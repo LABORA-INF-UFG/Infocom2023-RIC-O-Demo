@@ -20,6 +20,7 @@
 
 add_subdirectory(phy)
 add_subdirectory(stack)
+add_subdirectory(ric)
 
 
 # Link libstdc++ and libgcc
@@ -40,6 +41,7 @@ target_link_libraries(srsenb  srsenb_phy
                               srsenb_upper
                               srsenb_mac
                               srsenb_rrc
+			      srsenb_ric
                               srslte_common
                               srslte_mac
                               srslte_phy

@@ -52,6 +52,8 @@
 #include "srslte/interfaces/sched_interface.h"
 #include "srslte/interfaces/ue_interfaces.h"
 
+#include "srsenb/hdr/ric/agent_defs.h"
+
 namespace srsenb {
 
 /*******************************************************************************
@@ -106,7 +108,14 @@ struct all_args_t {
   general_args_t    general;
   phy_args_t        phy;
   stack_args_t      stack;
+  ric::agent_args_t ric_agent;
 };
+
+}
+
+#include "srsenb/hdr/ric/agent.h"
+
+namespace srsenb {
 
 /*******************************************************************************
   Main eNB class
@@ -140,6 +149,7 @@ private:
   int parse_args(const all_args_t& args_);
 
   // eNB components
+  std::unique_ptr<ric::agent>  ric_agent = nullptr;
   std::unique_ptr<enb_stack_base>     stack = nullptr;
   std::unique_ptr<srslte::radio>      radio = nullptr;
   std::unique_ptr<enb_phy_base>       phy   = nullptr;

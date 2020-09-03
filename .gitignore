@@ -1,0 +1,4 @@
+build
+srsenb/src/ric/messages/asn1/*.asn1
+srsenb/src/ric/messages/generated/*
+*~

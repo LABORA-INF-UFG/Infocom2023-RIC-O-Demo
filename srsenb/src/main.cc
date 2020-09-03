@@ -195,6 +195,14 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("embms.enable", bpo::value<bool>(&args->stack.embms.enable)->default_value(false), "Enables MBMS in the eNB")
     ("embms.m1u_multiaddr", bpo::value<string>(&args->stack.embms.m1u_multiaddr)->default_value("239.255.0.1"), "M1-U Multicast address the eNB joins.")
     ("embms.m1u_if_addr", bpo::value<string>(&args->stack.embms.m1u_if_addr)->default_value("127.0.1.201"), "IP address of the interface the eNB will listen for M1-U traffic.")
+
+    // O-RAN RIC/E2AP section
+    ("ric.agent.enabled", bpo::value<bool>(&args->ric_agent.enabled)->default_value(true), "Enable or disable the RIC agent.")
+    ("ric.agent.remote_ipv4_addr", bpo::value<string>(&args->ric_agent.remote_ipv4_addr)->default_value("127.0.0.1"), "IPv4 address of the RIC.")
+    ("ric.agent.remote_port", bpo::value<uint16_t>(&args->ric_agent.remote_port)->default_value(E2AP_PORT), "Remote port on which to connect to the RIC.")
+    ("ric.agent.functions_disabled", bpo::value<string>(&args->ric_agent.functions_disabled)->default_value(""), "A comma-separated list of E2SM functions to disable in the RIC agent; by default, all are enabled.")
+    ("ric.agent.log_level", bpo::value<string>(&args->ric_agent.log_level),  "RIC agent log level")
+    ("ric.agent.log_hex_limit",bpo::value<int>(&args->ric_agent.log_hex_limit), "RIC agent log hex dump limit")
     ;
 
   // Positional options - config file location
@@ -321,6 +329,9 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     if (!vm.count("log.stack_level")) {
       args->stack.log.stack_level = args->log.all_level;
     }
+    if (!vm.count("ric.agent.log_level")) {
+      args->ric_agent.log_level = args->log.all_level;
+    }
   }
 
   // Apply all_hex_limit to any unset layers
@@ -348,6 +359,9 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     }
     if (!vm.count("log.stack_hex_limit")) {
       args->stack.log.stack_hex_limit = args->log.all_hex_limit;
+    }
+    if (!vm.count("ric.agent.log_hex_limit")) {
+      args->ric_agent.log_hex_limit = args->log.all_hex_limit;
     }
   }
 

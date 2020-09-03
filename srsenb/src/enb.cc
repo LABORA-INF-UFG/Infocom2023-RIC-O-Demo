@@ -79,6 +79,12 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     return SRSLTE_ERROR;
   }
 
+  ric_agent.reset(new ric::agent(logger));
+  if (!ric_agent) {
+    log.console("Error creating RIC agent instance.\n");
+    return SRSLTE_ERROR;
+  }
+
   // Init layers
   if (lte_radio->init(args.rf, lte_phy.get())) {
     log.console("Error initializing radio.\n");
@@ -95,9 +101,20 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     ret = SRSLTE_ERROR;
   }
 
+  if (ric_agent->init(args)) {
+    log.console("Error initializing RIC agent.\n");
+    ret = SRSLTE_ERROR;
+  }
+
   stack = std::move(lte_stack);
   phy   = std::move(lte_phy);
   radio = std::move(lte_radio);
+  ric_agent = std::move(ric_agent);
+
+  if (ric_agent->start()) {
+    log.console("Error initializing RIC agent.\n");
+    ret = SRSLTE_ERROR;
+  }
 
   log.console("\n==== eNodeB started ===\n");
   log.console("Type <t> to view trace\n");
@@ -111,6 +128,10 @@ void enb::stop()
 {
   if (started) {
     // tear down in reverse order
+    if (ric_agent) {
+      ric_agent->stop();
+    }
+
     if (phy) {
       phy->stop();
     }
