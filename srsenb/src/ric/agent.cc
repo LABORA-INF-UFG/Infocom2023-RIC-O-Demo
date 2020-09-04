@@ -64,9 +64,31 @@ int agent::init(const srsenb::all_args_t& args_)
   if (!args.ric_agent.enabled)
     state = RIC_DISABLED;
 
-  /* XXX: handle disabled functions. */
+  /* Handle disabled functions. */
   if (!args.ric_agent.functions_disabled.empty()) {
-
+    int i = 0,spos = -1,sslen = 0;
+    int len = (int)args.ric_agent.functions_disabled.size();
+    for (int i = 0; i < len ; ++i) {
+      if (spos < 0
+	  && (args.ric_agent.functions_disabled[i] == ','
+	      || args.ric_agent.functions_disabled[i] == ' '
+	      || args.ric_agent.functions_disabled[i] == '\t'))
+	continue;
+      else if (spos < 0) {
+	spos = i;
+	continue;
+      }
+      if (args.ric_agent.functions_disabled[i] == ',' || (i + 1) == len) {
+	sslen = i - spos;
+	if ((i + 1) == len && !(args.ric_agent.functions_disabled[i] == ','))
+	  ++sslen;
+	std::string ds = \
+	  args.ric_agent.functions_disabled.substr(spos,sslen);
+	functions_disabled.push_back(ds);
+	RIC_DEBUG("disabled function: %s\n",ds.c_str());
+	spos = -1;
+      }
+    }
   }
 
   /* Add E2SM service models. */
@@ -92,6 +114,10 @@ int agent::init(const srsenb::all_args_t& args_)
       func = *it2;
       if (!(func->enabled))
 	continue;
+      if (!is_function_enabled(func->name)) {
+	func->enabled = false;
+        continue;
+      }
       function_id_map.insert(std::make_pair(func->function_id,func));
     }
   }
