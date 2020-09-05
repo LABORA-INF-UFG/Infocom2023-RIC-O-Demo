@@ -197,9 +197,10 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("embms.m1u_if_addr", bpo::value<string>(&args->stack.embms.m1u_if_addr)->default_value("127.0.1.201"), "IP address of the interface the eNB will listen for M1-U traffic.")
 
     // O-RAN RIC/E2AP section
-    ("ric.agent.enabled", bpo::value<bool>(&args->ric_agent.enabled)->default_value(true), "Enable or disable the RIC agent.")
+    ("ric.agent.disable", bpo::value<bool>(&args->ric_agent.disabled)->default_value(false), "Disable the RIC agent.")
     ("ric.agent.remote_ipv4_addr", bpo::value<string>(&args->ric_agent.remote_ipv4_addr)->default_value("127.0.0.1"), "IPv4 address of the RIC.")
     ("ric.agent.remote_port", bpo::value<uint16_t>(&args->ric_agent.remote_port)->default_value(E2AP_PORT), "Remote port on which to connect to the RIC.")
+    ("ric.agent.no_reconnect", bpo::value<bool>(&args->ric_agent.no_reconnect)->default_value(false), "Don't reconnect on connection loss or error.")
     ("ric.agent.functions_disabled", bpo::value<string>(&args->ric_agent.functions_disabled)->default_value("ORAN-E2SM-KPM"), "A comma-separated list of E2SM functions to disable in the RIC agent; by default, most are enabled.  To enable all, set this to the empty string.")
     ("ric.agent.log_level", bpo::value<string>(&args->ric_agent.log_level),  "RIC agent log level")
     ("ric.agent.log_hex_limit",bpo::value<int>(&args->ric_agent.log_hex_limit), "RIC agent log hex dump limit")

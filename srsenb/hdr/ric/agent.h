@@ -11,6 +11,7 @@
 #include "srslte/common/logger_file.h"
 #include "srslte/common/log_filter.h"
 #include "srslte/common/network_utils.h"
+#include "srslte/common/multiqueue.h"
 #include "srsenb/hdr/enb.h"
 #include "srsenb/hdr/ric/e2ap.h"
 #include "srsenb/hdr/ric/e2sm.h"
@@ -27,14 +28,16 @@ typedef enum {
   RIC_DISABLED = 6,
 } agent_state_t;
 
-class agent
+#define RIC_AGENT_RECONNECT_DELAY_INC 5
+#define RIC_AGENT_RECONNECT_DELAY_MAX 60
+
+class agent : public srslte::thread
 {
 public:
   agent(srslte::logger *logger_);
   virtual ~agent();
 
   int init(const srsenb::all_args_t& args_);
-  int start();
   void stop();
   int reset();
   bool send_sctp_data(uint8_t *buf,ssize_t len);
@@ -58,6 +61,12 @@ public:
   std::list<ric::service_model *> service_models;
 
 private:
+  void handle_connection_error();
+  int connect();
+  void disconnect(bool use_shutdown = true);
+  int connection_reset(int delay = -1);
+  void run_thread() override;
+  void stop_impl();
   bool handle_message(srslte::unique_byte_buffer_t pdu,
 		      const sockaddr_in &from,const sctp_sndrcvinfo &sri,
 		      int flags);
@@ -66,10 +75,15 @@ private:
   std::map<ric::ran_function_id_t,ric::ran_function_t *> function_id_map;
   std::list<subscription_t *> subscriptions;
   srslte::socket_handler_t ric_socket;
+  int current_reconnect_delay = 0;
   uint16_t ric_mcc,ric_mnc;
   uint32_t ric_id;
   struct sockaddr_in ric_sockaddr = {};
   std::unique_ptr<srslte::rx_multisocket_handler> rx_sockets;
+
+  bool agent_thread_started = false;
+  srslte::task_multiqueue pending_tasks;
+  int agent_queue_id = -1;
 
   std::list<std::string> functions_disabled;
   std::string remote_ipv4_addr;

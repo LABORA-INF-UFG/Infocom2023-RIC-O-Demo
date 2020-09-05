@@ -6,9 +6,10 @@ namespace ric {
 class agent;
 
 typedef struct agent_args {
-  bool        enabled;
+  bool        disabled;
   std::string remote_ipv4_addr;
   uint16_t    remote_port;
+  bool        no_reconnect;
   std::string functions_disabled;
   std::string log_level;
   int log_hex_limit;

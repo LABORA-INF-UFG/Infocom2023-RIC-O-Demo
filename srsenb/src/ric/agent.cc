@@ -26,7 +26,10 @@ namespace ric {
 bool e2ap_xer_print;
 bool e2sm_xer_print;
 
-agent::agent(srslte::logger* logger_) : logger(logger_) {};
+agent::agent(srslte::logger* logger_) : logger(logger_), thread("RIC")
+{
+  agent_queue_id = pending_tasks.add_queue();
+};
 
 agent::~agent()
 {
@@ -61,8 +64,10 @@ int agent::init(const srsenb::all_args_t& args_)
   log.e2sm.set_hex_limit(args.ric_agent.log_hex_limit);
   e2sm_xer_print = (log.e2sm_level >= srslte::LOG_LEVEL_DEBUG);
 
-  if (!args.ric_agent.enabled)
+  if (args.ric_agent.disabled) {
     state = RIC_DISABLED;
+    return SRSLTE_SUCCESS;
+  }
 
   /* Handle disabled functions. */
   if (!args.ric_agent.functions_disabled.empty()) {
@@ -124,7 +129,27 @@ int agent::init(const srsenb::all_args_t& args_)
 
   state = RIC_INITIALIZED;
 
+  /* Start up our recv socket thread and agent thread. */
+  rx_sockets.reset(new srslte::rx_multisocket_handler("RICSOCKET",
+						      srslte::logmap::get("RIC")));
+
+  /* Enqueue a connect task for our thread.  This will run due to start() below. */
+  pending_tasks.push(agent_queue_id,[this]() { connect(); });
+
+  /* Use the default high-priority level, below UDH, same as enb. */
+  agent_thread_started = true;
+  start(-1);
+
   return SRSLTE_SUCCESS;
+}
+
+void agent::run_thread()
+{
+  while (agent_thread_started) {
+    srslte::move_task_t task{};
+    if (pending_tasks.wait_pop(&task) >= 0)
+      task();
+  }
 }
 
 bool agent::is_function_enabled(std::string &function_name)
@@ -172,20 +197,61 @@ ric::subscription_t *agent::lookup_subscription(
   return nullptr;
 }
 
-int agent::start()
+/**
+ * Handle an error or closure of the RIC socket connection.  The goal
+ * here was to allow users to specify that the agent shouldn't always,
+ * infinitely attempt to reconnect, and should actually stop both its rx
+ * and agent threads here, but that isn't supported by srsenb.
+ *
+ * (We cannot call stop() from within our rx thread nor our agent
+ * thread: if the former, we deadlock on cleanup within the rx thread;
+ * if the latter, we try to pthread_join ourself from ourself, after
+ * adding a stop_impl task for ourself :).  What we need to implement
+ * this is help from the enb stack itself (e.g. a daemon thread that
+ * just waits for component threads to exit and joins them), but it
+ * doesn't have any support to do this, presumably because none of its
+ * radio threads would ever exit without taking the whole enb with it;
+ * and because none of the upper layers should ever not reconnect.  So
+ * we just stop reconnection attempts, and let our threads sleep forever
+ * (until the enb main actually does stop them at enb termination).)
+ */
+void agent::handle_connection_error()
+{
+  if (args.ric_agent.no_reconnect) {
+    RIC_INFO("disabling further RIC reconnects\n");
+    /* stop(); */
+    state = RIC_DISABLED;
+    pending_tasks.push(agent_queue_id,[this]() {
+      disconnect();
+    });
+  }
+  else {
+    RIC_INFO("resetting agent connection (reconnect enabled)\n");
+    pending_tasks.push(agent_queue_id,[this]() {
+      connection_reset();
+    });
+  }
+}
+
+int agent::connect()
 {
   int ret;
   uint8_t *buf = NULL;
   ssize_t len;
 
-  if (state == RIC_DISABLED)
+  if (state == RIC_DISABLED || state == RIC_UNINITIALIZED)
     return SRSLTE_SUCCESS;
+  else if (state == RIC_CONNECTED || state == RIC_ESTABLISHED)
+    return SRSLTE_ERROR;
 
   /* Open a connection to the RIC. */
   if (!ric_socket.open_socket(srslte::net_utils::addr_family::ipv4,
 			      srslte::net_utils::socket_type::stream,
 			      srslte::net_utils::protocol_type::SCTP)) {
-    RIC_ERROR("failed to open an SCTP socket");
+    RIC_ERROR("failed to open an SCTP socket to RIC; stopping agent\n");
+    /* Cannot recover from this error, so stop the agent. */
+    stop();
+    state = RIC_DISABLED;
     return SRSLTE_ERROR;
   }
 
@@ -193,16 +259,18 @@ int agent::start()
   struct sctp_initmsg initmsg = { 1,1,3,5 };
   if (setsockopt(ric_socket.fd(),IPPROTO_SCTP,SCTP_INITMSG,
 		 &initmsg,sizeof(initmsg)) < 0) {
-    RIC_ERROR("failed to set sctp socket stream options: %s\n",strerror(errno));
-    ric_socket.close();
+    RIC_ERROR("failed to set sctp socket stream options (%s); stopping agent\n",
+	      strerror(errno));
+    ric_socket.reset();
+    /* Cannot recover from this error, so stop the agent. */
+    stop();
+    state = RIC_DISABLED;
     return SRSLTE_ERROR;
   }
   int reuse = 1;
   if (setsockopt(ric_socket.fd(),SOL_SOCKET,SO_REUSEADDR,
 		 &reuse,sizeof(reuse)) < 0) {
-    RIC_ERROR("failed to set sctp socket reuseaddr: %s\n",strerror(errno));
-    ric_socket.close();
-    return SRSLTE_ERROR;
+    RIC_WARN("failed to set sctp socket reuseaddr: %s\n",strerror(errno));
   }
 
   if (!ric_socket.connect_to(args.ric_agent.remote_ipv4_addr.c_str(),
@@ -210,12 +278,13 @@ int agent::start()
 				&ric_sockaddr)) {
     RIC_ERROR("failed to connect to %s",
 	      args.ric_agent.remote_ipv4_addr.c_str());
-    return 1;
+    ric_socket.reset();
+    /* Might be recoverable; don't stop the agent. */
+    handle_connection_error();
+    return SRSLTE_ERROR;
   }
 
   /* Add an rx handler for the RIC socket. */
-  rx_sockets.reset(new srslte::rx_multisocket_handler("RICSOCKET",
-						      srslte::logmap::get("RIC")));
   auto ric_socket_handler =
     [this](srslte::unique_byte_buffer_t pdu,
 	   const sockaddr_in& from,const sctp_sndrcvinfo& sri,int flags) {
@@ -230,7 +299,7 @@ int agent::start()
   /* Send an E2Setup request to RIC. */
   ret = ric::e2ap::generate_e2_setup_request(this,&buf,&len);
   if (ret) {
-    RIC_ERROR("failed to generate E2setupRequest; disabling!\n");
+    RIC_ERROR("failed to generate E2setupRequest; disabling RIC agent!\n");
     stop();
     state = RIC_DISABLED;
     if (buf)
@@ -238,15 +307,17 @@ int agent::start()
     return 1;
   }
   if (!send_sctp_data(buf,len)) {
-    RIC_ERROR("failed to send E2setupRequest; disabling!\n");
-    stop();
-    state = RIC_DISABLED;
+    RIC_ERROR("failed to send E2setupRequest; aborting connect\n");
     if (buf)
       free(buf);
+    handle_connection_error();
     return 1;
   }
   RIC_INFO("sent E2setupRequest to RIC\n");
   free(buf);
+
+  /* We have a successful connection, so clear our current delay. */
+  current_reconnect_delay = 0;
 
   return 0;
 }
@@ -257,8 +328,24 @@ bool agent::handle_message(srslte::unique_byte_buffer_t pdu,
 {
   int ret;
 
-  RIC_DEBUG("handling incoming message\n");
+  /* If this "message" is an SCTP notification/event, handle it. */
+  if (flags & MSG_NOTIFICATION) {
+    union sctp_notification *n = (union sctp_notification *)pdu->msg;
+    switch (n->sn_header.sn_type) {
+    case SCTP_SHUTDOWN_EVENT:
+      struct sctp_shutdown_event *shut; 
+      shut = (struct sctp_shutdown_event *)pdu->msg; 
+      RIC_DEBUG("recv SCTP_SHUTDOWN (assoc %d)\n",shut->sse_assoc_id);
+      handle_connection_error();
+      break;
+    default:
+      RIC_DEBUG("received sctp event %d; ignoring\n",n->sn_header.sn_type);
+      break;
+    }
+    return true;
+  }
 
+  /* Otherwise, handle the message. */
   ret = ric::e2ap::handle_message(this,0,pdu->msg,pdu->N_bytes);
   if (ret == SRSLTE_SUCCESS)
     return true;
@@ -283,30 +370,82 @@ bool agent::send_sctp_data(uint8_t *buf,ssize_t len)
   return true;
 }
 
-void agent::stop()
+void agent::disconnect(bool use_shutdown)
 {
-  if (state == RIC_DISABLED)
+  if (!(state == RIC_CONNECTED || state == RIC_ESTABLISHED))
     return;
 
-  RIC_INFO("stopping agent\n");
-
-  rx_sockets->stop();
+  RIC_INFO("disconnecting from RIC\n");
+  if (use_shutdown) {
+      struct sctp_sndrcvinfo sri = { 0 };
+      sri.sinfo_flags = SCTP_EOF;
+      sctp_send(ric_socket.fd(),NULL,0,&sri,0);
+  }
+  rx_sockets->remove_socket(ric_socket.fd());
   ric_socket.reset();
+
   ric_mcc = ric_mnc = 0;
   ric_id = 0;
+
   state = RIC_DISCONNECTED;
 }
 
+void agent::stop()
+{
+  if (state == RIC_DISABLED || state == RIC_UNINITIALIZED)
+    return;
+
+  pending_tasks.push(agent_queue_id,[this]() { stop_impl(); });
+  wait_thread_finish();
+}
+
+void agent::stop_impl()
+{
+  RIC_INFO("stopping agent\n");
+
+  disconnect();
+  rx_sockets->stop();
+  pending_tasks.erase_queue(agent_queue_id);
+  state = RIC_INITIALIZED;
+  agent_thread_started = false;
+}
+
+/**
+ * Implements an E2 reset.  Must not schedule any tasks, since it might
+ * be called from connection_reset(), which clears the task queue.
+ */
 int agent::reset()
 {
-  stop();
-  state = RIC_INITIALIZED;
-  start();
+  RIC_INFO("resetting E2 agent state\n");
 
   /* TODO: cancel subscription actions/timers in a meaningful way. */
   subscriptions.clear();
 
   return SRSLTE_SUCCESS;
+}
+
+/**
+ * Implements a connection reset: disconnect(), reset(), connect().
+ */
+int agent::connection_reset(int delay)
+{
+  RIC_INFO("resetting agent connection\n");
+
+  if (delay < 0) {
+    delay = current_reconnect_delay;
+    /* Update our current reconnect delay. */
+    current_reconnect_delay += RIC_AGENT_RECONNECT_DELAY_INC;
+    if (current_reconnect_delay > RIC_AGENT_RECONNECT_DELAY_MAX)
+      current_reconnect_delay = RIC_AGENT_RECONNECT_DELAY_MAX;
+  }
+
+  reset();
+  disconnect();
+  pending_tasks.erase_queue(agent_queue_id);
+  state = RIC_INITIALIZED;
+  /* This is only "safe" because the agent_queue was just cleared. */
+  sleep(delay);
+  return connect();
 }
 
 }

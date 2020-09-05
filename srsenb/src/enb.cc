@@ -111,11 +111,6 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
   radio = std::move(lte_radio);
   ric_agent = std::move(ric_agent);
 
-  if (ric_agent->start()) {
-    log.console("Error initializing RIC agent.\n");
-    ret = SRSLTE_ERROR;
-  }
-
   log.console("\n==== eNodeB started ===\n");
   log.console("Type <t> to view trace\n");
 
