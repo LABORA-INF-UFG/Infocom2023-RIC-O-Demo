@@ -253,7 +253,7 @@ int handle_ric_subscription_delete_request(ric::agent *agent,uint32_t stream,
     cause_detail = E2AP_CauseRIC_ran_function_id_Invalid;
     goto errout;
   }
-  if (request_id < 0 || instance_id) {
+  if (request_id < 0 || instance_id < 0) {
     E2AP_ERROR(agent,"request_id or instance_id not specified\n");
     cause = E2AP_Cause_PR_ricRequest;
     cause_detail = E2AP_CauseRIC_request_id_unknown;
