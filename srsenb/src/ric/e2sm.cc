@@ -9,7 +9,7 @@ ran_function_id_t next_ran_function_id = 0;
 
 ran_function_id_t get_next_ran_function_id()
 {
-  return ++next_ran_function_id;
+  return next_ran_function_id++;
 }
 
 int service_model::init()
