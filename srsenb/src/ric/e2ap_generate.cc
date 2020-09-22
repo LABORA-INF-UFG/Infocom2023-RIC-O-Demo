@@ -110,13 +110,13 @@ int generate_ric_subscription_response(
   E2AP_E2AP_PDU_t pdu;
   E2AP_RICsubscriptionResponse_t *out;
   E2AP_RICsubscriptionResponse_IEs_t *ie;
-  E2AP_RICaction_Admitted_Item_t *ai;
-  E2AP_RICaction_NotAdmitted_Item_t *nai;
+  E2AP_RICaction_Admitted_ItemIEs_t *ai;
+  E2AP_RICaction_NotAdmitted_ItemIEs_t *nai;
   std::list<ric::action_t *>::iterator it;
   ric::action_t *action;
 
   memset(&pdu, 0, sizeof(pdu));
-  pdu.present = E2AP_E2AP_PDU_PR_unsuccessfulOutcome;
+  pdu.present = E2AP_E2AP_PDU_PR_successfulOutcome;
   pdu.choice.successfulOutcome.procedureCode = E2AP_ProcedureCode_id_RICsubscription;
   pdu.choice.successfulOutcome.criticality = E2AP_Criticality_reject;
   pdu.choice.successfulOutcome.value.present = E2AP_SuccessfulOutcome__value_PR_RICsubscriptionResponse;
@@ -145,8 +145,11 @@ int generate_ric_subscription_response(
     action = *it;
     if (!action->enabled)
       continue;
-    ai = (E2AP_RICaction_Admitted_Item_t *)calloc(1,sizeof(*ai));
-    ai->ricActionID = action->id;
+    ai = (E2AP_RICaction_Admitted_ItemIEs_t *)calloc(1,sizeof(*ai));
+    ai->id = E2AP_ProtocolIE_ID_id_RICaction_Admitted_Item;
+    ai->criticality = E2AP_Criticality_reject;
+    ai->value.present = E2AP_RICaction_Admitted_ItemIEs__value_PR_RICaction_Admitted_Item;
+    ai->value.choice.RICaction_Admitted_Item.ricActionID = action->id;
     ASN_SEQUENCE_ADD(&ie->value.choice.RICaction_Admitted_List.list,ai);
   }
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
@@ -159,26 +162,34 @@ int generate_ric_subscription_response(
     action = *it;
     if (action->enabled)
       continue;
-    nai = (E2AP_RICaction_NotAdmitted_Item_t *)calloc(1,sizeof(*nai));
-    nai->ricActionID = action->id;
-    nai->cause.present = (E2AP_Cause_PR)action->error_cause;
-    switch (nai->cause.present) {
+    nai = (E2AP_RICaction_NotAdmitted_ItemIEs_t *)calloc(1,sizeof(*nai));
+    nai->id = E2AP_ProtocolIE_ID_id_RICaction_NotAdmitted_Item;
+    nai->criticality = E2AP_Criticality_reject;
+    nai->value.present = E2AP_RICaction_NotAdmitted_ItemIEs__value_PR_RICaction_NotAdmitted_Item;
+    nai->value.choice.RICaction_NotAdmitted_Item.ricActionID = action->id;
+    if (action->error_cause == 0) {
+      action->error_cause = E2AP_Cause_PR_ricRequest;
+      action->error_cause_detail = E2AP_CauseRIC_unspecified;
+    }
+    nai->value.choice.RICaction_NotAdmitted_Item.cause.present = (E2AP_Cause_PR)action->error_cause;
+    switch (nai->value.choice.RICaction_NotAdmitted_Item.cause.present) {
     case E2AP_Cause_PR_NOTHING:
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = 0;
       break;
     case E2AP_Cause_PR_ricRequest:
-      nai->cause.choice.ricRequest = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_ricService:
-      nai->cause.choice.ricService = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricService = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_transport:
-      nai->cause.choice.transport = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.transport = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_protocol:
-      nai->cause.choice.protocol = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.protocol = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_misc:
-      nai->cause.choice.misc = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.misc = action->error_cause_detail;
       break;
     default:
       break;
@@ -203,7 +214,7 @@ int generate_ric_subscription_failure(
   E2AP_E2AP_PDU_t pdu;
   E2AP_RICsubscriptionFailure_t *out;
   E2AP_RICsubscriptionFailure_IEs_t *ie;
-  E2AP_RICaction_NotAdmitted_Item_t *ai;
+  E2AP_RICaction_NotAdmitted_ItemIEs_t *nai;
   std::list<ric::action_t *>::iterator it;
   ric::action_t *action;
 
@@ -235,31 +246,39 @@ int generate_ric_subscription_failure(
   ie->value.present = E2AP_RICsubscriptionFailure_IEs__value_PR_RICaction_NotAdmitted_List;
   for (it = rs->actions.begin(); it != rs->actions.end(); ++it) {
     action = *it;
-    ai = (E2AP_RICaction_NotAdmitted_Item_t *)calloc(1,sizeof(*ai));
-    ai->ricActionID = action->id;
-    ai->cause.present = (E2AP_Cause_PR)action->error_cause;
-    switch (ai->cause.present) {
+    nai = (E2AP_RICaction_NotAdmitted_ItemIEs_t *)calloc(1,sizeof(*nai));
+    nai->id = E2AP_ProtocolIE_ID_id_RICaction_NotAdmitted_Item;
+    nai->criticality = E2AP_Criticality_reject;
+    nai->value.present = E2AP_RICaction_NotAdmitted_ItemIEs__value_PR_RICaction_NotAdmitted_Item;
+    nai->value.choice.RICaction_NotAdmitted_Item.ricActionID = action->id;
+    if (action->error_cause == 0) {
+      action->error_cause = E2AP_Cause_PR_ricRequest;
+      action->error_cause_detail = E2AP_CauseRIC_unspecified;
+    }
+    nai->value.choice.RICaction_NotAdmitted_Item.cause.present = (E2AP_Cause_PR)action->error_cause;
+    switch (nai->value.choice.RICaction_NotAdmitted_Item.cause.present) {
     case E2AP_Cause_PR_NOTHING:
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = 0;
       break;
     case E2AP_Cause_PR_ricRequest:
-      ai->cause.choice.ricRequest = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_ricService:
-      ai->cause.choice.ricService = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricService = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_transport:
-      ai->cause.choice.transport = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.transport = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_protocol:
-      ai->cause.choice.protocol = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.protocol = action->error_cause_detail;
       break;
     case E2AP_Cause_PR_misc:
-      ai->cause.choice.misc = action->error_cause_detail;
+      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.misc = action->error_cause_detail;
       break;
     default:
       break;
     }
-    ASN_SEQUENCE_ADD(&ie->value.choice.RICaction_NotAdmitted_List.list,ai);
+    ASN_SEQUENCE_ADD(&ie->value.choice.RICaction_NotAdmitted_List.list,nai);
   }
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 

@@ -98,13 +98,14 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
   ssize_t len;
   ric::ran_function_t *func;
   std::list<ric::action_t *>::iterator it;
+  bool any_actions_enabled = false;
 
   req = &pdu->choice.initiatingMessage.value.choice.RICsubscriptionRequest;
 
   E2AP_INFO(agent,"Received RICsubscriptionRequest\n");
 
   /* We need to create an ric_subscription to generate errors. */
-  rs = (ric::subscription_t *)calloc(1,sizeof(*rs));
+  rs = new ric::subscription_t;
 
   for (ptr = req->protocolIEs.list.array;
        ptr < &req->protocolIEs.list.array[req->protocolIEs.list.count];
@@ -120,7 +121,6 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
     else if (rie->id == E2AP_ProtocolIE_ID_id_RICsubscriptionDetails) {
       E2AP_RICeventTriggerDefinition_t *rtd = &rie->value.choice.RICsubscriptionDetails.ricEventTriggerDefinition;
       E2AP_RICactions_ToBeSetup_List_t *ral = &rie->value.choice.RICsubscriptionDetails.ricAction_ToBeSetup_List;
-      E2AP_RICaction_ToBeSetup_Item_t *rai;
 
       if (rtd->size > 0 && rtd->size < E2SM_MAX_DEF_SIZE) {
 	rs->event_trigger.size = rie->value.choice.RICsubscriptionDetails.ricEventTriggerDefinition.size;
@@ -135,21 +135,25 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
       }
 
       for (int i = 0; i < ral->list.count; ++i) {
-	rai = (E2AP_RICaction_ToBeSetup_Item_t *)ral->list.array[i];
-	ra = (ric::action_t *)calloc(1,sizeof(*ra));
-	ra->id = rai->ricActionID;
-	ra->type = rai->ricActionType;
-	if (rai->ricActionDefinition && rai->ricActionDefinition->size > 0) {
-	  ra->def_size = rai->ricActionDefinition->size;
-	  ra->def_buf = (uint8_t *)malloc(ra->def_size);
-	  memcpy(ra->def_buf,rai->ricActionDefinition->buf,ra->def_size);
-	}
-	if (rai->ricSubsequentAction) {
-	  ra->subsequent_action = rai->ricSubsequentAction->ricSubsequentActionType;
-	  ra->time_to_wait = rai->ricSubsequentAction->ricTimeToWait;
-	}
+	E2AP_RICaction_ToBeSetup_ItemIEs_t *ptr2 = (E2AP_RICaction_ToBeSetup_ItemIEs_t *)ral->list.array[i];
+	if (ptr2->id == E2AP_ProtocolIE_ID_id_RICaction_ToBeSetup_Item) {
+	  E2AP_RICaction_ToBeSetup_Item_t *rai = \
+	    (E2AP_RICaction_ToBeSetup_Item_t *)&ptr2->value.choice.RICaction_ToBeSetup_Item;
+	  ra = (ric::action_t *)calloc(1,sizeof(*ra));
+	  ra->id = rai->ricActionID;
+	  ra->type = rai->ricActionType;
+	  if (rai->ricActionDefinition && rai->ricActionDefinition->size > 0) {
+	    ra->def_size = rai->ricActionDefinition->size;
+	    ra->def_buf = (uint8_t *)malloc(ra->def_size);
+	    memcpy(ra->def_buf,rai->ricActionDefinition->buf,ra->def_size);
+	  }
+	  if (rai->ricSubsequentAction) {
+	    ra->subsequent_action = rai->ricSubsequentAction->ricSubsequentActionType;
+	    ra->time_to_wait = rai->ricSubsequentAction->ricTimeToWait;
+	  }
 
-	rs->actions.push_back(ra);
+	  rs->actions.push_back(ra);
+	}
       }
     }
   }
@@ -163,6 +167,19 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
   ret = func->model->handle_subscription_add(rs);
   if (ret) {
     E2AP_ERROR(agent,"failed to subscribe to ran_function %ld\n",rs->function_id);
+    goto errout;
+  }
+
+  /* If not one action is enabled, this subscription fails by definition. */
+  for (it = rs->actions.begin(); it != rs->actions.end(); ++it) {
+    ra = *it;
+    if (ra->enabled) {
+      any_actions_enabled = true;
+      break;
+    }
+  }
+  if (!any_actions_enabled) {
+    E2AP_ERROR(agent,"no actions enabled; fails by definition\n");
     goto errout;
   }
 
@@ -194,7 +211,7 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
   }
   if (rs->event_trigger.buf)
     free(rs->event_trigger.buf);
-  free(rs);
+  delete rs;
 
   return ret;
 }
