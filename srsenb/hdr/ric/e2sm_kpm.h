@@ -36,7 +36,7 @@ class kpm_model : public service_model
 public:
   kpm_model(ric::agent *agent_):
     service_model(agent_,"ORAN-E2SM-KPM","1.3.6.1.4.1.1.1.2.2"),
-    period_ms(-1), timeout(), callback(NULL) {};
+    period_ms(-1), timeout(), callback(NULL), serial_number(1) {};
   int init();
   virtual ~kpm_model() {};
   void send_indication();
@@ -50,6 +50,7 @@ private:
   srslte::timeout timeout;
   kpm_timeout_callback *callback;
   std::list<ric::subscription_t *> subscriptions;
+  long serial_number;
 };
 
 class kpm_timeout_callback : public srslte::timeout_callback

@@ -6,15 +6,20 @@
 #include "srsenb/hdr/ric/e2sm_kpm.h"
 #include "srsenb/hdr/ric/e2ap_encode.h"
 #include "srsenb/hdr/ric/e2ap_decode.h"
+#include "srsenb/hdr/ric/e2ap_generate.h"
 
 #include "E2AP_Cause.h"
 #include "E2AP_RICactionType.h"
+#include "E2AP_RICindicationType.h"
 #include "E2SM_KPM_E2SM-KPM-RANfunction-Description.h"
 #include "E2SM_KPM_RIC-ReportStyle-List.h"
 #include "E2SM_KPM_RIC-EventTriggerStyle-List.h"
 #include "E2SM_KPM_RT-Period-IE.h"
 #include "E2SM_KPM_E2SM-KPM-EventTriggerDefinition.h"
 #include "E2SM_KPM_Trigger-ConditionIE-Item.h"
+#include "E2SM_KPM_E2SM-KPM-IndicationHeader.h"
+#include "E2SM_KPM_E2SM-KPM-IndicationMessage.h"
+#include "E2SM_KPM_PM-Containers-List.h"
 
 namespace ric {
 
@@ -236,10 +241,109 @@ int kpm_model::handle_control(ric::control_t *control)
 
 void kpm_model::send_indication()
 {
-  E2SM_INFO(agent,"kpm: would have sent indication\n");
+  uint8_t *buf = NULL;
+  ssize_t buf_len = 0;
+  std::list<ric::subscription_t *>::iterator it;
+  ric::subscription_t *sub;
+  std::list<ric::action_t *>::iterator it2;
+  ric::action_t *action;
+  E2SM_KPM_E2SM_KPM_IndicationHeader_t ih;
+  E2SM_KPM_E2SM_KPM_IndicationMessage_t im;
+  uint8_t *header_buf = NULL;
+  ssize_t header_buf_len = 0;
+  uint8_t *msg_buf = NULL;
+  ssize_t msg_buf_len = 0;
+  E2SM_KPM_PM_Containers_List_t *pmc_item;
 
   /* Schedule the next callback immediately. */
   timeout.start(period_ms,0,callback);
+
+  E2SM_INFO(agent,"kpm: sending indications\n");
+
+  /* First, we grab all the RF data. */
+  long qci = 0;
+
+  /*
+   * Second, we generate the e2sm-specific stuff.
+   *
+   * NB: we really need this to be action-specific, because actions can
+   * request a particular report style, but since we currently only
+   * generate one report style, don't worry for now.
+   */
+  memset(&ih,0,sizeof(ih));
+  ih.present = E2SM_KPM_E2SM_KPM_IndicationHeader_PR_indicationHeader_Format1;
+  ih.choice.indicationHeader_Format1.pLMN_Identity = \
+    (E2SM_KPM_PLMN_Identity_t *)calloc(1,sizeof(E2SM_KPM_PLMN_Identity_t));
+  ASN1_MAKE_PLMNID(
+    agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
+    ih.choice.indicationHeader_Format1.pLMN_Identity);
+  ih.choice.indicationHeader_Format1.qci = (long *)calloc(1,sizeof(long));
+  memcpy(ih.choice.indicationHeader_Format1.qci,&qci,sizeof(qci));
+
+  header_buf_len = ric::e2ap::encode(
+    &asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,0,&ih,&header_buf);
+  if (header_buf_len < 0) {
+    E2SM_ERROR(agent,"failed to encode indication header; aborting send_indication\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(
+      asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih);
+    goto out;
+  }
+
+  memset(&im,0,sizeof(im));
+  im.ric_Style_Type = (long)4;
+  im.indicationMessage.present = \
+    E2SM_KPM_E2SM_KPM_IndicationMessage__indicationMessage_PR_indicationMessage_Format1;
+  pmc_item = (E2SM_KPM_PM_Containers_List_t *)calloc(1,sizeof(*pmc_item));
+  memset(pmc_item,0,sizeof(*pmc_item));
+  ASN_SEQUENCE_ADD(
+    &im.indicationMessage.choice.indicationMessage_Format1.pm_Containers.list,
+    pmc_item);
+
+  msg_buf_len = ric::e2ap::encode(
+    &asn_DEF_E2SM_KPM_E2SM_KPM_IndicationMessage,0,&im,&msg_buf);
+  if (msg_buf_len < 0) {
+    E2SM_ERROR(agent,"failed to encode indication msg; aborting send_indication\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(
+      asn_DEF_E2SM_KPM_E2SM_KPM_IndicationMessage,&im);
+    goto out;
+  }
+
+  /*
+   * Finally, for each subscription and its actions, generate and send
+   * an indication.  We could only do this more efficiently if we did
+   * all the PDU generation here, because the subscription and action
+   * IDs are built into the RICindication message, so we have to
+   * generate a new one for each.  This means we are less efficient due
+   * to all the memcpys to create the IEs; and the memcpys into temp
+   * buffers for the SM-specific octet strings.  Ah well.
+   */
+  for (it = subscriptions.begin(); it != subscriptions.end(); ++it) {
+    sub = *it;
+    for (it2 = sub->actions.begin(); it2 != sub->actions.end(); ++it2) {
+      action = *it2;
+
+      if (ric::e2ap::generate_indication(
+	    agent,sub->request_id,sub->instance_id,sub->function_id,
+	    action->id,serial_number++,(int)E2AP_RICindicationType_report,
+	    header_buf,header_buf_len,msg_buf,msg_buf_len,NULL,0,&buf,&buf_len)) {
+	E2SM_ERROR(
+	  agent,"kpm: failed to generate indication (reqid=%ld,instid=%ld,funcid=%ld,actid=%ld)\n",
+	  sub->request_id,sub->instance_id,sub->function_id,action->id);
+      }
+      else {
+	E2SM_DEBUG(
+	  agent,"kpm: sending indication (reqid=%ld,instid=%ld,funcid=%ld,actid=%ld)\n",
+	  sub->request_id,sub->instance_id,sub->function_id,action->id);
+	agent->send_sctp_data(buf,buf_len);
+      }
+      free(buf);
+      buf = NULL;
+      buf_len = 0;
+    }
+  }
+
+ out:
+  return;
 }
 
 }
