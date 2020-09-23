@@ -280,6 +280,9 @@ void kpm_model::send_indication()
   ih.choice.indicationHeader_Format1.qci = (long *)calloc(1,sizeof(long));
   memcpy(ih.choice.indicationHeader_Format1.qci,&qci,sizeof(qci));
 
+  E2SM_DEBUG(agent,"indication header:\n");
+  E2SM_XER_PRINT(NULL,&asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih);
+
   header_buf_len = ric::e2ap::encode(
     &asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,0,&ih,&header_buf);
   if (header_buf_len < 0) {
@@ -298,6 +301,9 @@ void kpm_model::send_indication()
   ASN_SEQUENCE_ADD(
     &im.indicationMessage.choice.indicationMessage_Format1.pm_Containers.list,
     pmc_item);
+
+  E2SM_DEBUG(agent,"indication message:\n");
+  E2SM_XER_PRINT(NULL,&asn_DEF_E2SM_KPM_E2SM_KPM_IndicationMessage,&im);
 
   msg_buf_len = ric::e2ap::encode(
     &asn_DEF_E2SM_KPM_E2SM_KPM_IndicationMessage,0,&im,&msg_buf);
