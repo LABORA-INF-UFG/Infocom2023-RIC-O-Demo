@@ -25,6 +25,20 @@
 namespace ric {
 namespace e2ap {
 
+int decode(ric::agent *agent,const struct asn_TYPE_descriptor_s *td,
+	   void *ptr,const void *buf,size_t len)
+{
+  asn_dec_rval_t dres;
+
+  dres = aper_decode(NULL,td,&ptr,buf,len,0,0);
+  if (dres.code != RC_OK) {
+    E2AP_ERROR(agent,"failed to decode type (%d)\n",dres.code);
+    return -1;
+  }
+
+  return 0;
+}
+
 int decode_pdu(ric::agent *agent,E2AP_E2AP_PDU_t *pdu,
 	       const uint8_t * const buf,const uint32_t len)
 {

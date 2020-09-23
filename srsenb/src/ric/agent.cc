@@ -97,14 +97,6 @@ int agent::init(const srsenb::all_args_t& args_)
   }
 
   /* Add E2SM service models. */
-  model = new gnb_nrt_model(this);
-  if (model->init()) {
-    RIC_ERROR("failed to add E2SM-gNB-NRT model; aborting!\n");
-    delete model;
-    return SRSLTE_ERROR;
-  }
-  service_models.push_back(model);
-
   model = new kpm_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-KPM model; aborting!\n");
@@ -112,18 +104,36 @@ int agent::init(const srsenb::all_args_t& args_)
     return SRSLTE_ERROR;
   }
   service_models.push_back(model);
+  RIC_INFO("added model %s\n",model->name.c_str());
+
+  model = new gnb_nrt_model(this);
+  if (model->init()) {
+    RIC_ERROR("failed to add E2SM-gNB-NRT model; aborting!\n");
+    delete model;
+    return SRSLTE_ERROR;
+  }
+  service_models.push_back(model);
+  RIC_INFO("added model %s\n",model->name.c_str());
 
   /* Construct a simple function_id->function lookup table. */
   for (it = service_models.begin(); it != service_models.end(); ++it) {
     for (it2 = (*it)->functions.begin(); it2 != (*it)->functions.end(); ++it2) {
       func = *it2;
-      if (!(func->enabled))
+      if (!(func->enabled)) {
+	RIC_DEBUG("model %s function %s not enabled; not registering\n",
+		  (*it)->name.c_str(),func->name.c_str());
 	continue;
+      }
       if (!is_function_enabled(func->name)) {
+	RIC_DEBUG("model %s function %s administratively disabled; not registering\n",
+		  (*it)->name.c_str(),func->name.c_str());
 	func->enabled = false;
         continue;
       }
       function_id_map.insert(std::make_pair(func->function_id,func));
+      RIC_DEBUG("model %s function %s (function_id %ld) enabled and registered\n",
+		(*it)->name.c_str(),func->name.c_str(),func->function_id);
+
     }
   }
 

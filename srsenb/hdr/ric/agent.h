@@ -47,6 +47,10 @@ public:
   ric::ran_function_t *lookup_ran_function(ran_function_id_t function_id);
   ric::subscription_t *lookup_subscription(long request_id,long instance_id,
 					   ric::ran_function_id_t function_id);
+  template <typename FwdRef>
+  void push_task(FwdRef&& value) {
+    pending_tasks.push(agent_queue_id,value);
+  };
 
   srslte::logger *logger = nullptr;
   struct {
@@ -84,6 +88,7 @@ private:
   bool agent_thread_started = false;
   srslte::task_multiqueue pending_tasks;
   int agent_queue_id = -1;
+  srslte::timer_handler timers;
 
   std::list<std::string> functions_disabled;
   std::string remote_ipv4_addr;

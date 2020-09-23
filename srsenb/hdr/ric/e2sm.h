@@ -35,7 +35,8 @@ ran_function_id_t get_next_ran_function_id();
 class service_model
 {
 public:
-  service_model(ric::agent *agent_): agent(agent_) {};
+  service_model(ric::agent *agent_,const std::string name_,const std::string oid_):
+    agent(agent_), name(name_), oid(oid_) {};
   virtual int init();
   virtual ~service_model();
   virtual int handle_subscription_add(ric::subscription_t *sub);
@@ -47,7 +48,6 @@ public:
   const std::string oid;
   std::list<ric::ran_function_t *> functions;
 
-private:
   ric::agent *agent;
 };
 
