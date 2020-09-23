@@ -90,6 +90,7 @@ int generate_e2_setup_request(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode E2setupRequest\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
@@ -101,6 +102,7 @@ int generate_e2_setup_request(
   }
   */
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 
@@ -202,9 +204,11 @@ int generate_ric_subscription_response(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode RICsubscriptionResponse\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 
@@ -286,9 +290,11 @@ int generate_ric_subscription_failure(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode RICsubscriptionFailure\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 
@@ -326,9 +332,11 @@ int generate_ric_subscription_delete_response(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode RICsubscriptionDeleteResponse\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 
@@ -395,9 +403,11 @@ int generate_ric_subscription_delete_failure(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode RICsubscriptionDeleteFailure\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 
@@ -441,9 +451,11 @@ int generate_ric_service_update(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode RICserviceUpdate\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 
@@ -462,9 +474,114 @@ int generate_reset_response(
 
   if (encode_pdu(&pdu,buffer,len) < 0) {
     E2AP_ERROR(agent,"Failed to encode ResetResponse\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
     return SRSLTE_ERROR;
   }
 
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
+  return SRSLTE_SUCCESS;
+}
+
+int generate_indication(
+  ric::agent *agent,long request_id,long instance_id,
+  ric::ran_function_id_t function_id,long action_id,long serial_number,
+  int type,
+  const uint8_t *header_buf,ssize_t header_buf_len,
+  const uint8_t *msg_buf,ssize_t msg_buf_len,
+  const uint8_t *process_id,ssize_t process_id_len,
+  uint8_t **buffer,ssize_t *len)
+{
+  E2AP_E2AP_PDU_t pdu;
+  E2AP_RICindication_t *out;
+  E2AP_RICindication_IEs_t *ie;
+
+  memset(&pdu, 0, sizeof(pdu));
+  pdu.present = E2AP_E2AP_PDU_PR_initiatingMessage;
+  pdu.choice.initiatingMessage.procedureCode = E2AP_ProcedureCode_id_RICindication;
+  pdu.choice.initiatingMessage.criticality = E2AP_Criticality_reject;
+  pdu.choice.initiatingMessage.value.present = E2AP_InitiatingMessage__value_PR_RICindication;
+  out = &pdu.choice.initiatingMessage.value.choice.RICindication;
+
+  ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_RICrequestID;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_RICindication_IEs__value_PR_RICrequestID;
+  ie->value.choice.RICrequestID.ricRequestorID = request_id;
+  ie->value.choice.RICrequestID.ricInstanceID = instance_id;
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+
+  ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_RANfunctionID;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_RICindication_IEs__value_PR_RANfunctionID;
+  ie->value.choice.RANfunctionID = function_id;
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+
+  ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_RICactionID;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_RICindication_IEs__value_PR_RICactionID;
+  ie->value.choice.RICactionID = action_id;
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+
+  if (serial_number >= 0) {
+    ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+    ie->id = E2AP_ProtocolIE_ID_id_RICindicationSN;
+    ie->criticality = E2AP_Criticality_reject;
+    ie->value.present = E2AP_RICindication_IEs__value_PR_RICindicationSN;
+    ie->value.choice.RICindicationSN = serial_number;
+    ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+  }
+
+  ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_RICindicationType;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_RICindication_IEs__value_PR_RICindicationType;
+  ie->value.choice.RICindicationType = (enum E2AP_RICindicationType)type;
+  ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+
+  if (msg_buf != NULL && msg_buf_len > 0) {
+    ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+    ie->id = E2AP_ProtocolIE_ID_id_RICindicationMessage;
+    ie->criticality = E2AP_Criticality_reject;
+    ie->value.present = E2AP_RICindication_IEs__value_PR_RICindicationMessage;
+    ie->value.choice.RICindicationMessage.buf = (uint8_t *)malloc(msg_buf_len);
+    memcpy(ie->value.choice.RICindicationMessage.buf,msg_buf,msg_buf_len);
+    ie->value.choice.RICindicationMessage.size = msg_buf_len;
+    ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+  }
+
+  if (header_buf != NULL && header_buf_len > 0) {
+    ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+    ie->id = E2AP_ProtocolIE_ID_id_RICindicationHeader;
+    ie->criticality = E2AP_Criticality_reject;
+    ie->value.present = E2AP_RICindication_IEs__value_PR_RICindicationHeader;
+    ie->value.choice.RICindicationHeader.buf = (uint8_t *)malloc(header_buf_len);
+    memcpy(ie->value.choice.RICindicationHeader.buf,header_buf,header_buf_len);
+    ie->value.choice.RICindicationHeader.size = header_buf_len;
+    ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+  }
+
+  if (process_id != NULL && process_id_len > 0) {
+    ie = (E2AP_RICindication_IEs_t *)calloc(1,sizeof(*ie));
+    ie->id = E2AP_ProtocolIE_ID_id_RICcallProcessID;
+    ie->criticality = E2AP_Criticality_reject;
+    ie->value.present = E2AP_RICindication_IEs__value_PR_RICcallProcessID;
+    ie->value.choice.RICcallProcessID.buf = (uint8_t *)malloc(process_id_len);
+    memcpy(ie->value.choice.RICcallProcessID.buf,process_id,process_id_len);
+    ie->value.choice.RICcallProcessID.size = process_id_len;
+    ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
+  }
+
+  E2AP_XER_PRINT(NULL,&asn_DEF_E2AP_E2AP_PDU,&pdu);
+
+  if (encode_pdu(&pdu,buffer,len) < 0) {
+    E2AP_ERROR(agent,"Failed to encode RICindication\n");
+    ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
+    return SRSLTE_ERROR;
+  }
+
+  ASN_STRUCT_FREE_CONTENTS_ONLY(asn_DEF_E2AP_E2AP_PDU,&pdu);
   return SRSLTE_SUCCESS;
 }
 

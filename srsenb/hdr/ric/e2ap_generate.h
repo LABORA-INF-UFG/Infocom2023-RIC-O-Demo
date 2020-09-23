@@ -27,6 +27,14 @@ int generate_ric_service_update(
   ric::agent *agent,uint8_t **buffer,ssize_t *len);
 int generate_reset_response(
   ric::agent *agent,uint8_t **buffer,ssize_t *len);
+int generate_indication(
+  ric::agent *agent,long request_id,long instance_id,
+  ric::ran_function_id_t function_id,long action_id,long serial_number,
+  int type,
+  const uint8_t *header_buf,ssize_t header_buf_len,
+  const uint8_t *msg_buf,ssize_t msg_buf_len,
+  const uint8_t *process_id,ssize_t process_id_len,
+  uint8_t **buffer,ssize_t *len);
 
 }
 }
