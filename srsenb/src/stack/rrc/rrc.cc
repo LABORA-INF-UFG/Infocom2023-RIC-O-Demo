@@ -102,6 +102,7 @@ void rrc::get_metrics(rrc_metrics_t& m)
     m.n_ues = 0;
     for (auto iter = users.begin(); m.n_ues < ENB_METRICS_MAX_USERS && iter != users.end(); ++iter) {
       ue* u                  = iter->second.get();
+      m.ues[m.n_ues].rnti = u->rnti;
       m.ues[m.n_ues++].state = u->get_state();
     }
   }

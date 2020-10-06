@@ -39,6 +39,7 @@ typedef enum {
 
 struct rrc_ue_metrics_t {
   rrc_state_t state;
+  uint16_t    rnti;
 };
 
 struct rrc_metrics_t {
