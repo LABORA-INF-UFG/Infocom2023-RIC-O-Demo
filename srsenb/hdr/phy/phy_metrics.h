@@ -41,6 +41,7 @@ struct dl_metrics_t {
 };
 
 struct phy_metrics_t {
+  uint32_t cc_idx;
   dl_metrics_t dl;
   ul_metrics_t ul;
 };

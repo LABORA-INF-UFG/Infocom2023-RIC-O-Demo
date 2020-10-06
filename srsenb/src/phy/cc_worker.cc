@@ -563,6 +563,7 @@ uint32_t cc_worker::get_metrics(phy_metrics_t metrics[ENB_METRICS_MAX_USERS])
   for (auto& ue : ue_db) {
     if ((SRSLTE_RNTI_ISUSER(ue.first) || ue.first == SRSLTE_MRNTI) && cnt < ENB_METRICS_MAX_USERS) {
       ue.second->metrics_read(&metrics[cnt]);
+      metrics[cnt].cc_idx = cc_idx;
       cnt++;
     }
   }
