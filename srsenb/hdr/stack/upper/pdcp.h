@@ -23,6 +23,7 @@
 #include "srslte/interfaces/enb_interfaces.h"
 #include "srslte/interfaces/ue_interfaces.h"
 #include "srslte/upper/pdcp.h"
+#include "srsenb/hdr/stack/upper/pdcp_metrics.h"
 #include <map>
 
 #ifndef SRSENB_PDCP_H
@@ -37,6 +38,7 @@ public:
   virtual ~pdcp() {}
   void init(rlc_interface_pdcp* rlc_, rrc_interface_pdcp* rrc_, gtpu_interface_pdcp* gtpu_);
   void stop();
+  void get_metrics(pdcp_metrics_t& m);
 
   // pdcp_interface_rlc
   void write_pdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t sdu) override;
@@ -59,6 +61,7 @@ private:
   {
   public:
     uint16_t                    rnti;
+    uint64_t                    dl_bytes[RB_ID_N_ITEMS];
     srsenb::rlc_interface_pdcp* rlc;
     // rlc_interface_pdcp
     void write_sdu(uint32_t lcid, srslte::unique_byte_buffer_t sdu, bool blocking);
@@ -70,6 +73,7 @@ private:
   {
   public:
     uint16_t                     rnti;
+    uint64_t                     ul_bytes[RB_ID_N_ITEMS];
     srsenb::gtpu_interface_pdcp* gtpu;
     // gw_interface_pdcp
     void write_pdu(uint32_t lcid, srslte::unique_byte_buffer_t pdu);
