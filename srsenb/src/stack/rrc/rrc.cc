@@ -202,7 +202,7 @@ void rrc::add_user(uint16_t rnti, const sched_interface::ue_cfg_t& sched_ue_cfg)
       // adding UE object to MAC for MRNTI without scheduling configuration (broadcast not part of regular scheduling)
       mac->ue_cfg(SRSLTE_MRNTI, NULL);
       rlc->add_bearer_mrb(SRSLTE_MRNTI, lcid);
-      pdcp->add_bearer(SRSLTE_MRNTI, lcid, srslte::make_drb_pdcp_config_t(1, false));
+      pdcp->add_bearer(SRSLTE_MRNTI, lcid, 0, srslte::make_drb_pdcp_config_t(1, false));
       gtpu->add_bearer(SRSLTE_MRNTI, lcid, 1, 1, &teid_in);
     }
   }
@@ -1621,7 +1621,7 @@ void rrc::ue::send_connection_setup(bool is_setup)
   parent->rlc->add_bearer(rnti, 1, srslte::rlc_config_t::srb_config(1));
 
   // Configure SRB1 in PDCP
-  parent->pdcp->add_bearer(rnti, 1, srslte::make_srb_pdcp_config_t(1, false));
+  parent->pdcp->add_bearer(rnti, 1, 0, srslte::make_srb_pdcp_config_t(1, false));
 
   // Configure PHY layer
   apply_setup_phy_config_dedicated(*phy_cfg); // It assumes SCell has not been set before
@@ -1832,7 +1832,7 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
   parent->rlc->add_bearer(rnti, 2, srslte::rlc_config_t::srb_config(2));
 
   // Configure SRB2 in PDCP
-  parent->pdcp->add_bearer(rnti, 2, srslte::make_srb_pdcp_config_t(2, false));
+  parent->pdcp->add_bearer(rnti, 2, 0, srslte::make_srb_pdcp_config_t(2, false));
   parent->pdcp->config_security(rnti, 2, sec_cfg);
   parent->pdcp->enable_integrity(rnti, 2);
   parent->pdcp->enable_encryption(rnti, 2);
@@ -1869,7 +1869,7 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
     // Configure DRB1 in PDCP
     srslte::pdcp_config_t pdcp_cnfg_drb =
         srslte::make_drb_pdcp_config_t(drb_id, false, conn_reconf->rr_cfg_ded.drb_to_add_mod_list[vec_idx].pdcp_cfg);
-    parent->pdcp->add_bearer(rnti, lcid, pdcp_cnfg_drb);
+    parent->pdcp->add_bearer(rnti, lcid, erab.qos_params.qci, pdcp_cnfg_drb);
     parent->pdcp->config_security(rnti, lcid, sec_cfg);
     parent->pdcp->enable_integrity(rnti, lcid);
     parent->pdcp->enable_encryption(rnti, lcid);
@@ -2102,10 +2102,10 @@ void rrc::ue::send_connection_reconf_new_bearer(const asn1::s1ap::erab_to_be_set
     // TODO: Review all ID mapping LCID DRB ERAB EPSBID Mapping
     if (drb_item.pdcp_cfg_present) {
       parent->pdcp->add_bearer(
-          rnti, lcid, srslte::make_drb_pdcp_config_t(drb_item.drb_id - 1, false, drb_item.pdcp_cfg));
+          rnti, lcid, erabs[id].qos_params.qci, srslte::make_drb_pdcp_config_t(drb_item.drb_id - 1, false, drb_item.pdcp_cfg));
     } else {
       // use default config
-      parent->pdcp->add_bearer(rnti, lcid, srslte::make_drb_pdcp_config_t(drb_item.drb_id - 1, false));
+      parent->pdcp->add_bearer(rnti, lcid, erabs[id].qos_params.qci, srslte::make_drb_pdcp_config_t(drb_item.drb_id - 1, false));
     }
 
     // DRB has already been configured in GTPU through bearer setup

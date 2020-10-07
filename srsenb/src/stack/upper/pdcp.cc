@@ -53,7 +53,8 @@ void pdcp::get_metrics(pdcp_metrics_t& m)
     user_interface& u = iter->second;
     m.ues[m.n_ues].rnti = u.rlc_itf.rnti;
     memcpy(m.ues[m.n_ues].dl_bytes,u.rlc_itf.dl_bytes,sizeof(m.ues[m.n_ues].dl_bytes));
-    memcpy(m.ues[m.n_ues].ul_bytes,u.gtpu_itf.ul_bytes,sizeof(m.ues[m.n_ues].ul_bytes));
+    memcpy(m.ues[m.n_ues].dl_bytes_by_qci,u.rlc_itf.dl_bytes_by_qci,sizeof(m.ues[m.n_ues].dl_bytes_by_qci));
+    memcpy(m.ues[m.n_ues].ul_bytes_by_qci,u.gtpu_itf.ul_bytes_by_qci,sizeof(m.ues[m.n_ues].ul_bytes_by_qci));
     ++m.n_ues;
   }
 }
@@ -90,7 +91,7 @@ void pdcp::rem_user(uint16_t rnti)
   }
 }
 
-void pdcp::add_bearer(uint16_t rnti, uint32_t lcid, srslte::pdcp_config_t cfg)
+void pdcp::add_bearer(uint16_t rnti, uint32_t lcid, int8_t qci, srslte::pdcp_config_t cfg)
 {
   if (users.count(rnti)) {
     if (rnti != SRSLTE_MRNTI) {
@@ -98,6 +99,8 @@ void pdcp::add_bearer(uint16_t rnti, uint32_t lcid, srslte::pdcp_config_t cfg)
     } else {
       users[rnti].pdcp->add_bearer_mrb(lcid, cfg);
     }
+    users[rnti].rlc_itf.bearer_qci_map[lcid] = qci;
+    users[rnti].gtpu_itf.bearer_qci_map[lcid] = qci;
   }
 }
 
@@ -165,6 +168,7 @@ void pdcp::user_interface_gtpu::write_pdu(uint32_t lcid, srslte::unique_byte_buf
 
 void pdcp::user_interface_rlc::write_sdu(uint32_t lcid, srslte::unique_byte_buffer_t sdu, bool blocking)
 {
+  dl_bytes[lcid] += sdu->N_bytes;
   dl_bytes[lcid] += sdu->N_bytes;
   rlc->write_sdu(rnti, lcid, std::move(sdu));
 }

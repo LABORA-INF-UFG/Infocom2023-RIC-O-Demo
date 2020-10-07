@@ -65,7 +65,7 @@ public:
   void add_user(uint16_t rnti) override {}
   void rem_user(uint16_t rnti) override {}
   void write_sdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t sdu) override {}
-  void add_bearer(uint16_t rnti, uint32_t lcid, srslte::pdcp_config_t cnfg) override {}
+  void add_bearer(uint16_t rnti, uint32_t lcid, int8_t qci, srslte::pdcp_config_t cnfg) override {}
   void config_security(uint16_t rnti, uint32_t lcid, srslte::as_security_config_t sec_cfg_) override {}
   void enable_integrity(uint16_t rnti, uint32_t lcid) override {}
   void enable_encryption(uint16_t rnti, uint32_t lcid) override {}

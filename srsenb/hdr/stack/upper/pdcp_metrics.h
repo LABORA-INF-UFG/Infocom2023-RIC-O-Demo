@@ -23,13 +23,16 @@
 #define SRSENB_PDCP_METRICS_H
 
 #include "srsenb/hdr/stack/upper/common_enb.h"
+#include "srsenb/hdr/stack/rrc/rrc_config.h"
 
 namespace srsenb {
 
 struct pdcp_ue_metrics_t {
   uint16_t rnti;
-  uint64_t dl_bytes[RB_ID_N_ITEMS];
-  uint64_t ul_bytes[RB_ID_N_ITEMS];
+  uint64_t dl_bytes[SRSENB_N_RADIO_BEARERS];
+  uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
+  uint64_t ul_bytes[SRSENB_N_RADIO_BEARERS];
+  uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
 };
 
 struct pdcp_metrics_t {
