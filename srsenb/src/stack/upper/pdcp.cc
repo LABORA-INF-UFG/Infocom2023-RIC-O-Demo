@@ -163,13 +163,14 @@ void pdcp::write_sdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t 
 void pdcp::user_interface_gtpu::write_pdu(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
 {
   ul_bytes[lcid] += pdu->N_bytes;
+  ul_bytes_by_qci[bearer_qci_map[lcid]] += pdu->N_bytes;
   gtpu->write_pdu(rnti, lcid, std::move(pdu));
 }
 
 void pdcp::user_interface_rlc::write_sdu(uint32_t lcid, srslte::unique_byte_buffer_t sdu, bool blocking)
 {
   dl_bytes[lcid] += sdu->N_bytes;
-  dl_bytes[lcid] += sdu->N_bytes;
+  dl_bytes_by_qci[bearer_qci_map[lcid]] += sdu->N_bytes;
   rlc->write_sdu(rnti, lcid, std::move(sdu));
 }
 
