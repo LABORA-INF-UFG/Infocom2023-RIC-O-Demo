@@ -12,6 +12,7 @@
 #include "srslte/common/log_filter.h"
 #include "srslte/common/network_utils.h"
 #include "srslte/common/multiqueue.h"
+#include "srslte/interfaces/enb_metrics_interface.h"
 #include "srsenb/hdr/enb.h"
 #include "srsenb/hdr/ric/e2ap.h"
 #include "srsenb/hdr/ric/e2sm.h"
@@ -34,10 +35,13 @@ typedef enum {
 class agent : public srslte::thread
 {
 public:
-  agent(srslte::logger *logger_);
+  agent(srslte::logger *logger_,
+	srsenb::enb_metrics_interface *enb__metrics_interface_);
   virtual ~agent();
 
-  int init(const srsenb::all_args_t& args_);
+  int init(const srsenb::all_args_t& args_,
+	   srsenb::phy_cfg_t& phy_cfg_,
+	   srsenb::rrc_cfg_t rrc_cfg_);
   void stop();
   int reset();
   bool send_sctp_data(uint8_t *buf,ssize_t len);
@@ -62,7 +66,10 @@ public:
     srslte::LOG_LEVEL_ENUM e2sm_level;
   } log;
   srsenb::all_args_t args;
+  srsenb::phy_cfg_t phy_cfg;
+  srsenb::rrc_cfg_t rrc_cfg;
   std::list<ric::service_model *> service_models;
+  srsenb::enb_metrics_interface *enb_metrics_interface;
 
 private:
   void handle_connection_error();

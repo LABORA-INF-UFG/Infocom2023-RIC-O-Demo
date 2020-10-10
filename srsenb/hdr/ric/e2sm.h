@@ -38,6 +38,7 @@ public:
   service_model(ric::agent *agent_,const std::string name_,const std::string oid_):
     agent(agent_), name(name_), oid(oid_) {};
   virtual int init();
+  virtual void stop() = 0;
   virtual ~service_model();
   virtual int handle_subscription_add(ric::subscription_t *sub);
   virtual int handle_subscription_del(ric::subscription_t *sub,int force,

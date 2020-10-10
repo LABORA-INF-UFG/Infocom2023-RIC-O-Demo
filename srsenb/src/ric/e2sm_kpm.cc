@@ -1,4 +1,9 @@
 
+#include <sys/time.h>
+
+#include "srslte/interfaces/enb_metrics_interface.h"
+#include "srsenb/hdr/stack/rrc/rrc_metrics.h"
+#include "srsenb/hdr/stack/upper/common_enb.h"
 #include "srsenb/hdr/ric/e2ap.h"
 #include "srsenb/hdr/ric/e2sm.h"
 #include "srsenb/hdr/ric/agent.h"
@@ -20,8 +25,282 @@
 #include "E2SM_KPM_E2SM-KPM-IndicationHeader.h"
 #include "E2SM_KPM_E2SM-KPM-IndicationMessage.h"
 #include "E2SM_KPM_PM-Containers-List.h"
+#include "E2SM_KPM_PF-Container.h"
+#include "E2SM_KPM_CellResourceReportListItem.h"
+#include "E2SM_KPM_ServedPlmnPerCellListItem.h"
+#include "E2SM_KPM_EPC-DU-PM-Container.h"
+#include "E2SM_KPM_PF-ContainerListItem.h"
+#include "E2SM_KPM_PlmnID-List.h"
+#include "E2SM_KPM_EPC-CUUP-PM-Format.h"
+#include "E2SM_KPM_PerQCIReportListItemFormat.h"
 
 namespace ric {
+
+void timer_queue::stop()
+{
+  pthread_mutex_lock(&lock);
+  if (!running) {
+    pthread_mutex_unlock(&lock);
+    return;
+  }
+  running = false;
+  while (queue.size() > 0)
+    queue.pop();
+  pthread_mutex_unlock(&lock);
+  pthread_cond_signal(&cond);
+  pthread_join(thread,NULL);
+}
+
+bool timer_queue::start()
+{
+  pthread_mutex_lock(&lock);
+  if (running) {
+    pthread_mutex_unlock(&lock);
+    return false;
+  }
+  running = true;
+  if (pthread_create(&thread,NULL,timer_queue::run,this) != 0) {
+    running = false;
+    pthread_mutex_unlock(&lock);
+    return false;
+  }
+  pthread_mutex_unlock(&lock);
+
+  return true;
+}
+
+void *timer_queue::run(void *arg)
+{
+  timer_queue *tq = (timer_queue *)arg;
+
+  pthread_setname_np(pthread_self(),"KPM_TIMER_QUEUE");
+
+  pthread_mutex_lock(&tq->lock);
+  while (tq->running) {
+    if (tq->queue.size() == 0) {
+      pthread_cond_wait(&tq->cond,&tq->lock);
+      continue;
+    }
+    struct timeval now;
+    gettimeofday(&now,NULL);
+    timer_t *t = tq->queue.top();
+    while (t && timercmp(&t->next,&now,<=)) {
+      if (t->canceled) {
+	delete t;
+	continue;
+      }
+      if (t->repeats) {
+	struct timeval res;
+	timeradd(&t->next,&t->interval,&res);
+	t->next = res;
+	tq->queue.push(t);
+      }
+      t->callback(t->id,t->arg);
+      if (!t->repeats)
+	delete t;
+      tq->queue.pop();
+      t = tq->queue.top();
+    }
+    if (t) {
+	struct timeval wtv;
+	timersub(&t->next,&now,&wtv);
+	struct timespec ts = { wtv.tv_sec, wtv.tv_usec * 1000 };
+	pthread_cond_timedwait(&tq->cond,&tq->lock,&ts);
+    }
+  }
+  pthread_mutex_unlock(&tq->lock);
+  return NULL;
+}
+
+int timer_queue::insert_periodic(const struct timeval &interval,
+				 timer_callback_t callback,void *arg)
+{
+  timer_t *t;
+  struct timeval now;
+  int timer_id;
+
+  gettimeofday(&now,NULL);
+  t = new timer_t{};  
+  t->repeats = true;
+  t->canceled = false;
+  t->interval = interval;
+  t->callback = callback;
+  t->arg = arg;
+  timeradd(&now,&interval,&t->next);
+  pthread_mutex_lock(&lock);
+  timer_id = t->id = ++next_id;
+  queue.push(t);
+  pthread_mutex_unlock(&lock);
+  pthread_cond_signal(&cond);
+
+  return timer_id;
+}
+
+void timer_queue::cancel(int id)
+{
+  timer_t *t;
+
+  pthread_mutex_lock(&lock);
+  t = timer_map[id];
+  if (!t)
+    return;
+  t->canceled = true;
+  t->callback = NULL;
+  t->arg = NULL;
+  pthread_mutex_unlock(&lock);
+}
+
+
+kpm_model::metrics::metrics() :
+  have_bytes(0), have_prbs(0), active_ue_count(0)
+{
+  memset(dl_bytes_by_qci,0,sizeof(dl_bytes_by_qci));
+  memset(ul_bytes_by_qci,0,sizeof(ul_bytes_by_qci));
+  memset(dl_prbs_by_qci,0,sizeof(dl_prbs_by_qci));
+  memset(ul_prbs_by_qci,0,sizeof(ul_prbs_by_qci));
+}
+
+kpm_model::metrics::metrics(srsenb::enb_metrics_t *em)
+{
+  active_ue_count = 0;
+  have_bytes = false;
+  have_prbs = false;
+  memset(dl_bytes_by_qci,0,sizeof(dl_bytes_by_qci));
+  memset(ul_bytes_by_qci,0,sizeof(ul_bytes_by_qci));
+  memset(dl_prbs_by_qci,0,sizeof(dl_prbs_by_qci));
+  memset(ul_prbs_by_qci,0,sizeof(ul_prbs_by_qci));
+  for (uint16_t i = 0; i < em->stack.rrc.n_ues && i < ENB_METRICS_MAX_USERS; ++i) {
+    if (em->stack.rrc.ues[i].state == srsenb::RRC_STATE_REGISTERED)
+      ++active_ue_count;
+  }
+  for (uint16_t i = 0; i < em->stack.pdcp.n_ues && i < ENB_METRICS_MAX_USERS; ++i) {
+    for (int j = 0; j < MAX_NOF_QCI; ++j) {
+      dl_bytes_by_qci[j] += em->stack.pdcp.ues[i].dl_bytes_by_qci[j];
+      ul_bytes_by_qci[j] += em->stack.pdcp.ues[i].ul_bytes_by_qci[j];
+      if (!have_bytes && (dl_bytes_by_qci[j] > 0 || ul_bytes_by_qci[j] > 0))
+	have_bytes = true;
+    }
+  }
+}
+
+void kpm_model::metrics::reset()
+{
+  active_ue_count = 0;
+  have_bytes = false;
+  have_prbs = false;
+  memset(dl_bytes_by_qci,0,sizeof(dl_bytes_by_qci));
+  memset(ul_bytes_by_qci,0,sizeof(ul_bytes_by_qci));
+  memset(dl_prbs_by_qci,0,sizeof(dl_prbs_by_qci));
+  memset(ul_prbs_by_qci,0,sizeof(ul_prbs_by_qci));
+}
+
+void kpm_model::metrics::merge_diff(metrics &nm)
+{
+  if (!have_bytes) {
+    memcpy(dl_bytes_by_qci,nm.dl_bytes_by_qci,sizeof(dl_bytes_by_qci));
+    memcpy(ul_bytes_by_qci,nm.ul_bytes_by_qci,sizeof(ul_bytes_by_qci));
+  }
+  else if (!nm.have_bytes) {
+    memset(dl_bytes_by_qci,0,sizeof(dl_bytes_by_qci));
+    memset(ul_bytes_by_qci,0,sizeof(dl_bytes_by_qci));
+  }
+  else {
+    for (int i = 0; i < MAX_NOF_QCI; ++i) {
+      if (nm.dl_bytes_by_qci[i] < dl_bytes_by_qci[i])
+	dl_bytes_by_qci[i] = (UINT64_MAX - dl_bytes_by_qci[i]) + nm.dl_bytes_by_qci[i];
+      else
+	dl_bytes_by_qci[i] = nm.dl_bytes_by_qci[i] - dl_bytes_by_qci[i];
+      if (nm.ul_bytes_by_qci[i] < ul_bytes_by_qci[i])
+	ul_bytes_by_qci[i] = (UINT64_MAX - ul_bytes_by_qci[i]) + nm.ul_bytes_by_qci[i];
+      else
+	ul_bytes_by_qci[i] = nm.ul_bytes_by_qci[i] - ul_bytes_by_qci[i];
+    }
+  }
+  if (!have_prbs) {
+    memcpy(dl_prbs_by_qci,nm.dl_prbs_by_qci,sizeof(dl_prbs_by_qci));
+    memcpy(ul_prbs_by_qci,nm.ul_prbs_by_qci,sizeof(ul_prbs_by_qci));
+  }
+  else if (!nm.have_prbs) {
+    memset(dl_prbs_by_qci,0,sizeof(dl_prbs_by_qci));
+    memset(ul_prbs_by_qci,0,sizeof(dl_prbs_by_qci));
+  }
+  else {
+    for (int i = 0; i < MAX_NOF_QCI; ++i) {
+      if (nm.dl_prbs_by_qci[i] < dl_prbs_by_qci[i])
+	dl_prbs_by_qci[i] = (UINT64_MAX - dl_prbs_by_qci[i]) + nm.dl_prbs_by_qci[i];
+      else
+	dl_prbs_by_qci[i] = nm.dl_prbs_by_qci[i] - dl_prbs_by_qci[i];
+      if (nm.ul_prbs_by_qci[i] < ul_prbs_by_qci[i])
+	ul_prbs_by_qci[i] = (UINT64_MAX - ul_prbs_by_qci[i]) + nm.ul_prbs_by_qci[i];
+      else
+	ul_prbs_by_qci[i] = nm.ul_prbs_by_qci[i] - ul_prbs_by_qci[i];
+    }
+  }
+
+  have_bytes = nm.have_bytes;
+  have_prbs = nm.have_prbs;
+  active_ue_count = nm.active_ue_count;
+}
+
+int e2sm_kpm_period_ie_to_ms(E2SM_KPM_RT_Period_IE_t ie)
+{
+  switch(ie) {
+  case E2SM_KPM_RT_Period_IE_ms10:
+    return 10;
+  case E2SM_KPM_RT_Period_IE_ms20:
+    return 20;
+  case E2SM_KPM_RT_Period_IE_ms32:
+    return 32;
+  case E2SM_KPM_RT_Period_IE_ms40:
+    return 40;
+  case E2SM_KPM_RT_Period_IE_ms60:
+    return 60;
+  case E2SM_KPM_RT_Period_IE_ms64:
+    return 64;
+  case E2SM_KPM_RT_Period_IE_ms70:
+    return 70;
+  case E2SM_KPM_RT_Period_IE_ms80:
+    return 80;
+  case E2SM_KPM_RT_Period_IE_ms128:
+    return 128;
+  case E2SM_KPM_RT_Period_IE_ms160:
+    return 160;
+  case E2SM_KPM_RT_Period_IE_ms256:
+    return 256;
+  case E2SM_KPM_RT_Period_IE_ms320:
+    return 320;
+  case E2SM_KPM_RT_Period_IE_ms512:
+    return 512;
+  case E2SM_KPM_RT_Period_IE_ms640:
+    return 640;
+  case E2SM_KPM_RT_Period_IE_ms1024:
+    return 1024;
+  case E2SM_KPM_RT_Period_IE_ms1280:
+    return 1280;
+  case E2SM_KPM_RT_Period_IE_ms2048:
+    return 2048;
+  case E2SM_KPM_RT_Period_IE_ms2560:
+    return 2560;
+  case E2SM_KPM_RT_Period_IE_ms5120:
+    return 5120;
+  case E2SM_KPM_RT_Period_IE_ms10240:
+    return 10240;
+  default:
+    break;
+  }
+
+  return -1;
+}
+
+kpm_model::kpm_model(ric::agent *agent_) :
+  service_model(agent_,"ORAN-E2SM-KPM","1.3.6.1.4.1.1.1.2.2"),
+  serial_number(1), lock(PTHREAD_MUTEX_INITIALIZER)
+{
+  for (int i = 0; i < NUM_PERIODS; ++i) {
+    periods[i].timer_id = -1;
+    periods[i].ms = ric::e2sm_kpm_period_ie_to_ms((E2SM_KPM_RT_Period_IE_t)i);
+  }
+}
 
 int kpm_model::init()
 {
@@ -97,74 +376,47 @@ int kpm_model::init()
 
   functions.push_back(func);
 
+  queue.start();
+
   return 0;
 }
 
-int e2sm_kpm_period_ie_to_ms(E2SM_KPM_RT_Period_IE_t ie)
+void kpm_model::stop()
 {
-  switch(ie) {
-  case E2SM_KPM_RT_Period_IE_ms10:
-    return 10;
-  case E2SM_KPM_RT_Period_IE_ms20:
-    return 20;
-  case E2SM_KPM_RT_Period_IE_ms32:
-    return 32;
-  case E2SM_KPM_RT_Period_IE_ms40:
-    return 40;
-  case E2SM_KPM_RT_Period_IE_ms60:
-    return 60;
-  case E2SM_KPM_RT_Period_IE_ms64:
-    return 64;
-  case E2SM_KPM_RT_Period_IE_ms70:
-    return 70;
-  case E2SM_KPM_RT_Period_IE_ms80:
-    return 80;
-  case E2SM_KPM_RT_Period_IE_ms128:
-    return 128;
-  case E2SM_KPM_RT_Period_IE_ms160:
-    return 160;
-  case E2SM_KPM_RT_Period_IE_ms256:
-    return 256;
-  case E2SM_KPM_RT_Period_IE_ms320:
-    return 320;
-  case E2SM_KPM_RT_Period_IE_ms512:
-    return 512;
-  case E2SM_KPM_RT_Period_IE_ms640:
-    return 640;
-  case E2SM_KPM_RT_Period_IE_ms1024:
-    return 1024;
-  case E2SM_KPM_RT_Period_IE_ms1280:
-    return 1280;
-  case E2SM_KPM_RT_Period_IE_ms2048:
-    return 2048;
-  case E2SM_KPM_RT_Period_IE_ms2560:
-    return 2560;
-  case E2SM_KPM_RT_Period_IE_ms5120:
-    return 5120;
-  case E2SM_KPM_RT_Period_IE_ms10240:
-    return 10240;
-  default:
-    break;
+  pthread_mutex_lock(&lock);
+  queue.stop();
+  for (int i = 0; i < NUM_PERIODS; ++i) {
+    if (periods[i].timer_id < 0)
+      continue;
+    periods[i].subscriptions.clear();
+    memset(&periods[i].last_metrics,0,
+	   sizeof(periods[i].last_metrics));
   }
-
-  return -1;
+  for (auto it = subscriptions.begin(); it != subscriptions.end(); ++it) {
+    ric::subscription_t *sub = *it;
+    subscription_model_data *md = (subscription_model_data *)sub->model_data;
+    delete md;
+    sub->model_data = NULL;
+  }
+  subscriptions.clear();
+  pthread_mutex_unlock(&lock);
 }
 
 int kpm_model::handle_subscription_add(ric::subscription_t *sub)
 {
   E2SM_KPM_E2SM_KPM_EventTriggerDefinition_t etdef;
   E2SM_KPM_Trigger_ConditionIE_Item *ie,**ptr;
-  std::list<long> periods;
   int sub_period_ms;
-  std::list<ric::action_t *>::iterator it;
   ric::action_t *action;
   bool any_actions_enabled = false;
+  subscription_model_data *md;
 
   if (sub->event_trigger.size < 1 || sub->event_trigger.buf == NULL) {
     E2SM_ERROR(agent,"kpm: no report event trigger; no periods\n");
     return -1;
   }
 
+  md = new subscription_model_data_t{};
   memset(&etdef,0,sizeof(etdef));
   if (ric::e2ap::decode(
 	agent,&asn_DEF_E2SM_KPM_E2SM_KPM_EventTriggerDefinition,&etdef,
@@ -182,19 +434,20 @@ int kpm_model::handle_subscription_add(ric::subscription_t *sub)
 	 ptr++) {
       ie = (E2SM_KPM_Trigger_ConditionIE_Item *)*ptr;
       sub_period_ms = ric::e2sm_kpm_period_ie_to_ms(ie->report_Period_IE);
-      if (sub_period_ms < -1) {
+      if (sub_period_ms < 0) {
         E2SM_ERROR(agent,"kpm: invalid report period %d\n",sub_period_ms);
 	goto errout;
       }
-      periods.push_back(sub_period_ms);
+      md->periods.push_back((int)ie->report_Period_IE);
+      //md->periods.push_back((int)E2SM_KPM_RT_Period_IE_ms1024);
     }
   }
-  if (periods.empty()) {
+  if (md->periods.empty()) {
     E2SM_ERROR(agent,"kpm: invalid report trigger; no periods\n");
     goto errout;
   }
 
-  for (it = sub->actions.begin(); it != sub->actions.end(); ++it) {
+  for (std::list<ric::action_t *>::iterator it = sub->actions.begin(); it != sub->actions.end(); ++it) {
     action = *it;
     if (action->type != E2AP_RICactionType_report) {
 	E2SM_WARN(agent,"kpm: invalid actionType %ld; not enabling this action\n",
@@ -209,17 +462,29 @@ int kpm_model::handle_subscription_add(ric::subscription_t *sub)
     goto errout;
   }
 
+  /* This is a valid subscription; add it. */
+  pthread_mutex_lock(&lock);
   subscriptions.push_back(sub);
+  for (std::list<int>::iterator it = md->periods.begin(); it != md->periods.end(); ++it) {
+    int period = *it;
 
-  if (period_ms < 0) {
-    period_ms = 1000;
-    callback = new ric::kpm_timeout_callback(this);
-    timeout.start(period_ms,0,callback);
+    periods[period].subscriptions.push_back(sub);
+    if (periods[period].timer_id < 0) {
+      struct timeval tv = { periods[period].ms / 1000,
+			    (periods[period].ms % 1000) * 1000 };
+      periods[period].timer_id = queue.insert_periodic(
+	tv,timer_callback,this);
+      memset(&periods[period].last_metrics,0,sizeof(periods[period].last_metrics));
+    }
   }
+  sub->model_data = md;
+  pthread_mutex_unlock(&lock);
 
   return 0;
 
  errout:
+  pthread_mutex_unlock(&lock);
+  delete md;
   ASN_STRUCT_FREE_CONTENTS_ONLY(
     asn_DEF_E2SM_KPM_E2SM_KPM_EventTriggerDefinition,(&etdef));
 
@@ -229,6 +494,25 @@ int kpm_model::handle_subscription_add(ric::subscription_t *sub)
 int kpm_model::handle_subscription_del(
   ric::subscription_t *sub,int force,long *cause,long *cause_detail)
 {
+  subscription_model_data_t *md = (subscription_model_data_t *)sub->model_data;
+
+  pthread_mutex_lock(&lock);
+
+  for (std::list<int>::iterator it = md->periods.begin(); it != md->periods.end(); ++it) {
+    int period = *it;
+
+    periods[period].subscriptions.remove(sub);
+    if (periods[period].subscriptions.size() == 0) {
+      queue.cancel(periods[period].timer_id);
+      periods[period].timer_id = -1;
+    }
+  }
+  delete md;
+  sub->model_data = NULL;
+  subscriptions.remove(sub);
+
+  pthread_mutex_unlock(&lock);
+
   return 0;
 }
 
@@ -239,7 +523,14 @@ int kpm_model::handle_control(ric::control_t *control)
   return -1;
 }
 
-void kpm_model::send_indication()
+void *kpm_model::timer_callback(int timer_id,void *arg)
+{
+  kpm_model *model = (kpm_model *)arg;
+  model->agent->push_task([model,timer_id]() { model->send_indications(timer_id); });
+  return NULL;
+}
+
+void kpm_model::send_indications(int timer_id)
 {
   uint8_t *buf = NULL;
   ssize_t buf_len = 0;
@@ -254,14 +545,49 @@ void kpm_model::send_indication()
   uint8_t *msg_buf = NULL;
   ssize_t msg_buf_len = 0;
   E2SM_KPM_PM_Containers_List_t *pmc_item;
+  E2SM_KPM_PF_Container_t *pf_item;
+  E2SM_KPM_CellResourceReportListItem_t *crr_item;
+  E2SM_KPM_ServedPlmnPerCellListItem_t *served_item;
+  E2SM_KPM_EPC_DU_PM_Container_t *epc_du_pm;
+  E2SM_KPM_PF_ContainerListItem_t *epc_cu_up_item;
+  E2SM_KPM_PerQCIReportListItemFormat_t *epc_cu_up_report_item;
+  E2SM_KPM_PlmnID_List_t *epc_cu_up_plmnid_item;
+  int period;
+  srsenb::enb_metrics_t em;
+  metrics *nm, *dm;
 
-  /* Schedule the next callback immediately. */
-  timeout.start(period_ms,0,callback);
+  /*
+   * We would prefer not to be locked while generating asn1, but in this
+   * case, we are referencing the per-period metrics during generation,
+   * and those must be locked together with the period subscriptions.
+   */
+  pthread_mutex_lock(&lock);
+  for (period = 0; period < NUM_PERIODS; ++period)
+    if (timer_id == periods[period].timer_id)
+      break;
+  if (period == NUM_PERIODS) {
+    E2SM_ERROR(agent,"kpm: bogus timer_id %d; ignoring!\n",timer_id);
+    pthread_mutex_unlock(&lock);
+    return;
+  }
+  if (periods[period].subscriptions.size() == 0) {
+    pthread_mutex_unlock(&lock);
+    return;
+  }
 
-  E2SM_INFO(agent,"kpm: sending indications\n");
+  E2SM_INFO(agent,"kpm: sending indications for period %d (%d ms)\n",
+	    period,periods[period].ms);
 
-  /* First, we grab all the RF data. */
-  long qci = 0;
+  /*
+   * First, we grab all the RF data and process it.
+   */
+  memset(&em,0,sizeof(em));
+  agent->enb_metrics_interface->get_metrics(&em);
+  nm = new metrics(&em);
+  periods[period].last_metrics.merge_diff(*nm);
+  dm = &periods[period].last_metrics;
+  delete nm;
+  nm = NULL;
 
   /*
    * Second, we generate the e2sm-specific stuff.
@@ -277,8 +603,6 @@ void kpm_model::send_indication()
   ASN1_MAKE_PLMNID(
     agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
     ih.choice.indicationHeader_Format1.pLMN_Identity);
-  ih.choice.indicationHeader_Format1.qci = (long *)calloc(1,sizeof(long));
-  memcpy(ih.choice.indicationHeader_Format1.qci,&qci,sizeof(qci));
 
   E2SM_DEBUG(agent,"indication header:\n");
   E2SM_XER_PRINT(NULL,&asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih);
@@ -291,13 +615,101 @@ void kpm_model::send_indication()
       asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih);
     goto out;
   }
+  /*
+  memset(&ih,0,sizeof(ih));
+  if (ric::e2ap::decode(
+	agent,&asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih,
+	header_buf,header_buf_len)) {
+    E2SM_ERROR(agent,"failed to redecode e2sm ih\n");
+    goto out;
+  }
+  E2SM_DEBUG(agent,"indication header (decoded):\n");
+  E2SM_XER_PRINT(NULL,&asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih);
+  ASN_STRUCT_FREE_CONTENTS_ONLY(
+    asn_DEF_E2SM_KPM_E2SM_KPM_IndicationHeader,&ih);
+  */
 
   memset(&im,0,sizeof(im));
   im.ric_Style_Type = (long)4;
   im.indicationMessage.present = \
     E2SM_KPM_E2SM_KPM_IndicationMessage__indicationMessage_PR_indicationMessage_Format1;
+
+  /*
+   * O-DU performance metrics (style 2).
+   */
   pmc_item = (E2SM_KPM_PM_Containers_List_t *)calloc(1,sizeof(*pmc_item));
   memset(pmc_item,0,sizeof(*pmc_item));
+  pmc_item->performanceContainer = pf_item = (E2SM_KPM_PF_Container_t *)calloc(1,sizeof(*pf_item));
+  pf_item->present = E2SM_KPM_PF_Container_PR_oDU;
+  /* For each cell: */
+  for (uint32_t cc = 0; cc < agent->phy_cfg.phy_cell_cfg.size(); cc++) {
+    crr_item = (E2SM_KPM_CellResourceReportListItem_t *)calloc(1,sizeof(*crr_item));
+    ASN1_MAKE_PLMNID(
+      agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
+      &crr_item->nRCGI.pLMN_Identity);
+    ASN1_MAKE_NRCGI((long)agent->phy_cfg.phy_cell_cfg[cc].cell_id,
+		    &crr_item->nRCGI.nRCellIdentity);
+
+    served_item = (E2SM_KPM_ServedPlmnPerCellListItem *)calloc(1,sizeof(*served_item));
+    ASN1_MAKE_PLMNID(
+      agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
+      &served_item->pLMN_Identity);
+    // XXX For each QCI:
+    ASN_SEQUENCE_ADD(&crr_item->servedPlmnPerCellList.list,served_item);
+
+    ASN_SEQUENCE_ADD(&pf_item->choice.oDU.cellResourceReportList.list,crr_item);
+  }
+  ASN_SEQUENCE_ADD(
+    &im.indicationMessage.choice.indicationMessage_Format1.pm_Containers.list,
+    pmc_item);
+
+  /*
+   * O-CU-CP performance metrics (style 4).
+   */
+  pmc_item = (E2SM_KPM_PM_Containers_List_t *)calloc(1,sizeof(*pmc_item));
+  memset(pmc_item,0,sizeof(*pmc_item));
+  pmc_item->performanceContainer = pf_item = (E2SM_KPM_PF_Container_t *)calloc(1,sizeof(*pf_item));
+  pf_item->present = E2SM_KPM_PF_Container_PR_oCU_CP;
+  pf_item->choice.oCU_CP.cu_CP_Resource_Status.numberOfActive_UEs = (long *)calloc(1,sizeof(long));
+  *pf_item->choice.oCU_CP.cu_CP_Resource_Status.numberOfActive_UEs = dm->active_ue_count;
+  ASN_SEQUENCE_ADD(
+    &im.indicationMessage.choice.indicationMessage_Format1.pm_Containers.list,
+    pmc_item);
+
+  /*
+   * O-CU-UP performance metrics (style 6).
+   */
+  pmc_item = (E2SM_KPM_PM_Containers_List_t *)calloc(1,sizeof(*pmc_item));
+  memset(pmc_item,0,sizeof(*pmc_item));
+  pmc_item->performanceContainer = pf_item = (E2SM_KPM_PF_Container_t *)calloc(1,sizeof(*pf_item));
+  pf_item->present = E2SM_KPM_PF_Container_PR_oCU_UP;
+
+  epc_cu_up_item = (E2SM_KPM_PF_ContainerListItem_t *)calloc(1,sizeof(*epc_cu_up_item));
+  epc_cu_up_item->interface_type = E2SM_KPM_NI_Type_f1_u;
+  epc_cu_up_plmnid_item = (E2SM_KPM_PlmnID_List_t *)calloc(1,sizeof(*epc_cu_up_plmnid_item));
+  ASN1_MAKE_PLMNID(
+      agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
+      &epc_cu_up_plmnid_item->pLMN_Identity);
+  if (dm->have_bytes) {
+    epc_cu_up_plmnid_item->cu_UP_PM_EPC = (E2SM_KPM_EPC_CUUP_PM_Format *)calloc(1,sizeof(*epc_cu_up_plmnid_item->cu_UP_PM_EPC));
+    for (int i = 0; i < MAX_NOF_QCI; ++i) {
+      if (dm->dl_bytes_by_qci[i] == 0 && dm->ul_bytes_by_qci[i] == 0)
+        continue;
+
+      epc_cu_up_report_item = (E2SM_KPM_PerQCIReportListItemFormat_t *)calloc(1,sizeof(*epc_cu_up_report_item));
+      epc_cu_up_report_item->qci = i;
+      epc_cu_up_report_item->pDCPBytesDL = (INTEGER_t *)calloc(1,sizeof(*epc_cu_up_report_item->pDCPBytesDL));
+      epc_cu_up_report_item->pDCPBytesUL = (INTEGER_t *)calloc(1,sizeof(*epc_cu_up_report_item->pDCPBytesUL));
+      asn_uint642INTEGER(epc_cu_up_report_item->pDCPBytesDL,dm->dl_bytes_by_qci[i]);
+      asn_uint642INTEGER(epc_cu_up_report_item->pDCPBytesUL,dm->ul_bytes_by_qci[i]);
+      ASN_SEQUENCE_ADD(&epc_cu_up_plmnid_item->cu_UP_PM_EPC->perQCIReportList.list,
+		       epc_cu_up_report_item);
+    }
+  }
+  ASN_SEQUENCE_ADD(&epc_cu_up_item->o_CU_UP_PM_Container.plmnList.list,
+		   epc_cu_up_plmnid_item);
+  ASN_SEQUENCE_ADD(&pf_item->choice.oCU_UP.pf_ContainerList.list,
+		   epc_cu_up_item);
   ASN_SEQUENCE_ADD(
     &im.indicationMessage.choice.indicationMessage_Format1.pm_Containers.list,
     pmc_item);
@@ -349,6 +761,7 @@ void kpm_model::send_indication()
   }
 
  out:
+  pthread_mutex_unlock(&lock);
   return;
 }
 

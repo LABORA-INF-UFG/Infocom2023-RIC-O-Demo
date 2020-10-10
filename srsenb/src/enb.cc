@@ -79,7 +79,7 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     return SRSLTE_ERROR;
   }
 
-  ric_agent.reset(new ric::agent(logger));
+  ric_agent.reset(new ric::agent(logger,this));
   if (!ric_agent) {
     log.console("Error creating RIC agent instance.\n");
     return SRSLTE_ERROR;
@@ -101,7 +101,7 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     ret = SRSLTE_ERROR;
   }
 
-  if (ric_agent->init(args)) {
+  if (ric_agent->init(args, phy_cfg, rrc_cfg)) {
     log.console("Error initializing RIC agent.\n");
     ret = SRSLTE_ERROR;
   }

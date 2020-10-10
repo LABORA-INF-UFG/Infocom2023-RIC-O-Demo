@@ -26,7 +26,9 @@ namespace ric {
 bool e2ap_xer_print;
 bool e2sm_xer_print;
 
-agent::agent(srslte::logger* logger_) : logger(logger_), thread("RIC")
+agent::agent(srslte::logger* logger_,
+	     srsenb::enb_metrics_interface *enb_metrics_interface_)
+  : logger(logger_), enb_metrics_interface(enb_metrics_interface_), thread("RIC")
 {
   agent_queue_id = pending_tasks.add_queue();
 };
@@ -36,7 +38,9 @@ agent::~agent()
   stop();
 }
 
-int agent::init(const srsenb::all_args_t& args_)
+int agent::init(const srsenb::all_args_t& args_,
+	   srsenb::phy_cfg_t& phy_cfg_,
+	   srsenb::rrc_cfg_t rrc_cfg_)
 {
   service_model *model;
   std::list<ric::service_model *>::iterator it;
@@ -45,6 +49,8 @@ int agent::init(const srsenb::all_args_t& args_)
   std::string ric_level_copy;
 
   args = args_;
+  phy_cfg = phy_cfg_;
+  rrc_cfg = rrc_cfg_;
 
   ric_level_copy = std::string(args.ric_agent.log_level);
   log.ric_level = log.e2ap_level = log.e2sm_level = \

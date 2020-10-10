@@ -2,67 +2,126 @@
 #define RIC_E2SM_KPM_H
 
 #include <list>
+#include <map>
 #include <queue>
 
+#include <time.h>
 #include "pthread.h"
 
 #include "srslte/common/timeout.h"
+#include "srsenb/hdr/stack/upper/common_enb.h"
+#include "srslte/interfaces/enb_metrics_interface.h"
+#include "srsenb/hdr/stack/rrc/rrc_metrics.h"
 
 #include "srsenb/hdr/ric/e2ap.h"
 #include "srsenb/hdr/ric/e2sm.h"
 
+#include "E2SM_KPM_RT-Period-IE.h"
+
 namespace ric {
 
-    /*
-class timer_queue_dispatcher : thread {
-pthread_cond_timedwaits until next timeout, then callback sent to
-task_queue for execution.
-    
-namespace e2sm {
-namespace kpm {
+class timer_queue
+{
+public:
 
-typedef struct report_periods {
-    std::list<long> periods;
-} report_periods_t;
+  typedef void *(*timer_callback_t)(int timer_id,void *arg);
 
-}
-}
-    */
+  typedef struct timer {
+    int id;
+    bool repeats;
+    bool canceled;
+    struct timeval next;
+    struct timeval interval;
+    timer_callback_t callback;
+    void *arg;
+  } timer_t;
 
-class kpm_timeout_callback;
+  class timer_comparator
+  {
+  public:
+    bool operator() (const timer_t *l,const timer_t *r) const
+    {
+      if (l->next.tv_sec > r->next.tv_sec
+	  || (l->next.tv_sec == r->next.tv_sec
+	      && l->next.tv_usec > r->next.tv_usec))
+	return true;
+      return false;
+    }
+  };
+
+  timer_queue()
+    : thread(0), running(false), next_id(0), cond(PTHREAD_COND_INITIALIZER),
+      lock(PTHREAD_MUTEX_INITIALIZER) {};
+  virtual ~timer_queue() { stop(); };
+  bool start();
+  void stop();
+  static void *run(void *arg);
+  int insert_periodic(const struct timeval &interval,
+		      timer_callback_t callback,void *arg);
+  void cancel(int id);
+
+private:
+  std::priority_queue<timer_t *,std::vector<timer_t *>,timer_comparator> queue;
+  std::map<int,timer_t *> timer_map;
+  pthread_t thread;
+  pthread_cond_t cond;
+  pthread_mutex_t lock;
+  bool running;
+  int next_id;
+};
+
+#define NUM_PERIODS (E2SM_KPM_RT_Period_IE_ms10240 + 1)
 
 class kpm_model : public service_model
 {
 public:
-  kpm_model(ric::agent *agent_):
-    service_model(agent_,"ORAN-E2SM-KPM","1.3.6.1.4.1.1.1.2.2"),
-    period_ms(-1), timeout(), callback(NULL), serial_number(1) {};
+
+  class metrics
+  {
+  public:
+
+    metrics();
+    metrics(srsenb::enb_metrics_t *em);
+    void merge_diff(metrics &nm);
+    void reset();
+
+    bool have_bytes;
+    bool have_prbs;
+    long active_ue_count;
+    uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
+    uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
+    uint64_t dl_prbs_by_qci[MAX_NOF_QCI];
+    uint64_t ul_prbs_by_qci[MAX_NOF_QCI];
+  };
+
+  typedef struct subscription_model_data {
+    std::list<int> periods;
+  } subscription_model_data_t;
+
+  typedef struct report_period {
+    int ms;
+    int timer_id;
+    metrics last_metrics;
+    std::list<ric::subscription_t *> subscriptions;
+  } report_period_t;
+
+  kpm_model(ric::agent *agent_);
   int init();
-  virtual ~kpm_model() {};
-  void send_indication();
+  void stop();
+  virtual ~kpm_model() { stop(); };
+  static void *timer_callback(int timer_id,void *arg);
+  void send_indications(int timer_id);
   int handle_subscription_add(ric::subscription_t *sub);
   int handle_subscription_del(ric::subscription_t *sub,int force,
 			      long *cause,long *cause_detail);
   int handle_control(ric::control_t *control);
 
 private:
-  int period_ms;
-  srslte::timeout timeout;
-  kpm_timeout_callback *callback;
+  pthread_mutex_t lock;
   std::list<ric::subscription_t *> subscriptions;
+  report_period_t periods[NUM_PERIODS];
   long serial_number;
-};
-
-class kpm_timeout_callback : public srslte::timeout_callback
-{
-public:
-  kpm_timeout_callback(kpm_model *model_) : model(model_) {};
-  virtual ~kpm_timeout_callback() {};
-  void timeout_expired(uint32_t timeout_id) {
-      model->agent->push_task([this]() { model->send_indication(); });
-  };
-private:
-  kpm_model *model;
+  timer_queue queue;
 };
 
 }

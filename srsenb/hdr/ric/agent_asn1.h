@@ -68,4 +68,16 @@ extern bool e2sm_xer_print;
 	| ((_asn1_bitstring)->buf[2] >> 4);				\
   } while(0)
 
+#define ASN1_MAKE_NRCGI(_cell_id,_asn1_bitstring)			\
+  do { \
+    (_asn1_bitstring)->buf = (uint8_t *)calloc(5,sizeof(uint8_t));	\
+    (_asn1_bitstring)->buf[0] = ((_cell_id) >> 28) & 0xff;		\
+    (_asn1_bitstring)->buf[1] = ((_cell_id) >> 20) & 0xff;		\
+    (_asn1_bitstring)->buf[2] = ((_cell_id) >> 12) & 0xff;		\
+    (_asn1_bitstring)->buf[3] = ((_cell_id) >> 4) & 0xff;		\
+    (_asn1_bitstring)->buf[4] = ((_cell_id) & 0xf) << 4;		\
+    (_asn1_bitstring)->size = 5;					\
+    (_asn1_bitstring)->bits_unused = 4;					\
+  } while(0)
+
 #endif

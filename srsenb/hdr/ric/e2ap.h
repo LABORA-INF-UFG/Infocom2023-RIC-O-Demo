@@ -46,6 +46,8 @@ typedef struct subscription {
 
   bool enabled;
   std::list<action_t *> actions;
+
+  void *model_data;
 } subscription_t;
 
 typedef struct control {
