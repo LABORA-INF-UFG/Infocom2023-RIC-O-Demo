@@ -101,6 +101,7 @@ set(RIC_SOURCES
   e2ap_generate.cc
   e2ap_decode.cc
   e2ap_handle.cc
+  timer_queue.cc
   e2sm.cc
   e2sm_gnb_nrt.cc
   e2sm_kpm.cc
