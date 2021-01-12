@@ -20,6 +20,7 @@
 #include "srsenb/hdr/ric/e2sm.h"
 #include "srsenb/hdr/ric/e2sm_gnb_nrt.h"
 #include "srsenb/hdr/ric/e2sm_kpm.h"
+#include "srsenb/hdr/ric/e2sm_nexran.h"
 
 namespace ric {
 
@@ -115,6 +116,15 @@ int agent::init(const srsenb::all_args_t& args_,
   model = new gnb_nrt_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-gNB-NRT model; aborting!\n");
+    delete model;
+    return SRSLTE_ERROR;
+  }
+  service_models.push_back(model);
+  RIC_INFO("added model %s\n",model->name.c_str());
+
+  model = new nexran_model(this);
+  if (model->init()) {
+    RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }

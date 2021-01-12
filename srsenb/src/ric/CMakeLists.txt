@@ -93,10 +93,31 @@ if("${RIC_GENERATED_E2SM_KPM_BINDING_DIR}" STREQUAL "")
     DEPENDS ${E2SM_KPM_ASN_FILE})
 endif()
 
+if("${RIC_GENERATED_E2SM_NEXRAN_BINDING_DIR}" STREQUAL "")
+  set(E2SM_NEXRAN_ASN_FILE ${RIC_ASN_DIR}/e2sm-nexran-v01.00.asn1)
+  set(E2SM_NEXRAN_C_DIR ${CMAKE_CURRENT_BINARY_DIR}/messages/E2SM-NEXRAN/)
+  execute_process(
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_asn1c_includes.sh "${E2SM_NEXRAN_C_DIR}" "${E2SM_NEXRAN_ASN_FILE}" "E2SM_NEXRAN_" -fno-include-deps -fincludes-quoted
+    RESULT_VARIABLE ret)
+  if (NOT ${ret} STREQUAL 0)
+    message(FATAL_ERROR "${ret}: error")
+  endif (NOT ${ret} STREQUAL 0)
+else()
+  set(E2SM_NEXRAN_C_DIR "${RIC_GENERATED_E2SM_NEXRAN_BINDING_DIR}")
+endif()
+file(GLOB E2SM_NEXRAN_source ${E2SM_NEXRAN_C_DIR}/*.c)
+if("${RIC_GENERATED_E2SM_NEXRAN_BINDING_DIR}" STREQUAL "")
+  add_custom_command (
+    OUTPUT ${E2SM_NEXRAN_source}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_asn1c_includes.sh "${E2SM_NEXRAN_C_DIR}" "${E2SM_NEXRAN_ASN_FILE}" "E2SM_NEXRAN_" -fno-include-deps -fincludes-quoted
+    DEPENDS ${E2SM_NEXRAN_ASN_FILE})
+endif()
+
 set(RIC_SOURCES
   ${E2AP_source}
   ${E2SM_GNB_NRT_source}
   ${E2SM_KPM_source}
+  ${E2SM_NEXRAN_source}
   e2ap_encode.cc
   e2ap_generate.cc
   e2ap_decode.cc
@@ -105,9 +126,11 @@ set(RIC_SOURCES
   e2sm.cc
   e2sm_gnb_nrt.cc
   e2sm_kpm.cc
+  e2sm_nexran.cc
   agent.cc)
 
 add_library(srsenb_ric STATIC ${RIC_SOURCES})
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_GNB_NRT_C_DIR})
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_KPM_C_DIR})
+target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_NEXRAN_C_DIR})
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2AP_C_DIR})
