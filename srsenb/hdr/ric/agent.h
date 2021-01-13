@@ -8,7 +8,7 @@
 
 #include "srslte/common/common.h"
 #include "srslte/common/log.h"
-#include "srslte/common/logger_file.h"
+#include "srslte/common/logger.h"
 #include "srslte/common/log_filter.h"
 #include "srslte/common/network_utils.h"
 #include "srslte/common/multiqueue.h"
