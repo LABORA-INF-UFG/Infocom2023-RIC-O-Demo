@@ -299,7 +299,10 @@ public:
    * @return value of the allocated C-RNTI
    */
   virtual uint16_t reserve_new_crnti(const sched_interface::ue_cfg_t& ue_cfg) = 0;
+  virtual bool is_slicer_enabled() = 0;
+  virtual void handle_imsi_capture(uint64_t imsi, uint16_t rnti) = 0;
 };
+
 
 class mac_interface_rlc
 {
@@ -552,9 +555,16 @@ typedef struct {
 } s1ap_args_t;
 
 typedef struct {
+  bool        enable;
+  std::string slice_db_filename;
+  bool        workshare;
+} slicer_args_t;
+
+typedef struct {
   uint32_t                      nof_prb; ///< Needed to dimension MAC softbuffers for all cells
   sched_interface::sched_args_t sched;
   int                           nr_tb_size = -1;
+  slicer_args_t                 slicer;
 } mac_args_t;
 
 class stack_interface_s1ap_lte

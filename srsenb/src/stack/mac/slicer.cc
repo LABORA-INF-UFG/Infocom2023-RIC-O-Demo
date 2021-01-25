@@ -1,0 +1,225 @@
+#include "srslte/common/logmap.h"
+#include "srsenb/hdr/enb.h"
+#include "srsenb/hdr/stack/mac/slicer.h"
+#include <string>
+#include <fstream>
+#include <iostream>
+#include <vector>
+
+namespace slicer {
+
+slicer::slicer() {
+  std::cout << "testing ... " << std::endl;
+}
+
+slicer::~slicer() {}
+
+void slicer::init(std::string slice_db_fname, bool workshare_)
+{
+  if (!read_slice_db_file(slice_db_fname)) {
+    srslte::console("[slicer] Couldn't read slice_db file: %s\n", slice_db_fname.c_str());
+    exit(SRSLTE_ERROR);
+  }
+  workshare = workshare_;
+  enable = true;
+}
+
+int slicer::add_slice(std::string name, uint32_t n_sf_rel, std::vector<uint64_t> member_imsis)
+{
+  // add slice if it doesn't exist
+  if (slices.find(name) != slices.end()) {
+    return 1;
+  }
+
+  slice s;
+  s.member_imsis = member_imsis;
+  s.n_sf_rel = n_sf_rel;
+  slices[name] = s;
+
+  srslte::console("[slicer] added slice %s with n_sf=%u and member IMSIs=", name.c_str(), n_sf_rel);
+  for (auto it = member_imsis.begin(); it < member_imsis.end(); ++it) {
+    srslte::console("%015" PRIu64 " ", *it);
+  }
+  srslte::console("\n");
+  return 0;
+}
+
+int slicer::rem_slice(std::string name)
+{
+  // if slice exists
+  //   delete slice and update sf allocation
+  return -1;
+}
+
+int slicer::add_slice_member(std::string name, uint64_t imsi)
+{
+  // if slice exists
+  //   if member not in slice
+  //     add member
+  return -1;
+}
+
+int slicer::rem_slice_member(std::string name, uint64_t imsi)
+{
+  // if slice exists
+  //   if member in slice
+  //     rem member
+  return -1;
+}
+
+int slicer::upd_slice_n_sf_rel(std::string s_name, uint32_t n_sf_rel)
+{
+  // if slice exists
+  //   update n_sf_rel
+  //   update_sf_alloc
+  //   reset cur_slice, cur_slice_sf
+  return -1;
+}
+
+int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
+{
+  imsi_to_crnti[imsi] = crnti;
+  srslte::console("[slicer] Updated IMSI: %015" PRIu64 " with RNTI: 0x%x\n", imsi, crnti);
+
+  for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
+    std::vector<uint64_t> *s_imsis = &slice_iter->second.member_imsis;
+    if (std::find(s_imsis->begin(), s_imsis->end(), imsi) != s_imsis->end()) {
+      srslte::console("[slicer] RNTI 0x%x belongs to slice %s\n", crnti, slice_iter->first.c_str());
+      upd_slice_crntis(slice_iter->first);
+    }
+  }
+  return 0;
+}
+
+int slicer::upd_member_crnti(uint16_t old_crnti, uint16_t crnti)
+{
+  return 0;
+}
+
+/**
+ * Given the proportional subframe allocations for all slices, use their
+ * greatest common factor to produce the smallest total subframe allocation that
+ * maintains proportionality.
+ */
+void slicer::upd_sf_alloc()
+{
+  srslte::console("[slicer] Updating proportional sf allocation...\n");
+  std::vector<uint32_t> n_sf_rel, n_sf_alloc;
+  std::map<std::string, slice>::iterator it;
+  for (it = slices.begin(); it != slices.end(); ++it) {
+    n_sf_rel.push_back(it->second.n_sf_rel);
+  }
+  uint32_t gcf = calc_gcf_vec(n_sf_rel);
+  // srslte::console("gcf: %u", gcf);
+  total_sf_alloc = 0;
+  sf_alloc.clear();
+  uint32_t slice_cnt = 0;
+  for (it = slices.begin(); it != slices.end(); ++it, ++slice_cnt) {
+    it->second.n_sf_alloc = it->second.n_sf_rel / gcf;
+    total_sf_alloc += it->second.n_sf_alloc;
+    sf_alloc.insert(sf_alloc.end(), it->second.n_sf_alloc, slice_cnt);
+    srslte::console("[slicer] slice: %s, proportional sf allocation: %u\n", it->first.c_str(), it->second.n_sf_alloc);
+  }
+}
+
+std::vector<uint16_t> slicer::get_cur_sf_crntis(uint32_t tti_tx_dl)
+{
+  uint32_t alloc_index = tti_tx_dl % total_sf_alloc;
+  slice_iter = slices.begin();
+  // std::cout << sf_alloc[alloc_index] << " ";
+  std::advance(slice_iter, sf_alloc[alloc_index]);
+
+  return slice_to_crnti_vec[slice_iter->first];
+}
+
+void slicer::upd_slice_crntis(std::string s_name)
+{
+  slice_to_crnti_vec[s_name].clear();
+  std::vector<uint64_t>::iterator it = slices[s_name].member_imsis.begin();
+  for (; it != slices[s_name].member_imsis.end(); ++it) {
+    if (imsi_to_crnti.find(*it) != imsi_to_crnti.end()) {
+      slice_to_crnti_vec[s_name].push_back(imsi_to_crnti[*it]);
+    }
+  }
+  srslte::console("[slicer] Updated RNTIs for slice %s\n", s_name.c_str());
+}
+
+bool slicer::read_slice_db_file(std::string db_filename)
+{
+  std::ifstream m_db_file;
+
+  m_db_file.open(db_filename.c_str(), std::ifstream::in);
+  if (!m_db_file.is_open()) {
+    return false;
+  }
+  srslte::console("[slicer] Opened slice DB file: %s\n", db_filename.c_str());
+
+  std::string line;
+  while (std::getline(m_db_file, line)) {
+    if (line[0] != '#' && line.length() > 0) {
+      std::vector<std::string> split = split_string(line, ',');
+      std::string slice_name = split[0];
+      uint32_t slice_n_sf_rel = static_cast<uint32_t>(std::stoul(split[1]));
+      std::vector<uint64_t> slice_members;
+      std::vector<std::string>::iterator it = split.begin() + 2;
+
+      while (it != split.end()) {
+        slice_members.push_back(std::stoul(it->c_str()));
+        ++it;
+      }
+
+      int ret = add_slice(slice_name, slice_n_sf_rel, slice_members);
+      if (ret != 0) {
+        srslte::console("[slicer] Failed to add slice %s\n", slice_name.c_str());
+        m_db_file.close();
+        exit(SRSLTE_ERROR);
+      }
+    }
+  }
+
+  m_db_file.close();
+  upd_sf_alloc();
+  return true;
+}
+
+// helper functions
+std::vector<std::string> split_string(const std::string& str, char delimiter)
+{
+  std::vector<std::string> tokens;
+  std::string              token;
+  std::istringstream       tokenstream(str);
+
+  while (std::getline(tokenstream, token, delimiter)) {
+    tokens.push_back(token);
+  }
+  return tokens;
+}
+
+/**
+ * We use the GCF to reduce the proportional slice allocation (currently read
+ * from file) to the smallest total subframe allocation.
+ */
+uint32_t calc_gcf(uint32_t a, uint32_t b)
+{
+  if (a == 0) {
+    return b;
+  }
+
+  return calc_gcf(b % a, a);
+}
+
+uint32_t calc_gcf_vec(std::vector<uint32_t> v)
+{
+  auto res = v[0];
+  for (uint32_t i = 1; i < v.size(); i++)
+  {
+    res = calc_gcf(v[i], res);
+    if(res == 1)
+    {
+      return 1;
+    }
+  }
+  return res;
+}
+
+} // namespace slicer

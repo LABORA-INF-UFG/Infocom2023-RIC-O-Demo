@@ -1,5 +1,8 @@
-srsLTE
+srsLTE (+ RAN slicer)
 ========
+
+(NB: this is a modified version of srsLTE that includes RAN slicing support in
+srsenb; see srsenb/slicer.md for instructions.)
 
 [![Build Status](https://travis-ci.org/srsLTE/srsLTE.svg?branch=master)](https://travis-ci.org/srsLTE/srsLTE)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/srsLTE/srsLTE.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/srsLTE/srsLTE/context:cpp)

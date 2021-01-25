@@ -20,7 +20,7 @@
  */
 
 #include "srsenb/hdr/stack/mac/scheduler_carrier.h"
-#include "srsenb/hdr/stack/mac/scheduler_metric.h"
+#include "srsenb/hdr/stack/mac/scheduler_metric_sliced.h"
 #include "srslte/common/log_helper.h"
 #include "srslte/common/logmap.h"
 
@@ -294,9 +294,9 @@ void sched::carrier_sched::carrier_cfg(const sched_cell_params_t& cell_params_)
   ra_sched_ptr.reset(new ra_sched{*cc_cfg, *ue_db});
 
   // Setup data scheduling algorithms
-  dl_metric.reset(new srsenb::dl_metric_rr{});
+  dl_metric.reset(new srsenb::dl_metric_sliced{});
   dl_metric->set_params(*cc_cfg);
-  ul_metric.reset(new srsenb::ul_metric_rr{});
+  ul_metric.reset(new srsenb::ul_metric_sliced{});
   ul_metric->set_params(*cc_cfg);
 
   // Initiate the tti_scheduler for each TTI

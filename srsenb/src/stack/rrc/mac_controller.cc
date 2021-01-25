@@ -327,6 +327,16 @@ void rrc::ue::mac_controller::update_mac(proc_stage_t stage)
   }
 }
 
+bool rrc::ue::mac_controller::is_slicer_enabled()
+{
+  return mac->is_slicer_enabled();
+}
+
+void rrc::ue::mac_controller::imsi_capture(uint64_t imsi, uint16_t rnti)
+{
+  mac->handle_imsi_capture(imsi, rnti);
+}
+
 void ue_cfg_apply_phy_cfg_ded(ue_cfg_t& ue_cfg, const asn1::rrc::phys_cfg_ded_s& phy_cfg, const rrc_cfg_t& rrc_cfg)
 {
   // Apply SR config

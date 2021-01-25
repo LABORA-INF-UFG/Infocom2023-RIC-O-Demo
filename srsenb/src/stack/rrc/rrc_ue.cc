@@ -22,7 +22,10 @@
 #include "srsenb/hdr/stack/rrc/rrc_ue.h"
 #include "srsenb/hdr/stack/rrc/mac_controller.h"
 #include "srsenb/hdr/stack/rrc/rrc_mobility.h"
+#include "srslte/asn1/s1ap_asn1.h"
 #include "srslte/asn1/rrc_asn1_utils.h"
+#include "srslte/asn1/liblte_common.h"
+#include "srslte/asn1/liblte_mme.h"
 #include "srslte/common/int_helpers.h"
 
 using namespace asn1::rrc;
@@ -176,6 +179,39 @@ void rrc::ue::parse_ul_dcch(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
                  .ded_info_type.ded_info_nas()
                  .data(),
              pdu->N_bytes);
+
+      if (mac_ctrl->is_slicer_enabled()) {
+        // Decode NAS message security header type and protocol discriminator
+        uint8_t  pd, msg_type, sec_hdr_type;
+        sec_hdr_type = (pdu->msg[0] & 0xF0) >> 4;
+        pd = pdu->msg[0] & 0x0F;
+        // srslte::console("sec_hdr_type: %i\n", sec_hdr_type);
+        // srslte::console("pd: %i\n", pd);
+
+        if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS) {
+          msg_type = pdu->msg[1];
+          srslte::console("[slicer rrc] plain nas msg_type: 0x%x\n", msg_type);
+          if (msg_type == LIBLTE_MME_MSG_TYPE_IDENTITY_RESPONSE) {
+            // extract IMSI
+            LIBLTE_MME_ID_RESPONSE_MSG_STRUCT id_resp;
+            uint8* msg_ptr = &pdu->msg[2]; // mobile id starts here
+            liblte_mme_unpack_mobile_id_ie(&msg_ptr, &id_resp.mobile_id);
+            // parent->rrc_log->debug_hex((const uint8*) &id_resp, sizeof(id_resp), "id_resp");
+            srslte::console("[slicer rrc] id type: %i\n", id_resp.mobile_id.type_of_id);
+            if (LIBLTE_MME_MOBILE_ID_TYPE_IMSI == id_resp.mobile_id.type_of_id) {
+              // srslte::console("id type: imsi\n", msg_type);
+              // srslte::console("id: %i\n", id_resp.mobile_id.imsi);
+              uint64_t imsi = 0;
+              for (int i = 0; i <= 14; i++) {
+                imsi += id_resp.mobile_id.imsi[i] * std::pow(10, 14 - i);
+              }
+              srslte::console("[slicer rrc] Identity response...\n");
+              srslte::console("[slicer rrc] Captured IMSI: %015" PRIu64 " for RNTI: 0x%x\n", imsi, rnti);
+              mac_ctrl->imsi_capture(imsi, rnti);
+            }
+          }
+        }
+      }
       parent->s1ap->write_pdu(rnti, std::move(pdu));
       break;
     case ul_dcch_msg_type_c::c1_c_::types::rrc_conn_recfg_complete:
@@ -238,6 +274,7 @@ void rrc::ue::handle_rrc_con_req(rrc_conn_request_s* msg)
     mmec     = (uint8_t)msg_r8->ue_id.s_tmsi().mmec.to_number();
     m_tmsi   = (uint32_t)msg_r8->ue_id.s_tmsi().m_tmsi.to_number();
     has_tmsi = true;
+    // srslte::console("tmsi: %u rnti: 0x%x\n", m_tmsi, rnti);
   }
   establishment_cause = msg_r8->establishment_cause;
   send_connection_setup();
@@ -290,6 +327,41 @@ void rrc::ue::handle_rrc_con_setup_complete(rrc_conn_setup_complete_s* msg, srsl
 
   pdu->N_bytes = msg_r8->ded_info_nas.size();
   memcpy(pdu->msg, msg_r8->ded_info_nas.data(), pdu->N_bytes);
+
+  if (mac_ctrl->is_slicer_enabled()) {
+    // Decode NAS message security header type and protocol discriminator
+    uint8_t  pd, msg_type, sec_hdr_type;
+    sec_hdr_type = (pdu->msg[0] & 0xF0) >> 4;
+    pd = pdu->msg[0] & 0x0F;
+    // srslte::console("sec_hdr_type: %i\n", sec_hdr_type);
+    // srslte::console("pd: %i\n", pd);
+
+    if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS) {
+      msg_type = pdu->msg[1];
+      srslte::console("plain nas msg_type: 0x%x\n", msg_type);
+      if (msg_type == LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST) {
+        // extract IMSI
+        LIBLTE_MME_EPS_MOBILE_ID_STRUCT eps_mobile_id;
+        // LIBLTE_MME_ATTACH_REQUEST_MSG_STRUCT attach_req = {};
+        uint64_t imsi = 0;
+        uint8* msg_ptr = &pdu->msg[3]; // eps mobile id starts here
+        LIBLTE_ERROR_ENUM err = liblte_mme_unpack_eps_mobile_id_ie(&msg_ptr, &eps_mobile_id);
+        if (err != LIBLTE_SUCCESS) {
+          srslte::console("Error unpacking NAS attach request. Error: %s\n", liblte_error_text[err]);
+        }
+        srslte::console("mobile id type 0x%x\n", eps_mobile_id.type_of_id);
+        if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_IMSI) {
+          for (int i = 0; i <= 14; i++) {
+            imsi += eps_mobile_id.imsi[i] * std::pow(10, 14 - i);
+          }
+          srslte::console("Attach request...\n");
+          srslte::console("Captured IMSI: %015" PRIu64 " for RNTI: 0x%x\n", imsi, rnti);
+          mac_ctrl->imsi_capture(imsi, rnti);
+          // parent->slicer.upd_member_crnti(imsi, rnti);
+        }
+      }
+    }
+  }
 
   // Flag completion of RadioResource Configuration
   bearer_list.rr_ded_cfg_complete();

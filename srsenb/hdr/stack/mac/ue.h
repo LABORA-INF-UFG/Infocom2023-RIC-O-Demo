@@ -48,7 +48,8 @@ public:
      srslte::log_ref          log_,
      uint32_t                 nof_cells_,
      uint32_t                 nof_rx_harq_proc = SRSLTE_FDD_NOF_HARQ,
-     uint32_t                 nof_tx_harq_proc = SRSLTE_FDD_NOF_HARQ * SRSLTE_MAX_TB);
+     uint32_t                 nof_tx_harq_proc = SRSLTE_FDD_NOF_HARQ * SRSLTE_MAX_TB,
+     bool                     in_cur_slice = false);
   virtual ~ue();
 
   void reset();

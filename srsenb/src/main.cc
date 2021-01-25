@@ -225,6 +225,11 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("coreless.ip_netmask", bpo::value<string>(&args->stack.coreless.gw_args.tun_dev_netmask)->default_value("255.255.255.0"), "Netmask of the TUN device")
     ("coreless.drb_lcid", bpo::value<uint8_t>(&args->stack.coreless.drb_lcid)->default_value(4), "LCID of the dummy DRB")
     ("coreless.rnti", bpo::value<uint16_t >(&args->stack.coreless.rnti)->default_value(1234), "RNTI of the dummy user")
+
+    // Arguments for slicer
+    ("slicer.enable", bpo::value<bool>(&args->stack.mac.slicer.enable)->default_value(false), "Enable per-subframe RAN slicer.")
+    ("slicer.slice_db_filename", bpo::value<string>(&args->stack.mac.slicer.slice_db_filename)->default_value("/etc/srslte/slice_db.csv"), "Path for slice configuration file.")
+    ("slicer.workshare", bpo::value<bool>(&args->stack.mac.slicer.workshare)->default_value(true), "Allow slices to share leftover RBGs with other slices.")
     ;
 
   // Positional options - config file location
