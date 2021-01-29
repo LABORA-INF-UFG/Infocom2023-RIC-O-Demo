@@ -84,6 +84,12 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
       return SRSLTE_ERROR;
     }
 
+    ric_agent.reset(new ric::agent(logger,this));
+    if (!ric_agent) {
+      srslte::console("Error creating RIC agent instance.\n");
+      return SRSLTE_ERROR;
+    }
+
     // Init Radio
     if (lte_radio->init(args.rf, lte_phy.get())) {
       srslte::console("Error initializing radio.\n");
@@ -106,9 +112,15 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
       }
     }
 
+    if (ric_agent->init(args, phy_cfg, rrc_cfg)) {
+      srslte::console("Error initializing RIC agent.\n");
+      ret = SRSLTE_ERROR;
+    }
+
     stack = std::move(lte_stack);
     phy   = std::move(lte_phy);
     radio = std::move(lte_radio);
+    ric_agent = std::move(ric_agent);
 
   } else if (args.stack.type == "nr") {
 #ifdef HAVE_5GNR
@@ -167,6 +179,10 @@ void enb::stop()
 {
   if (started) {
     // tear down in reverse order
+    if (ric_agent) {
+      ric_agent->stop();
+    }
+
     if (phy) {
       phy->stop();
     }

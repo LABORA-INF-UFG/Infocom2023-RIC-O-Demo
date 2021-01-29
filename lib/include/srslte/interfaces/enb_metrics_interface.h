@@ -27,6 +27,7 @@
 #include "srsenb/hdr/phy/phy_metrics.h"
 #include "srsenb/hdr/stack/mac/mac_metrics.h"
 #include "srsenb/hdr/stack/rrc/rrc_metrics.h"
+#include "srsenb/hdr/stack/upper/pdcp_metrics.h"
 #include "srsenb/hdr/stack/upper/common_enb.h"
 #include "srsenb/hdr/stack/upper/s1ap_metrics.h"
 #include "srslte/common/metrics_hub.h"
@@ -39,6 +40,7 @@ namespace srsenb {
 struct stack_metrics_t {
   mac_metrics_t  mac[ENB_METRICS_MAX_USERS];
   rrc_metrics_t  rrc;
+  pdcp_metrics_t pdcp;
   s1ap_metrics_t s1ap;
 };
 

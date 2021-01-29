@@ -23,6 +23,8 @@
 #include "srslte/interfaces/enb_interfaces.h"
 #include "srslte/interfaces/ue_interfaces.h"
 #include "srslte/upper/pdcp.h"
+#include "srsenb/hdr/stack/upper/pdcp_metrics.h"
+#include "srsenb/hdr/stack/rrc/rrc_config.h"
 #include <map>
 
 #ifndef SRSENB_PDCP_H
@@ -37,6 +39,7 @@ public:
   virtual ~pdcp() {}
   void init(rlc_interface_pdcp* rlc_, rrc_interface_pdcp* rrc_, gtpu_interface_pdcp* gtpu_);
   void stop();
+  void get_metrics(pdcp_metrics_t& m);
 
   // pdcp_interface_rlc
   void write_pdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t sdu) override;
@@ -47,7 +50,7 @@ public:
   void add_user(uint16_t rnti) override;
   void rem_user(uint16_t rnti) override;
   void write_sdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t sdu) override;
-  void add_bearer(uint16_t rnti, uint32_t lcid, srslte::pdcp_config_t cnfg) override;
+  void add_bearer(uint16_t rnti, uint32_t lcid, int8_t qci, srslte::pdcp_config_t cnfg) override;
   void del_bearer(uint16_t rnti, uint32_t lcid) override;
   void config_security(uint16_t rnti, uint32_t lcid, srslte::as_security_config_t cfg_sec) override;
   void enable_integrity(uint16_t rnti, uint32_t lcid) override;
@@ -61,6 +64,9 @@ private:
   {
   public:
     uint16_t                    rnti;
+    int8_t                      bearer_qci_map[SRSENB_N_RADIO_BEARERS];
+    uint64_t                    dl_bytes[SRSENB_N_RADIO_BEARERS];
+    uint64_t                    dl_bytes_by_qci[MAX_NOF_QCI];
     srsenb::rlc_interface_pdcp* rlc;
     // rlc_interface_pdcp
     void write_sdu(uint32_t lcid, srslte::unique_byte_buffer_t sdu);
@@ -73,6 +79,9 @@ private:
   {
   public:
     uint16_t                     rnti;
+    int8_t                       bearer_qci_map[SRSENB_N_RADIO_BEARERS];
+    uint64_t                     ul_bytes[SRSENB_N_RADIO_BEARERS];
+    uint64_t                     ul_bytes_by_qci[MAX_NOF_QCI];
     srsenb::gtpu_interface_pdcp* gtpu;
     // gw_interface_pdcp
     void write_pdu(uint32_t lcid, srslte::unique_byte_buffer_t pdu);

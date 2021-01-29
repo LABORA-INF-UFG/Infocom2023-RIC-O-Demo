@@ -1,0 +1,7 @@
+build
+srsenb/src/ric/messages/asn1/e2ap-*.asn1
+srsenb/src/ric/messages/asn1/e2sm-kpm-*.asn1
+srsenb/src/ric/messages/asn1/e2sm-gNB-NRT-*.asn1
+srsenb/src/ric/messages/asn1/e2sm-ni-*.asn1
+srsenb/src/ric/messages/generated/*
+*~

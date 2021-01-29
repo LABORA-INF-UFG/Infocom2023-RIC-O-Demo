@@ -20,6 +20,7 @@
 
 add_subdirectory(phy)
 add_subdirectory(stack)
+add_subdirectory(ric)
 
 
 # Link libstdc++ and libgcc
@@ -37,7 +38,7 @@ target_link_libraries(enb_cfg_parser ${LIBCONFIGPP_LIBRARIES})
 
 add_executable(srsenb main.cc enb.cc metrics_stdout.cc metrics_csv.cc)
 
-set(SRSENB_SOURCES srsenb_phy srsenb_stack srsenb_upper srsenb_mac srsenb_rrc srslog)
+set(SRSENB_SOURCES srsenb_phy srsenb_stack srsenb_upper srsenb_mac srsenb_rrc srslog srsenb_ric)
 set(SRSLTE_SOURCES srslte_common srslte_mac srslte_phy srslte_upper srslte_radio rrc_asn1 s1ap_asn1 enb_cfg_parser srslog)
 
 if(ENABLE_5GNR)

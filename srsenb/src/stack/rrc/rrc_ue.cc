@@ -1494,7 +1494,7 @@ void rrc::ue::apply_reconf_phy_config(const rrc_conn_recfg_r8_ies_s& reconfig_r8
 void rrc::ue::apply_pdcp_srb_updates()
 {
   for (const srb_to_add_mod_s& srb : bearer_list.get_pending_addmod_srbs()) {
-    parent->pdcp->add_bearer(rnti, srb.srb_id, srslte::make_srb_pdcp_config_t(srb.srb_id, false));
+    parent->pdcp->add_bearer(rnti, srb.srb_id, 0, srslte::make_srb_pdcp_config_t(srb.srb_id, false));
 
     // For SRB2, enable security/encryption/integrity
     if (ue_security_cfg.is_as_sec_cfg_valid()) {
@@ -1514,10 +1514,10 @@ void rrc::ue::apply_pdcp_drb_updates()
     // Configure DRB1 in PDCP
     if (drb.pdcp_cfg_present) {
       srslte::pdcp_config_t pdcp_cnfg_drb = srslte::make_drb_pdcp_config_t(drb.drb_id, false, drb.pdcp_cfg);
-      parent->pdcp->add_bearer(rnti, drb.lc_ch_id, pdcp_cnfg_drb);
+      parent->pdcp->add_bearer(rnti, drb.lc_ch_id, bearer_list.erabs[drb.lc_ch_id + 2].qos_params.qci, pdcp_cnfg_drb);
     } else {
       srslte::pdcp_config_t pdcp_cnfg_drb = srslte::make_drb_pdcp_config_t(drb.drb_id, false);
-      parent->pdcp->add_bearer(rnti, drb.lc_ch_id, pdcp_cnfg_drb);
+      parent->pdcp->add_bearer(rnti, drb.lc_ch_id, bearer_list.erabs[drb.lc_ch_id + 2].qos_params.qci, pdcp_cnfg_drb);
     }
 
     if (ue_security_cfg.is_as_sec_cfg_valid()) {
