@@ -22,14 +22,19 @@
 #include "srsenb/hdr/ric/e2sm_kpm.h"
 #include "srsenb/hdr/ric/e2sm_nexran.h"
 
+#include "srsenb/hdr/stack/mac/slicer_test_utils.h"
 namespace ric {
 
 bool e2ap_xer_print;
 bool e2sm_xer_print;
 
 agent::agent(srslte::logger* logger_,
-	     srsenb::enb_metrics_interface *enb_metrics_interface_)
-  : logger(logger_), enb_metrics_interface(enb_metrics_interface_), thread("RIC")
+	     srsenb::enb_metrics_interface *enb_metrics_interface_,
+	     srsenb::enb_slicer_interface *enb_slicer_interface_)
+  : logger(logger_),
+    enb_metrics_interface(enb_metrics_interface_),
+    enb_slicer_interface(enb_slicer_interface_),
+    thread("RIC")
 {
   agent_queue_id = pending_tasks.add_queue();
 };
@@ -167,6 +172,17 @@ int agent::init(const srsenb::all_args_t& args_,
   start(-1);
 
   return SRSLTE_SUCCESS;
+}
+
+void agent::test_slicer_interface()
+{
+  srslte::console("Testing slicer interface...\n");
+  enb_slicer_interface->slice_config();
+  enb_slicer_interface->slice_delete();
+  enb_slicer_interface->slice_status();
+  enb_slicer_interface->slice_ue_bind();
+  enb_slicer_interface->slice_ue_unbind();
+
 }
 
 void agent::run_thread()

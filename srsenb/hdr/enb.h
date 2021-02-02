@@ -51,6 +51,7 @@
 #include "srslte/interfaces/enb_metrics_interface.h"
 #include "srslte/interfaces/sched_interface.h"
 #include "srslte/interfaces/ue_interfaces.h"
+#include "srslte/interfaces/enb_slicer_interface.h"
 
 #include "srsenb/hdr/ric/agent_defs.h"
 
@@ -121,7 +122,7 @@ namespace srsenb {
   Main eNB class
 *******************************************************************************/
 
-class enb : public enb_metrics_interface, enb_command_interface
+class enb : public enb_metrics_interface, enb_command_interface, enb_slicer_interface
 {
 public:
   enb();
@@ -141,6 +142,13 @@ public:
 
   // eNodeB command interface
   void cmd_cell_gain(uint32_t cell_id, float gain) override;
+
+  // eNodeB slicer interface
+  bool slice_config() override;
+  bool slice_delete() override;
+  bool slice_status() override;
+  bool slice_ue_bind() override;
+  bool slice_ue_unbind() override;
 
 private:
   const static int ENB_POOL_SIZE = 1024 * 10;

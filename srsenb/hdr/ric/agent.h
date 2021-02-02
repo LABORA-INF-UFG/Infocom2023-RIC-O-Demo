@@ -36,7 +36,8 @@ class agent : public srslte::thread
 {
 public:
   agent(srslte::logger *logger_,
-	srsenb::enb_metrics_interface *enb__metrics_interface_);
+	srsenb::enb_metrics_interface *enb__metrics_interface_,
+	srsenb::enb_slicer_interface *enb__slicer_interface_);
   virtual ~agent();
 
   int init(const srsenb::all_args_t& args_,
@@ -55,6 +56,7 @@ public:
   void push_task(FwdRef&& value) {
     pending_tasks.push(agent_queue_id,value);
   };
+  void test_slicer_interface();
 
   srslte::logger *logger = nullptr;
   struct {
@@ -70,6 +72,7 @@ public:
   srsenb::rrc_cfg_t rrc_cfg;
   std::list<ric::service_model *> service_models;
   srsenb::enb_metrics_interface *enb_metrics_interface;
+  srsenb::enb_slicer_interface *enb_slicer_interface;
 
 private:
   void handle_connection_error();

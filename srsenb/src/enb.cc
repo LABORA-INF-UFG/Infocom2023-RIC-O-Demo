@@ -84,7 +84,7 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
       return SRSLTE_ERROR;
     }
 
-    ric_agent.reset(new ric::agent(logger,this));
+    ric_agent.reset(new ric::agent(logger,this,this));
     if (!ric_agent) {
       srslte::console("Error creating RIC agent instance.\n");
       return SRSLTE_ERROR;
@@ -110,6 +110,7 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
         srslte::console("Error initializing stack.\n");
         ret = SRSLTE_ERROR;
       }
+    srslte::console("lte stack init....\n");
     }
 
     if (ric_agent->init(args, phy_cfg, rrc_cfg)) {
@@ -168,6 +169,7 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
   if (ret == SRSLTE_SUCCESS) {
     srslte::console("\n==== eNodeB started ===\n");
     srslte::console("Type <t> to view trace\n");
+    ric_agent->test_slicer_interface();
   } else {
     // if any of the layers failed to start, make sure the rest is stopped in a controlled manner
     stop();
@@ -228,6 +230,38 @@ bool enb::get_metrics(enb_metrics_t* m)
 void enb::cmd_cell_gain(uint32_t cell_id, float gain)
 {
   phy->cmd_cell_gain(cell_id, gain);
+}
+
+// eNodeB slicer interface
+bool enb::slice_config()
+{
+  srslte::console("slice config called.\n");
+  return false;
+}
+
+bool enb::slice_delete()
+{
+  srslte::console("slice delete called.\n");
+  return false;
+}
+
+bool enb::slice_status()
+{
+  srslte::console("slice status called.\n");
+  stack->slice_status();
+  return false;
+}
+
+bool enb::slice_ue_bind()
+{
+  srslte::console("slice ue bind called.\n");
+  return false;
+}
+
+bool enb::slice_ue_unbind()
+{
+  srslte::console("slice ue unbind called.\n");
+  return false;
 }
 
 srslte::LOG_LEVEL_ENUM enb::level(std::string l)

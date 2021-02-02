@@ -91,6 +91,14 @@ public:
 
   // eNB metrics interface
   virtual bool get_metrics(stack_metrics_t* metrics) = 0;
+
+  // eNB slicer interface
+  virtual bool slice_config() = 0;
+  virtual bool slice_delete() = 0;
+  virtual bool slice_status() = 0;
+  virtual bool slice_ue_bind() = 0;
+  virtual bool slice_ue_unbind() = 0;
+
 };
 
 } // namespace srsenb

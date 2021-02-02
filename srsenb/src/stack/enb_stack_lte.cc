@@ -24,6 +24,7 @@
 #include "srslte/common/network_utils.h"
 #include "srslte/srslte.h"
 #include <srslte/interfaces/enb_metrics_interface.h>
+#include <srslte/interfaces/enb_slicer_interface.h>
 
 using namespace srslte;
 
@@ -250,6 +251,40 @@ void enb_stack_lte::add_gtpu_m1u_socket_handler(int fd)
     gtpu_task_queue.push(std::bind(task_handler, std::move(pdu)));
   };
   rx_sockets->add_socket_pdu_handler(fd, gtpu_m1u_handler);
+}
+
+// eNodeB slicer interface
+bool enb_stack_lte::slice_config()
+{
+  srslte::console("slice config called.\n");
+  return false;
+}
+
+bool enb_stack_lte::slice_delete()
+{
+  srslte::console("slice delete called.\n");
+  return false;
+}
+
+bool enb_stack_lte::slice_status()
+{
+  srslte::console("slice status called.\n");
+  if (mac.slicer.initialized) {
+    mac.slicer.log_slice_names();
+  }
+  return false;
+}
+
+bool enb_stack_lte::slice_ue_bind()
+{
+  srslte::console("slice ue bind called.\n");
+  return false;
+}
+
+bool enb_stack_lte::slice_ue_unbind()
+{
+  srslte::console("slice ue unbind called.\n");
+  return false;
 }
 
 } // namespace srsenb

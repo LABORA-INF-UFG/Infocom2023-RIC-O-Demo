@@ -58,6 +58,11 @@ public:
   void        stop() final;
   std::string get_type() final;
   bool        get_metrics(stack_metrics_t* metrics) final;
+  bool        slice_config() final;
+  bool        slice_delete() final;
+  bool        slice_status() final;
+  bool        slice_ue_bind() final;
+  bool        slice_ue_unbind() final;
 
   /* PHY-MAC interface */
   int  sr_detected(uint32_t tti, uint16_t rnti) final { return mac.sr_detected(tti, rnti); }
