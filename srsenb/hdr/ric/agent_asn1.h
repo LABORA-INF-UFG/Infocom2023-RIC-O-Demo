@@ -2,6 +2,8 @@
 #define RIC_AGENT_ASN1_H
 
 #include "srslte/common/log.h"
+#include "srslte/common/bcd_helpers.h"
+#include "srslte/interfaces/rrc_interface_types.h"
 #include "srsenb/hdr/ric/agent.h"
 #include "ANY.h"
 #include "xer_support.h"
@@ -30,11 +32,11 @@ extern bool e2sm_xer_print;
 /* NB: this assumes that the 0xf prefix has been added to the mnc int. */
 #define ASN1_MAKE_PLMNID(_mcc,_mnc,_asn1_octetstring)			\
   do {									\
+    srslte::plmn_id_t plmnid;						\
+    plmnid.from_number(_mcc,_mnc);					\
     (_asn1_octetstring)->buf = (uint8_t *)calloc(3,sizeof(uint8_t));	\
-    (_asn1_octetstring)->buf[0] = (TENS(_mcc) << 4) | HUNDREDS(_mcc);	\
-    (_asn1_octetstring)->buf[1] = (HUNDREDS(_mnc) << 4) | ONES(_mcc);	\
-    (_asn1_octetstring)->buf[2] = (ONES(_mnc) << 4) | TENS(_mnc);	\
     (_asn1_octetstring)->size = 3;					\
+    plmnid.to_s1ap_plmn_bytes((_asn1_octetstring)->buf);		\
   } while(0)
 
 #define ASN1_MAKE_MACRO_ENB_ID(_enb_id,_asn1_bitstring)			\
