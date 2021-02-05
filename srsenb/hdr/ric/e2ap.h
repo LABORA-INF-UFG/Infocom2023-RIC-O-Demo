@@ -50,7 +50,22 @@ typedef struct subscription {
   void *model_data;
 } subscription_t;
 
+typedef enum control_request_ack {
+    CONTROL_REQUEST_NONE = 0,
+    CONTROL_REQUEST_ACK,
+    CONTROL_REQUEST_NACK
+} control_request_ack_t;
+
 typedef struct control {
+  long request_id;
+  long instance_id;
+  ran_function_id_t function_id;
+  control_request_ack_t request_ack;
+  uint8_t *header_buf;
+  size_t header_len;
+  uint8_t *message_buf;
+  size_t message_len;
+  void *model_data;
 } control_t;
 
 /**

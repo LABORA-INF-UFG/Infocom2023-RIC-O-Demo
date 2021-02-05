@@ -35,6 +35,14 @@ int generate_indication(
   const uint8_t *msg_buf,ssize_t msg_buf_len,
   const uint8_t *process_id,ssize_t process_id_len,
   uint8_t **buffer,ssize_t *len);
+int generate_ric_control_acknowledge(
+  ric::agent *agent,ric::control_t *rc,long status,
+  uint8_t *outcome,ssize_t outcome_len,
+  uint8_t **buffer,ssize_t *len);
+int generate_ric_control_failure(
+  ric::agent *agent,ric::control_t *rc,long cause,long cause_detail,
+  uint8_t *outcome,ssize_t outcome_len,
+  uint8_t **buffer,ssize_t *len);
 
 }
 }
