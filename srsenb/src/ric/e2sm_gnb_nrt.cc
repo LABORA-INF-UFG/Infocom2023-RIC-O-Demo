@@ -110,9 +110,8 @@ int gnb_nrt_model::handle_subscription_del(
   return 0;
 }
 
-int gnb_nrt_model::handle_control(ric::control_t *control)
+void gnb_nrt_model::handle_control(ric::control_t *control)
 {
-  return 0;
 }
 
 }

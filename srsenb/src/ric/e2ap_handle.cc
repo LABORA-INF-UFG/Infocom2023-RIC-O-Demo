@@ -359,6 +359,85 @@ int handle_reset_request(ric::agent *agent,uint32_t stream,
   return 0;
 }
 
+int handle_control(ric::agent *agent,uint32_t stream,
+		   E2AP_E2AP_PDU_t *pdu)
+{
+  E2AP_RICcontrolRequest_t *req;
+  E2AP_RICcontrolRequest_IEs_t *rie,**ptr;
+  ric::control_t *rc;
+  int ret;
+  uint8_t *buf;
+  ssize_t len;
+  ric::ran_function_t *func;
+  std::list<ric::action_t *>::iterator it;
+
+  req = &pdu->choice.initiatingMessage.value.choice.RICcontrolRequest;
+
+  E2AP_INFO(agent,"Received RICcontrolRequest\n");
+
+  /* We need to create an ric_subscription to generate errors. */
+  rc = new ric::control_t;
+
+  for (ptr = req->protocolIEs.list.array;
+       ptr < &req->protocolIEs.list.array[req->protocolIEs.list.count];
+       ptr++) {
+    rie = (E2AP_RICcontrolRequest_IEs_t *)*ptr;
+    if (rie->id == E2AP_ProtocolIE_ID_id_RICrequestID) {
+      rc->request_id = rie->value.choice.RICrequestID.ricRequestorID;
+      rc->instance_id = rie->value.choice.RICrequestID.ricInstanceID;
+    }
+    else if (rie->id == E2AP_ProtocolIE_ID_id_RANfunctionID) {
+      rc->function_id = rie->value.choice.RANfunctionID;
+    }
+    else if (rie->id == E2AP_ProtocolIE_ID_id_RICcontrolAckRequest) {
+      rc->request_ack = (ric::control_request_ack_t)rie->value.choice.RICcontrolAckRequest;
+    }
+    else if (rie->id == E2AP_ProtocolIE_ID_id_RICcontrolHeader
+	     && rie->value.choice.RICcontrolHeader.size > 0) {
+      rc->header_len = rie->value.choice.RICcontrolHeader.size;
+      rc->header_buf = (uint8_t *)malloc(rc->header_len);
+      memcpy(rc->header_buf,rie->value.choice.RICcontrolHeader.buf,
+	     rc->header_len);
+    }
+    else if (rie->id == E2AP_ProtocolIE_ID_id_RICcontrolMessage
+	     && rie->value.choice.RICcontrolMessage.size > 0) {
+      rc->message_len = rie->value.choice.RICcontrolMessage.size;
+      rc->message_buf = (uint8_t *)malloc(rc->message_len);
+      memcpy(rc->message_buf,rie->value.choice.RICcontrolMessage.buf,
+	     rc->message_len);
+    }
+  }
+
+  func = agent->lookup_ran_function(rc->function_id);
+  if (!func) {
+    E2AP_ERROR(agent,"failed to find ran_function %ld\n",rc->function_id);
+    goto errout;
+  }
+
+  /*
+   * NB: rc is owned by the model at this point, and model must send
+   * control ack/nack if requested/required.  Control requests may take
+   * an arbitrarily long amount of time, so we cannot tie up this thread
+   * waiting for a response.
+   */
+  func->model->handle_control(rc);
+
+  return 0;
+
+ errout:
+  ret = generate_ric_control_failure(
+    agent,rc,1,0,NULL,0,&buf,&len);
+  if (ret) {
+    E2AP_ERROR(agent,"failed to generate RICcontrolFailure\n");
+  }
+  else {
+    agent->send_sctp_data(buf,len);
+  }
+  delete rc;
+
+  return ret;
+}
+
 int handle_message(ric::agent *agent,uint32_t stream,
 		   const uint8_t * const buf,const uint32_t buflen)
 {
@@ -386,6 +465,9 @@ int handle_message(ric::agent *agent,uint32_t stream,
       break;
     case E2AP_ProcedureCode_id_Reset:
       ret = handle_reset_request(agent,stream,&pdu);
+      break;
+    case E2AP_ProcedureCode_id_RICcontrol:
+      ret = handle_control(agent,stream,&pdu);
       break;
     default:
       E2AP_WARN(agent,"unsupported initiatingMessage procedure %ld\n",
