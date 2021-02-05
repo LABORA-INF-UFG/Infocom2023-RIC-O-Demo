@@ -29,7 +29,7 @@ public:
   int handle_subscription_add(ric::subscription_t *sub);
   int handle_subscription_del(ric::subscription_t *sub,int force,
 			      long *cause,long *cause_detail);
-  int handle_control(ric::control_t *control);
+  void handle_control(ric::control_t *control);
 
 private:
   pthread_mutex_t lock;

@@ -399,11 +399,9 @@ int kpm_model::handle_subscription_del(
   return 0;
 }
 
-int kpm_model::handle_control(ric::control_t *control)
+void kpm_model::handle_control(ric::control_t *control)
 {
   E2SM_ERROR(agent,"kpm: no controls supported\n");
-
-  return -1;
 }
 
 void *kpm_model::timer_callback(int timer_id,void *arg)

@@ -43,7 +43,7 @@ public:
   virtual int handle_subscription_add(ric::subscription_t *sub);
   virtual int handle_subscription_del(ric::subscription_t *sub,int force,
 				      long *cause,long *cause_detail);
-  virtual int handle_control(ric::control_t *control);
+  virtual void handle_control(ric::control_t *control);
 
   const std::string name;
   const std::string oid;

@@ -32,9 +32,8 @@ int service_model::handle_subscription_del(
   return SRSLTE_ERROR;
 }
 
-int service_model::handle_control(ric::control_t *control)
+void service_model::handle_control(ric::control_t *control)
 {
-  return SRSLTE_ERROR;
 }
 
 }
