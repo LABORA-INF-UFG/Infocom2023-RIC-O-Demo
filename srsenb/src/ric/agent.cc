@@ -23,6 +23,7 @@
 #include "srsenb/hdr/ric/e2sm_nexran.h"
 
 #include "srsenb/hdr/stack/mac/slicer_test_utils.h"
+
 namespace ric {
 
 bool e2ap_xer_print;
@@ -176,13 +177,65 @@ int agent::init(const srsenb::all_args_t& args_,
 
 void agent::test_slicer_interface()
 {
-  srslte::console("Testing slicer interface...\n");
-  enb_slicer_interface->slice_config();
-  enb_slicer_interface->slice_delete();
-  enb_slicer_interface->slice_status();
-  enb_slicer_interface->slice_ue_bind();
-  enb_slicer_interface->slice_ue_unbind();
+  srslte::console("[agent] testing slicer interface...\n");
+  std::vector<std::string> slice_names;
 
+  srslte::console("[agent] configuring slices...\n");
+  std::vector<slicer::slice_config_t> s_configs;
+  for (auto it = slicer_test::slices.begin(); it != slicer_test::slices.end(); ++it) {
+    slicer_test::print_slice(*it);
+    s_configs.push_back(it->config);
+  }
+  enb_slicer_interface->slice_config(s_configs);
+
+  srslte::console("[agent] checking all single slice status'...\n");
+  std::vector<slicer::slice_status_t> s_status = enb_slicer_interface->slice_status({});
+  for (auto it = s_status.begin(); it != s_status.end(); ++it) {
+    slicer_test::print_slice(*it);
+  }
+
+  auto slice_name = slicer_test::slices[0].config.name;
+  srslte::console("[agent] checking slice status for slice %s...\n", slice_name.c_str());
+  s_status = enb_slicer_interface->slice_status({slice_name});
+  for (auto it = s_status.begin(); it != s_status.end(); ++it) {
+    slicer_test::print_slice(*it);
+  }
+
+  for (auto it = slicer_test::slices.begin(); it != slicer_test::slices.end(); ++it) {
+    srslte::console("[agent] binding UEs for slice %s...\n", it->config.name.c_str());
+    enb_slicer_interface->slice_ue_bind(it->config.name, it->imsi_list);
+  }
+
+  srslte::console("[agent] checking all slice status' after binding UEs...\n");
+  s_status = enb_slicer_interface->slice_status({});
+  for (auto it = s_status.begin(); it != s_status.end(); ++it) {
+    slicer_test::print_slice(*it);
+  }
+
+  for (auto it = slicer_test::imsis_to_unbind.begin(); it != slicer_test::imsis_to_unbind.end(); ++it) {
+    srslte::console("[agent] unbinding these UEs for slice %s ", it->name.c_str());
+    slicer_test::print_imsis(it->imsi_list);
+    enb_slicer_interface->slice_ue_unbind(it->name, it->imsi_list);
+  }
+
+  srslte::console("[agent] checking all slice status' after unbinding UEs...\n");
+  s_status = enb_slicer_interface->slice_status({});
+  for (auto it = s_status.begin(); it != s_status.end(); ++it) {
+    slicer_test::print_slice(*it);
+  }
+
+  srslte::console("[agent] deleting slices ");
+  for (auto it = slicer_test::slices_to_delete.begin(); it != slicer_test::slices_to_delete.end(); ++it) {
+    srslte::console("%s ", (*it).c_str());
+  }
+  srslte::console("\n");
+  enb_slicer_interface->slice_delete(slicer_test::slices_to_delete);
+
+  srslte::console("[agent] checking all slice status' after unbinding UEs...\n");
+  s_status = enb_slicer_interface->slice_status({});
+  for (auto it = s_status.begin(); it != s_status.end(); ++it) {
+    slicer_test::print_slice(*it);
+  }
 }
 
 void agent::run_thread()

@@ -17,33 +17,37 @@ class slicer {
     slicer();
     ~slicer();
 
+    // for mac
     void init(std::string slice_db_fname, bool workshare_);
-    int add_slice(slice_t slice);
-    int rem_slice(std::string name);
-    int add_slice_member(std::string s_name, uint64_t imsi);
-    int rem_slice_member(std::string s_name, uint64_t imsi);
-    int upd_slice_share(std::string s_name, uint32_t n_sf);
-    int upd_member_crnti(uint64_t imsi, uint16_t crnti);
-    int upd_member_crnti(uint16_t old_crnti, uint16_t crnti);
-    void upd_slice_crntis(std::string s_name);
-    void upd_sf_alloc();
     std::vector<uint16_t> get_cur_sf_crntis(uint32_t tti_tx_dl);
+
+    // slicer interface for agent
+    std::vector<slice_status_t> slice_status(std::vector<std::string> slice_names);
+    bool slice_config(std::vector<slice_config_t> slice_configs);
+    bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list);
+    bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list);
+    bool slice_delete(std::vector<std::string> slice_names);
+
+    // for rrc
+    int upd_member_crnti(uint64_t imsi, uint16_t crnti);
+
+    bool enable = false;
+    bool initialized = false;
+    bool workshare = false;
+ private:
     bool read_slice_db_file(std::string db_filename);
-    void log_slice_names();
+    int add_slice(slice_t slice);
+    void upd_sf_alloc();
+    void upd_slice_crntis(std::string s_name);
 
     std::map<std::string, std::vector<uint16_t> > slice_to_crnti_vec;
     std::map<uint64_t, uint16_t> imsi_to_crnti; // for all ues, regardless of slices
     std::map<std::string, slice_t> slices;
-    std::map<std::string, slice_t>::iterator slice_iter;
-    std::map<std::string, uint32_t> slice_to_sf_alloc;
+    std::map<std::string, slice_t>::iterator slice_iter; // reused often
     std::vector<uint32_t> sf_alloc;
-    uint32_t cur_slice_sf = 0;
     uint32_t total_sf_alloc = 0;
-    bool enable = false;
-    bool initialized = false;
-    bool workshare = false;
+    bool has_alloc = false;
 };
-
 
   // helper functions
   std::vector<std::string> split_string(const std::string& str, char delimiter);

@@ -22,16 +22,20 @@
 #ifndef SRSLTE_ENB_SLICER_INTERFACE_H
 #define SRSLTE_ENB_SLICER_INTERFACE_H
 
+#include "srsenb/hdr/stack/mac/slicer_defs.h"
+
 namespace srsenb {
+
 class enb_slicer_interface
 {
 public:
-  virtual bool slice_config() = 0;
-  virtual bool slice_delete() = 0;
-  virtual bool slice_status() = 0;
-  virtual bool slice_ue_bind() = 0;
-  virtual bool slice_ue_unbind() = 0;
+  virtual bool slice_config(std::vector<slicer::slice_config_t> slice_configs) = 0;
+  virtual bool slice_delete(std::vector<std::string> slice_names) = 0;
+  virtual std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) = 0;
+  virtual bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
+  virtual bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
 };
+
 } // namespace srsenb
 
 #endif // SRSLTE_ENB_SLICER_INTERFACE_H

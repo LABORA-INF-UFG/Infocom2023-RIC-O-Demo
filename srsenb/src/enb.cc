@@ -110,7 +110,6 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
         srslte::console("Error initializing stack.\n");
         ret = SRSLTE_ERROR;
       }
-    srslte::console("lte stack init....\n");
     }
 
     if (ric_agent->init(args, phy_cfg, rrc_cfg)) {
@@ -169,7 +168,9 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
   if (ret == SRSLTE_SUCCESS) {
     srslte::console("\n==== eNodeB started ===\n");
     srslte::console("Type <t> to view trace\n");
-    ric_agent->test_slicer_interface();
+    if (args.stack.mac.slicer.slice_db_filename.empty()) {
+      ric_agent->test_slicer_interface();
+    }
   } else {
     // if any of the layers failed to start, make sure the rest is stopped in a controlled manner
     stop();
@@ -233,35 +234,29 @@ void enb::cmd_cell_gain(uint32_t cell_id, float gain)
 }
 
 // eNodeB slicer interface
-bool enb::slice_config()
+bool enb::slice_config(std::vector<slicer::slice_config_t> slice_configs)
 {
-  srslte::console("slice config called.\n");
-  return false;
+  return stack->slice_config(slice_configs);
 }
 
-bool enb::slice_delete()
+bool enb::slice_delete(std::vector<std::string> slice_names)
 {
-  srslte::console("slice delete called.\n");
-  return false;
+  return stack->slice_delete(slice_names);
 }
 
-bool enb::slice_status()
+std::vector<slicer::slice_status_t> enb::slice_status(std::vector<std::string> slice_names)
 {
-  srslte::console("slice status called.\n");
-  stack->slice_status();
-  return false;
+  return stack->slice_status(slice_names);
 }
 
-bool enb::slice_ue_bind()
+bool enb::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list)
 {
-  srslte::console("slice ue bind called.\n");
-  return false;
+  return stack->slice_ue_bind(slice_name, imsi_list);
 }
 
-bool enb::slice_ue_unbind()
+bool enb::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list)
 {
-  srslte::console("slice ue unbind called.\n");
-  return false;
+  return stack->slice_ue_unbind(slice_name, imsi_list);
 }
 
 srslte::LOG_LEVEL_ENUM enb::level(std::string l)

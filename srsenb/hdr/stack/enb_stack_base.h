@@ -22,6 +22,7 @@
 #ifndef SRSLTE_ENB_STACK_BASE_H
 #define SRSLTE_ENB_STACK_BASE_H
 
+#include "srsenb/hdr/stack/mac/slicer_defs.h"
 #include "srslte/interfaces/enb_interfaces.h"
 #include "srsue/hdr/stack/upper/gw.h"
 #include <string>
@@ -93,11 +94,11 @@ public:
   virtual bool get_metrics(stack_metrics_t* metrics) = 0;
 
   // eNB slicer interface
-  virtual bool slice_config() = 0;
-  virtual bool slice_delete() = 0;
-  virtual bool slice_status() = 0;
-  virtual bool slice_ue_bind() = 0;
-  virtual bool slice_ue_unbind() = 0;
+  virtual bool slice_config(std::vector<slicer::slice_config_t> slice_configs) = 0;
+  virtual bool slice_delete(std::vector<std::string> slice_names) = 0;
+  virtual std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) = 0;
+  virtual bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
+  virtual bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
 
 };
 

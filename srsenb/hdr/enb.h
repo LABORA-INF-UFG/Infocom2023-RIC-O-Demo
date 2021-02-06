@@ -144,11 +144,11 @@ public:
   void cmd_cell_gain(uint32_t cell_id, float gain) override;
 
   // eNodeB slicer interface
-  bool slice_config() override;
-  bool slice_delete() override;
-  bool slice_status() override;
-  bool slice_ue_bind() override;
-  bool slice_ue_unbind() override;
+  bool slice_config(std::vector<slicer::slice_config_t> slice_configs) override;
+  bool slice_delete(std::vector<std::string> slice_names) override;
+  std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) override;
+  bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
+  bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
 
 private:
   const static int ENB_POOL_SIZE = 1024 * 10;

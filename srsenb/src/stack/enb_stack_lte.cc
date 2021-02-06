@@ -254,37 +254,29 @@ void enb_stack_lte::add_gtpu_m1u_socket_handler(int fd)
 }
 
 // eNodeB slicer interface
-bool enb_stack_lte::slice_config()
+bool enb_stack_lte::slice_config(std::vector<slicer::slice_config_t> slice_configs)
 {
-  srslte::console("slice config called.\n");
-  return false;
+  return mac.slicer.slice_config(slice_configs);
 }
 
-bool enb_stack_lte::slice_delete()
+bool enb_stack_lte::slice_delete(std::vector<std::string> slice_names)
 {
-  srslte::console("slice delete called.\n");
-  return false;
+  return mac.slicer.slice_delete(slice_names);
 }
 
-bool enb_stack_lte::slice_status()
+std::vector<slicer::slice_status_t> enb_stack_lte::slice_status(std::vector<std::string> slice_names)
 {
-  srslte::console("slice status called.\n");
-  if (mac.slicer.initialized) {
-    mac.slicer.log_slice_names();
-  }
-  return false;
+  return mac.slicer.slice_status(slice_names);
 }
 
-bool enb_stack_lte::slice_ue_bind()
+bool enb_stack_lte::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list)
 {
-  srslte::console("slice ue bind called.\n");
-  return false;
+  return mac.slicer.slice_ue_bind(slice_name, imsi_list);
 }
 
-bool enb_stack_lte::slice_ue_unbind()
+bool enb_stack_lte::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list)
 {
-  srslte::console("slice ue unbind called.\n");
-  return false;
+  return mac.slicer.slice_ue_unbind(slice_name, imsi_list);
 }
 
 } // namespace srsenb

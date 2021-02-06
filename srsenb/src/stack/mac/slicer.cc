@@ -16,15 +16,173 @@ slicer::~slicer() {}
 
 void slicer::init(std::string slice_db_fname, bool workshare_)
 {
-  if (!read_slice_db_file(slice_db_fname)) {
-    srslte::console("[slicer] Couldn't read slice_db file: %s\n", slice_db_fname.c_str());
-    exit(SRSLTE_ERROR);
+  if (!slice_db_fname.empty()) {
+    if (!read_slice_db_file(slice_db_fname)) {
+      srslte::console("[slicer] Couldn't read slice_db file: %s\n", slice_db_fname.c_str());
+      exit(SRSLTE_ERROR);
+    }
   }
   workshare = workshare_;
   enable = true;
   initialized = true;
 }
 
+std::vector<uint16_t> slicer::get_cur_sf_crntis(uint32_t tti_tx_dl)
+{
+  if (!has_alloc) {
+    return {};
+  }
+
+  uint32_t alloc_index = tti_tx_dl % total_sf_alloc;
+  slice_iter = slices.begin();
+  // std::cout << sf_alloc[alloc_index] << " ";
+  std::advance(slice_iter, sf_alloc[alloc_index]);
+
+  return slice_to_crnti_vec[slice_iter->first];
+}
+
+std::vector<slice_status_t> slicer::slice_status(std::vector<std::string> slice_names)
+{
+  srslte::console("[slicer] getting slice status...\n");
+  std::vector<slice_status_t> ret;
+  if (slice_names.empty()) {
+    for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
+      ret.push_back(slice_iter->second);
+    }
+  }
+  else {
+    for (auto it = slice_names.begin(); it != slice_names.end(); ++it) {
+      auto it1 = slices.find(*it);
+      if (it1 != slices.end()) {
+        ret.push_back(it1->second);
+      }
+    }
+  }
+
+  return ret;
+}
+
+bool slicer::slice_config(std::vector<slice_config_t> slice_configs)
+{
+  srslte::console("[slicer] configuring slices...\n");
+  for (auto it = slice_configs.begin(); it != slice_configs.end(); ++it) {
+    slice_t s;
+    s.config.name = it->name;
+    s.config.prop_alloc_policy = it->prop_alloc_policy;
+    slices[s.config.name] = s;
+  }
+  upd_sf_alloc();
+  return true;
+}
+
+bool slicer::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list)
+{
+  srslte::console("[slicer] binding UEs to slice...\n");
+  auto s_it = slices.find(slice_name);
+  if (s_it == slices.end()) {
+    srslte::console("[slicer] slice %s does not exist!\n", slice_name.c_str());
+    return false;
+  }
+
+  for (auto it = imsi_list.begin(); it != imsi_list.end(); ++it) {
+    auto it2 = std::find(s_it->second.imsi_list.begin(),
+                         s_it->second.imsi_list.end(), *it);
+    if (it2 == s_it->second.imsi_list.end()) {
+      s_it->second.imsi_list.push_back(*it);
+    }
+  }
+
+  return true;
+}
+
+bool slicer::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list)
+{
+  srslte::console("[slicer] unbinding UEs from slice...\n");
+  auto s_it = slices.find(slice_name);
+  if (s_it == slices.end()) {
+    srslte::console("[slicer] slice %s does not exist!\n", slice_name.c_str());
+    return false;
+  }
+
+  for (auto it = imsi_list.begin(); it != imsi_list.end(); ++it) {
+    auto it2 = std::find(s_it->second.imsi_list.begin(),
+                         s_it->second.imsi_list.end(), *it);
+    if (it2 != s_it->second.imsi_list.end()) {
+      s_it->second.imsi_list.erase(it2);
+    }
+  }
+
+  return true;
+}
+
+bool slicer::slice_delete(std::vector<std::string> slice_names)
+{
+  srslte::console("[slicer] deleting slices...\n");
+  for (auto it = slice_names.begin(); it != slice_names.end(); ++it) {
+    auto s = slices.find(*it);
+    if (s != slices.end()) {
+      slices.erase(s);
+      slice_to_crnti_vec.erase(*it);
+    }
+  }
+  upd_sf_alloc();
+  return false;
+}
+
+int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
+{
+  imsi_to_crnti[imsi] = crnti;
+  srslte::console("[slicer] updated IMSI: %015" PRIu64 " with RNTI: 0x%x\n", imsi, crnti);
+
+  for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
+    std::vector<uint64_t> *s_imsis = &slice_iter->second.imsi_list;
+    if (std::find(s_imsis->begin(), s_imsis->end(), imsi) != s_imsis->end()) {
+      srslte::console("[slicer] RNTI 0x%x belongs to slice %s\n", crnti, slice_iter->first.c_str());
+      upd_slice_crntis(slice_iter->first);
+    }
+  }
+  return 0;
+}
+
+bool slicer::read_slice_db_file(std::string db_filename)
+{
+  std::ifstream m_db_file;
+
+  m_db_file.open(db_filename.c_str(), std::ifstream::in);
+  if (!m_db_file.is_open()) {
+    return false;
+  }
+  srslte::console("[slicer] opened slice DB file: %s\n", db_filename.c_str());
+
+  std::string line;
+  while (std::getline(m_db_file, line)) {
+    if (line[0] != '#' && line.length() > 0) {
+      slice_t s;
+      std::vector<std::string> split = split_string(line, ',');
+      s.config.name = split[0];
+      s.config.prop_alloc_policy.share = static_cast<uint32_t>(std::stoul(split[1]));
+      std::vector<std::string>::iterator it = split.begin() + 2;
+
+      while (it != split.end()) {
+        s.imsi_list.push_back(std::stoul(it->c_str()));
+        ++it;
+      }
+
+      int ret = add_slice(s);
+      if (ret != 0) {
+        srslte::console("[slicer] failed to add slice %s, check file format\n", s.config.name.c_str());
+        m_db_file.close();
+        exit(SRSLTE_ERROR);
+      }
+    }
+  }
+
+  m_db_file.close();
+  upd_sf_alloc();
+  return true;
+}
+
+// still used when slice configuration loaded from file
 int slicer::add_slice(slice_t slice)
 {
   // add slice if it doesn't exist
@@ -43,58 +201,6 @@ int slicer::add_slice(slice_t slice)
   return 0;
 }
 
-int slicer::rem_slice(std::string name)
-{
-  // if slice exists
-  //   delete slice and update sf allocation
-  return -1;
-}
-
-int slicer::add_slice_member(std::string name, uint64_t imsi)
-{
-  // if slice exists
-  //   if member not in slice
-  //     add member
-  return -1;
-}
-
-int slicer::rem_slice_member(std::string name, uint64_t imsi)
-{
-  // if slice exists
-  //   if member in slice
-  //     rem member
-  return -1;
-}
-
-int slicer::upd_slice_share(std::string s_name, uint32_t share)
-{
-  // if slice exists
-  //   update share
-  //   update_sf_alloc
-  //   reset cur_slice, cur_slice_sf
-  return -1;
-}
-
-int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
-{
-  imsi_to_crnti[imsi] = crnti;
-  srslte::console("[slicer] Updated IMSI: %015" PRIu64 " with RNTI: 0x%x\n", imsi, crnti);
-
-  for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
-    std::vector<uint64_t> *s_imsis = &slice_iter->second.imsi_list;
-    if (std::find(s_imsis->begin(), s_imsis->end(), imsi) != s_imsis->end()) {
-      srslte::console("[slicer] RNTI 0x%x belongs to slice %s\n", crnti, slice_iter->first.c_str());
-      upd_slice_crntis(slice_iter->first);
-    }
-  }
-  return 0;
-}
-
-int slicer::upd_member_crnti(uint16_t old_crnti, uint16_t crnti)
-{
-  return 0;
-}
-
 /**
  * Given the proportional share for all slices, use their greatest common factor
  * to produce the smallest total subframe allocation that maintains
@@ -102,7 +208,7 @@ int slicer::upd_member_crnti(uint16_t old_crnti, uint16_t crnti)
  */
 void slicer::upd_sf_alloc()
 {
-  srslte::console("[slicer] Updating proportional sf allocation...\n");
+  srslte::console("[slicer] updating proportional sf allocation...\n");
   std::vector<uint32_t> slice_shares;
   std::map<std::string, slice>::iterator it;
   for (it = slices.begin(); it != slices.end(); ++it) {
@@ -119,16 +225,8 @@ void slicer::upd_sf_alloc()
     sf_alloc.insert(sf_alloc.end(), tmp, slice_cnt);
     srslte::console("[slicer] slice: %s, proportional sf allocation: %u\n", it->first.c_str(), tmp);
   }
-}
 
-std::vector<uint16_t> slicer::get_cur_sf_crntis(uint32_t tti_tx_dl)
-{
-  uint32_t alloc_index = tti_tx_dl % total_sf_alloc;
-  slice_iter = slices.begin();
-  // std::cout << sf_alloc[alloc_index] << " ";
-  std::advance(slice_iter, sf_alloc[alloc_index]);
-
-  return slice_to_crnti_vec[slice_iter->first];
+  has_alloc = total_sf_alloc > 0;
 }
 
 void slicer::upd_slice_crntis(std::string s_name)
@@ -140,58 +238,7 @@ void slicer::upd_slice_crntis(std::string s_name)
       slice_to_crnti_vec[s_name].push_back(imsi_to_crnti[*it]);
     }
   }
-  srslte::console("[slicer] Updated RNTIs for slice %s\n", s_name.c_str());
-}
-
-bool slicer::read_slice_db_file(std::string db_filename)
-{
-  std::ifstream m_db_file;
-
-  m_db_file.open(db_filename.c_str(), std::ifstream::in);
-  if (!m_db_file.is_open()) {
-    return false;
-  }
-  srslte::console("[slicer] Opened slice DB file: %s\n", db_filename.c_str());
-
-  std::string line;
-  while (std::getline(m_db_file, line)) {
-    if (line[0] != '#' && line.length() > 0) {
-      slice_t s;
-      std::vector<std::string> split = split_string(line, ',');
-      s.config.name = split[0];
-      s.config.prop_alloc_policy.share = static_cast<uint32_t>(std::stoul(split[1]));
-      std::vector<std::string>::iterator it = split.begin() + 2;
-
-      while (it != split.end()) {
-        s.imsi_list.push_back(std::stoul(it->c_str()));
-        ++it;
-      }
-
-      int ret = add_slice(s);
-      if (ret != 0) {
-        srslte::console("[slicer] Failed to add slice %s\n", s.config.name.c_str());
-        m_db_file.close();
-        exit(SRSLTE_ERROR);
-      }
-    }
-  }
-
-  m_db_file.close();
-  upd_sf_alloc();
-  return true;
-}
-
-void slicer::log_slice_names()
-{
-  if (slices.empty()) {
-    srslte::console("Slices have not been initialized.\n");
-  }
-  else {
-    for (auto it = slices.begin(); it != slices.end(); ++it) {
-      srslte::console("%s ", it->first.c_str());
-    }
-    srslte::console("\n");
-  }
+  srslte::console("[slicer] updated RNTIs for slice %s\n", s_name.c_str());
 }
 
 // helper functions

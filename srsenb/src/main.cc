@@ -228,7 +228,7 @@ void parse_args(all_args_t* args, int argc, char* argv[])
 
     // RAN slicer section
     ("slicer.enable", bpo::value<bool>(&args->stack.mac.slicer.enable)->default_value(false), "Enable per-subframe RAN slicer.")
-    ("slicer.slice_db_filename", bpo::value<string>(&args->stack.mac.slicer.slice_db_filename)->default_value("/etc/srslte/slice_db.csv"), "Path for slice configuration file.")
+    ("slicer.slice_db_filename", bpo::value<string>(&args->stack.mac.slicer.slice_db_filename)->default_value(""), "Path for slice configuration file.")
     ("slicer.workshare", bpo::value<bool>(&args->stack.mac.slicer.workshare)->default_value(true), "Allow slices to share leftover RBGs with other slices.")
 
     // O-RAN RIC/E2AP section

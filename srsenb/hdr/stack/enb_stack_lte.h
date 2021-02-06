@@ -58,11 +58,12 @@ public:
   void        stop() final;
   std::string get_type() final;
   bool        get_metrics(stack_metrics_t* metrics) final;
-  bool        slice_config() final;
-  bool        slice_delete() final;
-  bool        slice_status() final;
-  bool        slice_ue_bind() final;
-  bool        slice_ue_unbind() final;
+
+  bool slice_config(std::vector<slicer::slice_config_t> slice_configs) final;
+  bool slice_delete(std::vector<std::string> slice_names) final;
+  std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) final;
+  bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) final;
+  bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) final;
 
   /* PHY-MAC interface */
   int  sr_detected(uint32_t tti, uint16_t rnti) final { return mac.sr_detected(tti, rnti); }
