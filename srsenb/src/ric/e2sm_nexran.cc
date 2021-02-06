@@ -16,9 +16,11 @@
 #include "E2AP_Cause.h"
 #include "E2AP_RICactionType.h"
 #include "E2AP_RICindicationType.h"
+#include "E2AP_RICcontrolStatus.h"
 #include "E2SM_NEXRAN_RANfunction-Description.h"
 #include "E2SM_NEXRAN_E2SM-NexRAN-ControlHeader.h"
 #include "E2SM_NEXRAN_E2SM-NexRAN-ControlMessage.h"
+#include "E2SM_NEXRAN_SliceConfig.h"
 
 namespace ric {
 
@@ -155,9 +157,149 @@ void nexran_model::handle_control(ric::control_t *rc)
     cause_detail = 8;
     goto errout;
   }
+  if (cm.choice.controlMessageFormat1.present < E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceConfigRequest
+      || cm.choice.controlMessageFormat1.present < E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceUeUnbindRequest) {
+    E2SM_ERROR(agent,"unknown nexran control message\n");
+    cause = 1;
+    cause_detail = 8;
+    goto errout;
+  }
 
   E2SM_DEBUG(agent,"control message:\n");
   E2SM_XER_PRINT(NULL,&asn_DEF_E2SM_NEXRAN_E2SM_NexRAN_ControlMessage,&cm);
+
+  ret = 0;
+  switch (cm.choice.controlMessageFormat1.present) {
+  case E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceConfigRequest:
+    {
+      E2SM_NEXRAN_SliceConfigRequest_t *req = \
+	  &cm.choice.controlMessageFormat1.choice.sliceConfigRequest;
+      for (int i = 0; i < req->sliceConfigList.list.count; ++i) {
+        E2SM_NEXRAN_SliceConfig_t *sc = (E2SM_NEXRAN_SliceConfig_t *) \
+	    req->sliceConfigList.list.array[i];
+	std::string slice_name((char *)sc->sliceName.buf,
+			       sc->sliceName.size);
+	ProportionalAllocationPolicy *policy = new ProportionalAllocationPolicy(
+	    sc->schedPolicy.choice.proportionalAllocationPolicy.share);
+	slices[slice_name] = new SliceConfig(slice_name,policy);
+	if (!ues.count(slice_name)) {
+	    ues[slice_name] = std::list<std::string>();
+	}
+      }
+      ret = 0;
+    }
+    break;
+  case E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceDeleteRequest:
+    {
+      E2SM_NEXRAN_SliceDeleteRequest_t *req = \
+	  &cm.choice.controlMessageFormat1.choice.sliceDeleteRequest;
+      // We need to delete all or none, so check for existence first.
+      std::list<std::string> deletes;
+      for (int i = 0; i < req->sliceNameList.list.count; ++i) {
+        E2SM_NEXRAN_SliceName_t *sn = (E2SM_NEXRAN_SliceName_t *) \
+	    req->sliceNameList.list.array[i];
+	std::string slice_name((char *)sn->buf,sn->size);
+	deletes.push_back(slice_name);
+	if (!slices.count(slice_name)) {
+	  ret = 1;
+	  break;
+	}
+      }
+      if (ret)
+	  break;
+      for (auto it = deletes.begin(); it != deletes.end(); ++it) {
+	  slices.erase(*it);
+	  ues.erase(*it);
+      }
+      ret = 0;
+    }
+    break;
+  case E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceStatusRequest:
+      ret = 1;
+      break;
+  case E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceUeBindRequest:
+    {
+      E2SM_NEXRAN_SliceUeBindRequest_t *req = \
+	  &cm.choice.controlMessageFormat1.choice.sliceUeBindRequest;
+      std::string slice_name((char *)req->sliceName.buf,req->sliceName.size);
+      if (!slices.count(slice_name)) {
+	  ret = 1;
+	  break;
+      }
+      std::list<std::string> binds;
+      for (int i = 0; i < req->imsiList.list.count; ++i) {
+        E2SM_NEXRAN_IMSI_t *imsi = (E2SM_NEXRAN_IMSI_t *) \
+	    req->imsiList.list.array[i];
+	std::string imsi_str((char *)imsi->buf,imsi->size);
+	if (std::find(ues[slice_name].begin(),ues[slice_name].end(),imsi_str) != ues[slice_name].end()) {
+	    ret = 1;
+	    break;
+	}
+	binds.push_back(slice_name);
+      }
+      if (ret)
+	  break;
+      for (auto it = binds.begin(); it != binds.end(); ++it) {
+	  ues[slice_name].push_back(*it);
+      }
+      ret = 0;
+    }
+    break;
+  case E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceUeUnbindRequest:
+    {
+      E2SM_NEXRAN_SliceUeUnbindRequest_t *req = \
+	  &cm.choice.controlMessageFormat1.choice.sliceUeUnbindRequest;
+      std::string slice_name((char *)req->sliceName.buf,req->sliceName.size);
+      if (!slices.count(slice_name)) {
+	  ret = 1;
+	  break;
+      }
+      std::list<std::string> unbinds;
+      for (int i = 0; i < req->imsiList.list.count; ++i) {
+        E2SM_NEXRAN_IMSI_t *imsi = (E2SM_NEXRAN_IMSI_t *) \
+	    req->imsiList.list.array[i];
+	std::string imsi_str((char *)imsi->buf,imsi->size);
+	if (std::find(ues[slice_name].begin(),ues[slice_name].end(),imsi_str) == ues[slice_name].end()) {
+	    ret = 1;
+	    break;
+	}
+	unbinds.push_back(slice_name);
+      }
+      if (ret)
+	  break;
+
+      ues[slice_name].erase(ues[slice_name].begin());
+      for (auto it = ues[slice_name].begin(); it != ues[slice_name].end(); ++it) {
+	  if (std::find(unbinds.begin(),unbinds.end(),*it) != unbinds.end())
+	      ues[slice_name].erase(it);
+      }
+      ret = 0;
+    }
+    break;
+  default:
+    E2SM_ERROR(agent,"unknown nexran control message\n");
+    ret = 1;
+    cause = 1;
+    cause_detail = 8;
+  }
+
+  if (ret) {
+    E2SM_ERROR(agent,"error while handling nexran control request (%d)\n",ret);
+    cause = 1;
+    cause_detail = 8;
+    goto errout;
+  }
+
+  if (rc->request_ack == CONTROL_REQUEST_ACK) {
+    ret = ric::e2ap::generate_ric_control_acknowledge(
+      agent,rc,E2AP_RICcontrolStatus_success,NULL,0,&buf,&len);
+    if (ret) {
+      E2AP_ERROR(agent,"failed to generate RICcontrolFailure\n");
+    }
+    else {
+      agent->send_sctp_data(buf,len);
+    }
+  }
 
   delete rc;
   return;
