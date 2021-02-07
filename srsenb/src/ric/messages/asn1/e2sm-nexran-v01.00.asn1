@@ -37,7 +37,7 @@ GUTI ::= SEQUENCE {
 
 PLMN-Identity ::= OCTET STRING (SIZE(3))
 
-IMSI ::= OCTET STRING (SIZE (15))
+IMSI ::= OCTET STRING (SIZE (0..32))
 
 SliceName ::= PrintableString (SIZE(1..128))
 
@@ -128,6 +128,7 @@ E2SM-NexRAN-ControlMessage-Id ::= ENUMERATED {
     sliceDeleteRequest,
     sliceStatusRequest,
     sliceUeBindRequest,
+    sliceUeUnbindRequest,
     sliceUeBindingReport,
     ...
 }

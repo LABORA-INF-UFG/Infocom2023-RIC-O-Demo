@@ -15,32 +15,9 @@
 #include "srsenb/hdr/ric/e2ap.h"
 #include "srsenb/hdr/ric/e2sm.h"
 #include "srsenb/hdr/ric/timer_queue.h"
+#include "srsenb/hdr/stack/mac/slicer_defs.h"
 
 namespace ric {
-
-class ProportionalAllocationPolicy
-{
- public:
-    ProportionalAllocationPolicy()
-	: share(1024) {};
-    ProportionalAllocationPolicy(int share_)
-	: share(share_) {};
-    virtual ~ProportionalAllocationPolicy() = default;
-
-    int share;
-};
-
-class SliceConfig
-{
- public:
-    SliceConfig(std::string &name_,ProportionalAllocationPolicy *policy_)
-	: name(name_),policy(policy_) {};
-    virtual ~SliceConfig() = default;
-
-    std::string name;
-    ProportionalAllocationPolicy *policy;
-};
-
 
 class nexran_model : public service_model
 {
@@ -56,7 +33,7 @@ public:
   void handle_control(ric::control_t *control);
 
 private:
-  std::map<std::string,SliceConfig *> slices;
+  std::map<std::string,slicer::slice_config_t *> slices;
   std::map<std::string,std::list<std::string>> ues;
   pthread_mutex_t lock;
   long serial_number;

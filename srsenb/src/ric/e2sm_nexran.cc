@@ -174,18 +174,23 @@ void nexran_model::handle_control(ric::control_t *rc)
     {
       E2SM_NEXRAN_SliceConfigRequest_t *req = \
 	  &cm.choice.controlMessageFormat1.choice.sliceConfigRequest;
+      std::vector<slicer::slice_config_t> slice_configs(req->sliceConfigList.list.count);
       for (int i = 0; i < req->sliceConfigList.list.count; ++i) {
         E2SM_NEXRAN_SliceConfig_t *sc = (E2SM_NEXRAN_SliceConfig_t *) \
 	    req->sliceConfigList.list.array[i];
 	std::string slice_name((char *)sc->sliceName.buf,
 			       sc->sliceName.size);
-	ProportionalAllocationPolicy *policy = new ProportionalAllocationPolicy(
-	    sc->schedPolicy.choice.proportionalAllocationPolicy.share);
-	slices[slice_name] = new SliceConfig(slice_name,policy);
+	long share = sc->schedPolicy.choice.proportionalAllocationPolicy.share;
+	slices[slice_name] = new slicer::slice_config_t {
+	    slice_name, { (uint32_t)share } };
+	slice_configs.push_back(*slices[slice_name]);
 	if (!ues.count(slice_name)) {
 	    ues[slice_name] = std::list<std::string>();
 	}
+	E2SM_DEBUG(agent,"configured slice %s share %u\n",
+		   slice_name.c_str(),(uint32_t)share);
       }
+      agent->enb_slicer_interface->slice_config(slice_configs);
       ret = 0;
     }
     break;
@@ -194,7 +199,7 @@ void nexran_model::handle_control(ric::control_t *rc)
       E2SM_NEXRAN_SliceDeleteRequest_t *req = \
 	  &cm.choice.controlMessageFormat1.choice.sliceDeleteRequest;
       // We need to delete all or none, so check for existence first.
-      std::list<std::string> deletes;
+      std::vector<std::string> deletes;
       for (int i = 0; i < req->sliceNameList.list.count; ++i) {
         E2SM_NEXRAN_SliceName_t *sn = (E2SM_NEXRAN_SliceName_t *) \
 	    req->sliceNameList.list.array[i];
@@ -210,7 +215,9 @@ void nexran_model::handle_control(ric::control_t *rc)
       for (auto it = deletes.begin(); it != deletes.end(); ++it) {
 	  slices.erase(*it);
 	  ues.erase(*it);
+	  E2SM_DEBUG(agent,"deleted slice %s\n",it->c_str());
       }
+      agent->enb_slicer_interface->slice_delete(deletes);
       ret = 0;
     }
     break;
@@ -226,7 +233,8 @@ void nexran_model::handle_control(ric::control_t *rc)
 	  ret = 1;
 	  break;
       }
-      std::list<std::string> binds;
+      std::vector<std::string> binds(req->imsiList.list.count);
+      std::vector<uint64_t> imsi_uints(req->imsiList.list.count);
       for (int i = 0; i < req->imsiList.list.count; ++i) {
         E2SM_NEXRAN_IMSI_t *imsi = (E2SM_NEXRAN_IMSI_t *) \
 	    req->imsiList.list.array[i];
@@ -236,12 +244,16 @@ void nexran_model::handle_control(ric::control_t *rc)
 	    break;
 	}
 	binds.push_back(slice_name);
+	imsi_uints.push_back(std::stoul(imsi_str));
       }
       if (ret)
 	  break;
       for (auto it = binds.begin(); it != binds.end(); ++it) {
 	  ues[slice_name].push_back(*it);
+	  E2SM_DEBUG(agent,"bound slice %s to IMSI %s\n",
+		     slice_name.c_str(),it->c_str());
       }
+      agent->enb_slicer_interface->slice_ue_bind(slice_name,imsi_uints);
       ret = 0;
     }
     break;
@@ -254,7 +266,8 @@ void nexran_model::handle_control(ric::control_t *rc)
 	  ret = 1;
 	  break;
       }
-      std::list<std::string> unbinds;
+      std::vector<std::string> unbinds(req->imsiList.list.count);
+      std::vector<uint64_t> imsi_uints(req->imsiList.list.count);
       for (int i = 0; i < req->imsiList.list.count; ++i) {
         E2SM_NEXRAN_IMSI_t *imsi = (E2SM_NEXRAN_IMSI_t *) \
 	    req->imsiList.list.array[i];
@@ -264,15 +277,20 @@ void nexran_model::handle_control(ric::control_t *rc)
 	    break;
 	}
 	unbinds.push_back(slice_name);
+	imsi_uints.push_back(std::stoul(imsi_str));
       }
       if (ret)
 	  break;
 
       ues[slice_name].erase(ues[slice_name].begin());
       for (auto it = ues[slice_name].begin(); it != ues[slice_name].end(); ++it) {
-	  if (std::find(unbinds.begin(),unbinds.end(),*it) != unbinds.end())
+	  if (std::find(unbinds.begin(),unbinds.end(),*it) != unbinds.end()) {
 	      ues[slice_name].erase(it);
+	      E2SM_DEBUG(agent,"unbound slice %s from IMSI %s\n",
+			 slice_name.c_str(),it->c_str());
+	  }
       }
+      agent->enb_slicer_interface->slice_ue_unbind(slice_name,imsi_uints);
       ret = 0;
     }
     break;
