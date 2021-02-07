@@ -102,5 +102,6 @@ install_file "drb.conf.example"
 install_file "epc.conf.example"
 install_file "mbms.conf.example"
 install_file "user_db.csv.example"
+install_file "slice_db.csv.example"
 
 echo "Done."

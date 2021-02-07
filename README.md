@@ -1,9 +1,9 @@
-srsLTE (+ O-RAN RIC Agent)
+srsLTE (+ O-RAN RIC Agent and RAN slicer)
 ==========================
 
-(NB: this is a modified version of srsLTE that includes O-RAN RIC/E2
-support in srsenb; see srsenb/src/ric/README.md for RIC-relevant build
-and use instructions.)
+(NB: this is a modified version of srsLTE that includes O-RAN RIC/E2 support and
+RAN slicing support in srsenb; see srsenb/src/ric/README.md for RIC-relevant
+build and use instructions, and srsenb/slicer.md for RAN slicing instructions.)
 
 [![Build Status](https://travis-ci.org/srsLTE/srsLTE.svg?branch=master)](https://travis-ci.org/srsLTE/srsLTE)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/srsLTE/srsLTE.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/srsLTE/srsLTE/context:cpp)

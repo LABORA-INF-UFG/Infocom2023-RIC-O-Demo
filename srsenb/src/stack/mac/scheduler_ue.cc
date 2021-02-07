@@ -155,6 +155,7 @@ void sched_ue::set_cfg(const sched_interface::ue_cfg_t& cfg_)
     log_h->info("SCHED: Enqueueing SCell Activation CMD for rnti=0x%x\n", rnti);
   }
 
+  in_cur_slice = cfg_.in_cur_slice;
   check_ue_cfg_correctness();
 }
 

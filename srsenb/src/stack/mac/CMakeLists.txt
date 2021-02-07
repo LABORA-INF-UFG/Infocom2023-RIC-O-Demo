@@ -18,7 +18,7 @@
 # and at http://www.gnu.org/licenses/.
 #
 
-set(SOURCES mac.cc ue.cc scheduler.cc scheduler_carrier.cc scheduler_grid.cc scheduler_harq.cc scheduler_metric.cc scheduler_ue.cc)
+set(SOURCES mac.cc ue.cc scheduler.cc scheduler_carrier.cc scheduler_grid.cc scheduler_harq.cc scheduler_ue.cc slicer.cc scheduler_metric_sliced.cc)
 add_library(srsenb_mac STATIC ${SOURCES})
 
 if(ENABLE_5GNR)

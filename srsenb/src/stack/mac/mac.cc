@@ -73,6 +73,10 @@ bool mac::init(const mac_args_t&        args_,
 
     scheduler.init(rrc);
 
+    if (args.slicer.enable) {
+      slicer.init(args.slicer.slice_db_filename, args.slicer.workshare);
+    }
+
     // Set default scheduler configuration
     scheduler.set_sched_cfg(&args.sched);
 
@@ -285,6 +289,17 @@ void mac::get_metrics(mac_metrics_t metrics[ENB_METRICS_MAX_USERS])
     cnt++;
   }
 }
+
+bool mac::is_slicer_enabled()
+{
+  return slicer.enable;
+}
+
+void mac::handle_imsi_capture(uint64_t imsi, uint16_t rnti)
+{
+  slicer.upd_member_crnti(imsi, rnti);
+}
+
 
 /********************************************************
  *
@@ -556,6 +571,20 @@ int mac::get_dl_sched(uint32_t tti_tx_dl, dl_sched_list_t& dl_sched_res_list)
 {
   if (!started) {
     return 0;
+  }
+
+  // Sets a flag to indicate to the scheduler whether or not UEs belong to the
+  // slice that owns this subframe.
+  if (slicer.enable) {
+    std::vector<uint16_t> cur_sf_crntis = slicer.get_cur_sf_crntis(tti_tx_dl);
+    for (auto& u : ue_db) {
+      if (std::find(cur_sf_crntis.begin(), cur_sf_crntis.end(), u.second->get_rnti()) != cur_sf_crntis.end()) {
+        scheduler.set_is_in_cur_slice(u.second->get_rnti(), true);
+      }
+      else {
+        scheduler.set_is_in_cur_slice(u.second->get_rnti(), false);
+      }
+    }
   }
 
   log_h->step(TTI_SUB(tti_tx_dl, FDD_HARQ_DELAY_UL_MS));

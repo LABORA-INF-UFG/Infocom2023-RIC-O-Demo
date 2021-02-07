@@ -24,6 +24,7 @@
 #include "srslte/common/network_utils.h"
 #include "srslte/srslte.h"
 #include <srslte/interfaces/enb_metrics_interface.h>
+#include <srslte/interfaces/enb_slicer_interface.h>
 
 using namespace srslte;
 
@@ -250,6 +251,32 @@ void enb_stack_lte::add_gtpu_m1u_socket_handler(int fd)
     gtpu_task_queue.push(std::bind(task_handler, std::move(pdu)));
   };
   rx_sockets->add_socket_pdu_handler(fd, gtpu_m1u_handler);
+}
+
+// eNodeB slicer interface
+bool enb_stack_lte::slice_config(std::vector<slicer::slice_config_t> slice_configs)
+{
+  return mac.slicer.slice_config(slice_configs);
+}
+
+bool enb_stack_lte::slice_delete(std::vector<std::string> slice_names)
+{
+  return mac.slicer.slice_delete(slice_names);
+}
+
+std::vector<slicer::slice_status_t> enb_stack_lte::slice_status(std::vector<std::string> slice_names)
+{
+  return mac.slicer.slice_status(slice_names);
+}
+
+bool enb_stack_lte::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list)
+{
+  return mac.slicer.slice_ue_bind(slice_name, imsi_list);
+}
+
+bool enb_stack_lte::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list)
+{
+  return mac.slicer.slice_ue_unbind(slice_name, imsi_list);
 }
 
 } // namespace srsenb

@@ -134,6 +134,7 @@ public:
   void                                 tpc_dec(uint16_t rnti);
   std::array<int, SRSLTE_MAX_CARRIERS> get_enb_ue_cc_map(uint16_t rnti) final;
   int                                  ul_buffer_add(uint16_t rnti, uint32_t lcid, uint32_t bytes) final;
+  void                                 set_is_in_cur_slice(uint16_t rnti, bool val);
 
   class carrier_sched;
 
