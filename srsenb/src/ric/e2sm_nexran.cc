@@ -158,7 +158,7 @@ void nexran_model::handle_control(ric::control_t *rc)
     goto errout;
   }
   if (cm.choice.controlMessageFormat1.present < E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceConfigRequest
-      || cm.choice.controlMessageFormat1.present < E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceUeUnbindRequest) {
+      || cm.choice.controlMessageFormat1.present > E2SM_NEXRAN_E2SM_NexRAN_ControlMessage_Format1_PR_sliceUeUnbindRequest) {
     E2SM_ERROR(agent,"unknown nexran control message\n");
     cause = 1;
     cause_detail = 8;
