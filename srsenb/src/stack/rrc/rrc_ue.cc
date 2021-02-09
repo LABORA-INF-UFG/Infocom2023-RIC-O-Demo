@@ -182,32 +182,47 @@ void rrc::ue::parse_ul_dcch(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
 
       if (mac_ctrl->is_slicer_enabled()) {
         // Decode NAS message security header type and protocol discriminator
-        uint8_t  pd, msg_type, sec_hdr_type;
+        uint8_t  pd, msg_type, sec_hdr_type, msg_start;
         sec_hdr_type = (pdu->msg[0] & 0xF0) >> 4;
         pd = pdu->msg[0] & 0x0F;
-        // srslte::console("sec_hdr_type: %i\n", sec_hdr_type);
-        // srslte::console("pd: %i\n", pd);
+        // srslte::console("sec_hdr_type: 0x%x\n", sec_hdr_type);
+        // srslte::console("pd: 0x%x\n", pd);
+        if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS ||
+            sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_INTEGRITY) {
 
-        if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS) {
-          msg_type = pdu->msg[1];
-          srslte::console("[slicer rrc] plain nas msg_type: 0x%x\n", msg_type);
+          if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS) {
+            msg_start = 1;
+            msg_type = pdu->msg[msg_start];
+            // srslte::console("[slicer rrc] [RNTI: 0x%x] plain nas msg_type: 0x%x pd: 0x%x\n", rnti, msg_type, pd);
+          } else {
+            pd = pdu->msg[6] & 0x0F;
+            msg_start = 7;
+            msg_type = pdu->msg[msg_start];
+            // srslte::console("[slicer rrc] [RNTI: 0x%x] integrity protected msg_type: 0x%x pd: 0x%x\n", rnti, msg_type, pd);
+          }
+
           if (msg_type == LIBLTE_MME_MSG_TYPE_IDENTITY_RESPONSE) {
             // extract IMSI
             LIBLTE_MME_ID_RESPONSE_MSG_STRUCT id_resp;
-            uint8* msg_ptr = &pdu->msg[2]; // mobile id starts here
-            liblte_mme_unpack_mobile_id_ie(&msg_ptr, &id_resp.mobile_id);
-            // parent->rrc_log->debug_hex((const uint8*) &id_resp, sizeof(id_resp), "id_resp");
-            srslte::console("[slicer rrc] id type: %i\n", id_resp.mobile_id.type_of_id);
-            if (LIBLTE_MME_MOBILE_ID_TYPE_IMSI == id_resp.mobile_id.type_of_id) {
-              // srslte::console("id type: imsi\n", msg_type);
-              // srslte::console("id: %i\n", id_resp.mobile_id.imsi);
-              uint64_t imsi = 0;
-              for (int i = 0; i <= 14; i++) {
-                imsi += id_resp.mobile_id.imsi[i] * std::pow(10, 14 - i);
+            uint8* msg_ptr = &pdu->msg[msg_start + 1]; // mobile id starts here
+            LIBLTE_ERROR_ENUM err = liblte_mme_unpack_mobile_id_ie(&msg_ptr, &id_resp.mobile_id);
+            if (err != LIBLTE_SUCCESS) {
+              srslte::console("[slicer rrc] error unpacking identity response. error: %s\n", liblte_error_text[err]);
+            } else {
+              // parent->rrc_log->debug_hex((const uint8*) &id_resp, sizeof(id_resp), "id_resp");
+              // srslte::console("[slicer rrc] id type: %i\n", id_resp.mobile_id.type_of_id);
+              if (LIBLTE_MME_MOBILE_ID_TYPE_IMSI == id_resp.mobile_id.type_of_id) {
+                // srslte::console("id type: imsi\n", msg_type);
+                // srslte::console("id: %i\n", id_resp.mobile_id.imsi);
+                uint64_t imsi = 0;
+                for (int i = 0; i <= 14; i++) {
+                  imsi += id_resp.mobile_id.imsi[i] * std::pow(10, 14 - i);
+                }
+                srslte::console("[slicer rrc] [RNTI: 0x%x] ULInformationTransfer...\n", rnti);
+                srslte::console("[slicer rrc] [RNTI: 0x%x] identity response with IMSI...\n", rnti);
+                srslte::console("[slicer rrc] [RNTI: 0x%x] captured IMSI: %015" PRIu64 "\n", rnti, imsi);
+                mac_ctrl->imsi_capture(imsi, rnti);
               }
-              srslte::console("[slicer rrc] Identity response...\n");
-              srslte::console("[slicer rrc] Captured IMSI: %015" PRIu64 " for RNTI: 0x%x\n", imsi, rnti);
-              mac_ctrl->imsi_capture(imsi, rnti);
             }
           }
         }
@@ -330,34 +345,48 @@ void rrc::ue::handle_rrc_con_setup_complete(rrc_conn_setup_complete_s* msg, srsl
 
   if (mac_ctrl->is_slicer_enabled()) {
     // Decode NAS message security header type and protocol discriminator
-    uint8_t  pd, msg_type, sec_hdr_type;
+    uint8_t  pd, msg_type, sec_hdr_type, msg_start;
     sec_hdr_type = (pdu->msg[0] & 0xF0) >> 4;
     pd = pdu->msg[0] & 0x0F;
     // srslte::console("sec_hdr_type: %i\n", sec_hdr_type);
     // srslte::console("pd: %i\n", pd);
 
-    if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS) {
-      msg_type = pdu->msg[1];
-      srslte::console("plain nas msg_type: 0x%x\n", msg_type);
+    if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS ||
+        sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_INTEGRITY) {
+
+      if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_PLAIN_NAS) {
+        msg_start = 1;
+        msg_type = pdu->msg[msg_start];
+        // srslte::console("[slicer rrc] [RNTI: 0x%x] plain nas msg_type: 0x%x pd: 0x%x\n", rnti, msg_type, pd);
+      } else {
+        pd = pdu->msg[6] & 0x0F;
+        msg_start = 7;
+        msg_type = pdu->msg[msg_start];
+        // srslte::console("[slicer rrc] [RNTI: 0x%x] integrity protected msg_type: 0x%x pd: 0x%x\n", rnti, msg_type, pd);
+      }
+
       if (msg_type == LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST) {
         // extract IMSI
         LIBLTE_MME_EPS_MOBILE_ID_STRUCT eps_mobile_id;
         // LIBLTE_MME_ATTACH_REQUEST_MSG_STRUCT attach_req = {};
         uint64_t imsi = 0;
-        uint8* msg_ptr = &pdu->msg[3]; // eps mobile id starts here
+        uint8* msg_ptr = &pdu->msg[msg_start + 2]; // eps mobile id starts here
         LIBLTE_ERROR_ENUM err = liblte_mme_unpack_eps_mobile_id_ie(&msg_ptr, &eps_mobile_id);
         if (err != LIBLTE_SUCCESS) {
-          srslte::console("Error unpacking NAS attach request. Error: %s\n", liblte_error_text[err]);
-        }
-        srslte::console("mobile id type 0x%x\n", eps_mobile_id.type_of_id);
-        if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_IMSI) {
-          for (int i = 0; i <= 14; i++) {
-            imsi += eps_mobile_id.imsi[i] * std::pow(10, 14 - i);
+          srslte::console("[slicer rrc] error unpacking attach request. error: %s\n", liblte_error_text[err]);
+        } else {
+          // parent->rrc_log->debug_hex((const uint8*) &eps_mobile_id, sizeof(eps_mobile_id), "eps_mobile_id");
+          // srslte::console("[slicer rrc] id type: %i\n", eps_mobile_id.type_of_id);
+          if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_IMSI) {
+            for (int i = 0; i <= 14; i++) {
+              imsi += eps_mobile_id.imsi[i] * std::pow(10, 14 - i);
+            }
+            srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionSetupComplete...\n", rnti);
+            srslte::console("[slicer rrc] [RNTI: 0x%x] attach request with IMSI...\n", rnti);
+            srslte::console("[slicer rrc] [RNTI: 0x%x] captured IMSI: %015" PRIu64 "\n", rnti, imsi);
+            mac_ctrl->imsi_capture(imsi, rnti);
+            // parent->slicer.upd_member_crnti(imsi, rnti);
           }
-          srslte::console("Attach request...\n");
-          srslte::console("Captured IMSI: %015" PRIu64 " for RNTI: 0x%x\n", imsi, rnti);
-          mac_ctrl->imsi_capture(imsi, rnti);
-          // parent->slicer.upd_member_crnti(imsi, rnti);
         }
       }
     }
