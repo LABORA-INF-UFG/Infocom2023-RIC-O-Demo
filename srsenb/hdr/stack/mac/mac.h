@@ -106,6 +106,7 @@ public:
   // Interface from RRC to slicer
   bool is_slicer_enabled();
   void handle_imsi_capture(uint64_t imsi, uint16_t rnti) override;
+  void handle_tmsi_capture(uint32_t tmsi, uint16_t rnti) override;
 
   slicer::slicer slicer;
 private:

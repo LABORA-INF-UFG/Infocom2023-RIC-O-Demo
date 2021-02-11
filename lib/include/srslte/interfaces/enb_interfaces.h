@@ -301,6 +301,7 @@ public:
   virtual uint16_t reserve_new_crnti(const sched_interface::ue_cfg_t& ue_cfg) = 0;
   virtual bool is_slicer_enabled() = 0;
   virtual void handle_imsi_capture(uint64_t imsi, uint16_t rnti) = 0;
+  virtual void handle_tmsi_capture(uint32_t imsi, uint16_t rnti) = 0;
 };
 
 

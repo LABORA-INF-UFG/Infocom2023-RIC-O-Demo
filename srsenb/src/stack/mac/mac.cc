@@ -300,6 +300,10 @@ void mac::handle_imsi_capture(uint64_t imsi, uint16_t rnti)
   slicer.upd_member_crnti(imsi, rnti);
 }
 
+void mac::handle_tmsi_capture(uint32_t tmsi, uint16_t rnti)
+{
+  slicer.upd_member_crnti(tmsi, rnti);
+}
 
 /********************************************************
  *

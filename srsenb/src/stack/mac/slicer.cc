@@ -144,6 +144,41 @@ int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
   return 0;
 }
 
+int slicer::upd_member_crnti(uint32_t tmsi, uint16_t crnti)
+{
+  // if (std::find(tmsi_to_imsi.begin(), tmsi_to_imsi.end(), tmsi) == tmsi_to_imsi.end()) {
+  if (tmsi_to_imsi.find(tmsi) == tmsi_to_imsi.end()) {
+    srslte::console("[slicer] new TMSI: %u with RNTI: 0x%x\n", tmsi, crnti);
+    tmsi_to_imsi[tmsi] = 0;
+  }
+
+  for (auto it = imsi_to_crnti.begin(); it != imsi_to_crnti.end(); ++it) {
+    if (it->second == crnti) {
+      tmsi_to_imsi[tmsi] = it->first;
+      srslte::console("[slicer] updated TMSI: %u for IMSI: %015" PRIu64 " and RNTI: 0x%x\n",
+                      tmsi, it->first, crnti);
+      break;
+    }
+  }
+
+  if (tmsi_to_imsi[tmsi] == 0) {
+    srslte::console("[slicer] TMSI: %u for RNTI: 0x%x not yet mapped to an IMSI\n", tmsi, crnti);
+    srslte::console("[slicer] will not update slice crntis.\n");
+    return 0;
+  }
+
+  for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
+    std::vector<uint64_t> *s_imsis = &slice_iter->second.imsi_list;
+    auto it = std::find(s_imsis->begin(), s_imsis->end(), tmsi_to_imsi[tmsi]);
+    if (it != s_imsis->end()) {
+      imsi_to_crnti[*it] = crnti;
+      srslte::console("[slicer] RNTI: 0x%x belongs to slice %s\n", crnti, slice_iter->first.c_str());
+      upd_slice_crntis(slice_iter->first);
+    }
+  }
+  return 0;
+}
+
 bool slicer::read_slice_db_file(std::string db_filename)
 {
   std::ifstream m_db_file;

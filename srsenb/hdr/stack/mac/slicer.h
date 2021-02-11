@@ -30,6 +30,7 @@ class slicer {
 
     // for rrc
     int upd_member_crnti(uint64_t imsi, uint16_t crnti);
+    int upd_member_crnti(uint32_t tmsi, uint16_t crnti);
 
     bool enable = false;
     bool initialized = false;
@@ -41,12 +42,15 @@ class slicer {
     void upd_slice_crntis(std::string s_name);
 
     std::map<std::string, std::vector<uint16_t> > slice_to_crnti_vec;
-    std::map<uint64_t, uint16_t> imsi_to_crnti; // for all ues, regardless of slices
     std::map<std::string, slice_t> slices;
     std::map<std::string, slice_t>::iterator slice_iter; // reused often
     std::vector<uint32_t> sf_alloc;
     uint32_t total_sf_alloc = 0;
     bool has_alloc = false;
+
+    // for tracking all UE identifiers
+    std::map<uint64_t, uint16_t> imsi_to_crnti;
+    std::map<uint32_t, uint64_t> tmsi_to_imsi;
 };
 
   // helper functions

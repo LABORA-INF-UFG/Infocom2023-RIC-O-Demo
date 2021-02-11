@@ -289,7 +289,9 @@ void rrc::ue::handle_rrc_con_req(rrc_conn_request_s* msg)
     mmec     = (uint8_t)msg_r8->ue_id.s_tmsi().mmec.to_number();
     m_tmsi   = (uint32_t)msg_r8->ue_id.s_tmsi().m_tmsi.to_number();
     has_tmsi = true;
-    // srslte::console("tmsi: %u rnti: 0x%x\n", m_tmsi, rnti);
+    srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionRequest with TMSI...\n", rnti);
+    srslte::console("[slicer rrc] [RNTI: 0x%x] captured TMSI: %u\n", rnti, m_tmsi);
+    mac_ctrl->tmsi_capture(m_tmsi, rnti);
   }
   establishment_cause = msg_r8->establishment_cause;
   send_connection_setup();
@@ -377,15 +379,20 @@ void rrc::ue::handle_rrc_con_setup_complete(rrc_conn_setup_complete_s* msg, srsl
         } else {
           // parent->rrc_log->debug_hex((const uint8*) &eps_mobile_id, sizeof(eps_mobile_id), "eps_mobile_id");
           // srslte::console("[slicer rrc] id type: %i\n", eps_mobile_id.type_of_id);
+          srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionSetupComplete...\n", rnti);
           if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_IMSI) {
             for (int i = 0; i <= 14; i++) {
               imsi += eps_mobile_id.imsi[i] * std::pow(10, 14 - i);
             }
-            srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionSetupComplete...\n", rnti);
             srslte::console("[slicer rrc] [RNTI: 0x%x] attach request with IMSI...\n", rnti);
             srslte::console("[slicer rrc] [RNTI: 0x%x] captured IMSI: %015" PRIu64 "\n", rnti, imsi);
             mac_ctrl->imsi_capture(imsi, rnti);
             // parent->slicer.upd_member_crnti(imsi, rnti);
+          }
+          else if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_GUTI) {
+            srslte::console("[slicer rrc] [RNTI: 0x%x] attach request with TMSI...\n", rnti);
+            srslte::console("[slicer rrc] [RNTI: 0x%x] captured TMSI: %u\n", rnti, eps_mobile_id.guti.m_tmsi);
+            mac_ctrl->tmsi_capture(eps_mobile_id.guti.m_tmsi, rnti);
           }
         }
       }
@@ -657,6 +664,55 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
 
   // Add pending NAS info
   bearer_list.fill_pending_nas_info(conn_reconf);
+
+  // srslte::console("[slicer rrc] [RNTI: 0x%x] size of ded_info_nas_list: %u\n",
+  //                 rnti, conn_reconf->ded_info_nas_list.size());
+  if (conn_reconf->ded_info_nas_list_present) {
+    for (auto it = conn_reconf->ded_info_nas_list.begin();
+         it != conn_reconf->ded_info_nas_list.end(); ++it) {
+      // srslte::console("[slicer rrc] [RNTI: 0x%x] size of ded_info_nas pdu: %u\n", rnti, it->size());
+      uint8_t  pd, msg_type, sec_hdr_type, msg_start;
+      sec_hdr_type = (it->data()[0] & 0xF0) >> 4;
+      pd = it->data()[0] & 0x0F;
+      // srslte::console("sec_hdr_type: 0x%x\n", sec_hdr_type);
+      // srslte::console("pd: 0x%x\n", pd);
+      if (sec_hdr_type == LIBLTE_MME_SECURITY_HDR_TYPE_INTEGRITY_AND_CIPHERED &&
+          pd == LIBLTE_MME_PD_EPS_MOBILITY_MANAGEMENT) {
+        msg_start = 7; // start at msg_type
+        uint8* msg_ptr = &it->data()[msg_start];
+        parent->rrc_log->debug_hex((const uint8*) it->data(), it->size(), "[slicer rrc] reconf pdu");
+        msg_type = *msg_ptr;
+        msg_ptr++;
+        // srslte::console("[slicer rrc] [RNTI: 0x%x] integrity protected msg_type: 0x%x pd: 0x%x\n",
+        //                 rnti, msg_type, pd);
+
+        if (msg_type == LIBLTE_MME_MSG_TYPE_ATTACH_ACCEPT) {
+          // unpack the rest of the nas info and extract TMSI update
+          LIBLTE_MME_ATTACH_ACCEPT_MSG_STRUCT attach_accept = {};
+
+          liblte_mme_unpack_eps_attach_result_ie(&msg_ptr, 0, &attach_accept.eps_attach_result);
+          msg_ptr++;
+          if (attach_accept.eps_attach_result == LIBLTE_MME_EPS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH) {
+            // some funcs increment the pointer.. using for convenience right now
+            liblte_mme_unpack_gprs_timer_ie(&msg_ptr, &attach_accept.t3412);
+            liblte_mme_unpack_tracking_area_identity_list_ie(&msg_ptr, &attach_accept.tai_list);
+            liblte_mme_unpack_esm_message_container_ie(&msg_ptr, &attach_accept.esm_msg);
+
+            // GUTI
+            if (LIBLTE_MME_GUTI_IEI == *msg_ptr) {
+              msg_ptr++;
+              liblte_mme_unpack_eps_mobile_id_ie(&msg_ptr, &attach_accept.guti);
+              srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionReconfiguration w/ AttachAccept+GUTI...\n", rnti);
+              srslte::console("[slicer rrc] [RNTI: 0x%x] captured updated TMSI: %u\n",
+                              rnti, attach_accept.guti.guti.m_tmsi);
+              mac_ctrl->tmsi_capture(attach_accept.guti.guti.m_tmsi, rnti);
+            }
+          }
+        }
+      }
+    }
+  }
+
 
   if (mobility_handler != nullptr) {
     mobility_handler->fill_conn_recfg_no_ho_cmd(conn_reconf);

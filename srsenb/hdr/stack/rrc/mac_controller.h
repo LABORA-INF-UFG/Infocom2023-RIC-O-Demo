@@ -60,6 +60,7 @@ public:
 
   bool is_slicer_enabled();
   void imsi_capture(uint64_t imsi, uint16_t rnti);
+  void tmsi_capture(uint32_t tmsi, uint16_t rnti);
 private:
   int  apply_basic_conn_cfg(const asn1::rrc::rr_cfg_ded_s& rr_cfg);
   void apply_current_bearers_cfg();
