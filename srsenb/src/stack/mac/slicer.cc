@@ -16,6 +16,7 @@ slicer::~slicer() {}
 
 void slicer::init(std::string slice_db_fname, bool workshare_)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   if (!slice_db_fname.empty()) {
     if (!read_slice_db_file(slice_db_fname)) {
       srslte::console("[slicer] Couldn't read slice_db file: %s\n", slice_db_fname.c_str());
@@ -29,6 +30,7 @@ void slicer::init(std::string slice_db_fname, bool workshare_)
 
 std::vector<uint16_t> slicer::get_cur_sf_crntis(uint32_t tti_tx_dl)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   if (!has_alloc) {
     return {};
   }
@@ -43,6 +45,7 @@ std::vector<uint16_t> slicer::get_cur_sf_crntis(uint32_t tti_tx_dl)
 
 std::vector<slice_status_t> slicer::slice_status(std::vector<std::string> slice_names)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   srslte::console("[slicer] getting slice status...\n");
   std::vector<slice_status_t> ret;
   if (slice_names.empty()) {
@@ -64,6 +67,7 @@ std::vector<slice_status_t> slicer::slice_status(std::vector<std::string> slice_
 
 bool slicer::slice_config(std::vector<slice_config_t> slice_configs)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   srslte::console("[slicer] configuring slices...\n");
   for (auto it = slice_configs.begin(); it != slice_configs.end(); ++it) {
     slice_t s;
@@ -77,6 +81,7 @@ bool slicer::slice_config(std::vector<slice_config_t> slice_configs)
 
 bool slicer::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   srslte::console("[slicer] binding UEs to slice...\n");
   auto s_it = slices.find(slice_name);
   if (s_it == slices.end()) {
@@ -97,6 +102,7 @@ bool slicer::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_li
 
 bool slicer::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   srslte::console("[slicer] unbinding UEs from slice...\n");
   auto s_it = slices.find(slice_name);
   if (s_it == slices.end()) {
@@ -117,6 +123,7 @@ bool slicer::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_
 
 bool slicer::slice_delete(std::vector<std::string> slice_names)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   srslte::console("[slicer] deleting slices...\n");
   for (auto it = slice_names.begin(); it != slice_names.end(); ++it) {
     auto s = slices.find(*it);
@@ -131,6 +138,7 @@ bool slicer::slice_delete(std::vector<std::string> slice_names)
 
 int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   imsi_to_crnti[imsi] = crnti;
   srslte::console("[slicer] updated IMSI: %015" PRIu64 " with RNTI: 0x%x\n", imsi, crnti);
 

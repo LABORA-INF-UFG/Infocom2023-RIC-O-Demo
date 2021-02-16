@@ -4,6 +4,7 @@
 #include "srslte/common/common.h"
 #include "srslte/common/log.h"
 #include <map>
+#include <mutex>
 #include <string>
 #include <stdint.h>
 #include <vector>
@@ -47,6 +48,7 @@ class slicer {
     std::vector<uint32_t> sf_alloc;
     uint32_t total_sf_alloc = 0;
     bool has_alloc = false;
+    std::mutex slicer_mutex;
 
     // for tracking all UE identifiers
     std::map<uint64_t, uint16_t> imsi_to_crnti;
