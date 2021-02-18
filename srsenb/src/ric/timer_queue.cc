@@ -54,6 +54,8 @@ void *timer_queue::run(void *arg)
     while (t && timercmp(&t->next,&now,<=)) {
       if (t->canceled) {
 	delete t;
+	tq->queue.pop();
+	t = tq->queue.top();
 	continue;
       }
       if (t->repeats) {
