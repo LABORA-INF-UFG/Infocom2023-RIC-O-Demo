@@ -226,11 +226,14 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("coreless.drb_lcid", bpo::value<uint8_t>(&args->stack.coreless.drb_lcid)->default_value(4), "LCID of the dummy DRB")
     ("coreless.rnti", bpo::value<uint16_t >(&args->stack.coreless.rnti)->default_value(1234), "RNTI of the dummy user")
 
+#ifdef ENABLE_SLICER
     // RAN slicer section
     ("slicer.enable", bpo::value<bool>(&args->stack.mac.slicer.enable)->default_value(false), "Enable per-subframe RAN slicer.")
     ("slicer.slice_db_filename", bpo::value<string>(&args->stack.mac.slicer.slice_db_filename)->default_value(""), "Path for slice configuration file.")
     ("slicer.workshare", bpo::value<bool>(&args->stack.mac.slicer.workshare)->default_value(true), "Allow slices to share leftover RBGs with other slices.")
+#endif
 
+#ifdef ENABLE_RIC_AGENT
     // O-RAN RIC/E2AP section
     ("ric.agent.disable", bpo::value<bool>(&args->ric_agent.disabled)->default_value(false), "Disable the RIC agent.")
     ("ric.agent.remote_ipv4_addr", bpo::value<string>(&args->ric_agent.remote_ipv4_addr)->default_value("127.0.0.1"), "IPv4 address of the RIC.")
@@ -239,6 +242,7 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("ric.agent.functions_disabled", bpo::value<string>(&args->ric_agent.functions_disabled)->default_value(""), "A comma-separated list of E2SM functions to disable in the RIC agent; by default, most are enabled.  To enable all, set this to the empty string.")
     ("ric.agent.log_level", bpo::value<string>(&args->ric_agent.log_level),  "RIC agent log level")
     ("ric.agent.log_hex_limit",bpo::value<int>(&args->ric_agent.log_hex_limit), "RIC agent log hex dump limit")
+#endif
     ;
 
   // Positional options - config file location
@@ -365,9 +369,11 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     if (!vm.count("log.stack_level")) {
       args->stack.log.stack_level = args->log.all_level;
     }
+#ifdef ENABLE_RIC_AGENT
     if (!vm.count("ric.agent.log_level")) {
       args->ric_agent.log_level = args->log.all_level;
     }
+#endif
   }
 
   // Apply all_hex_limit to any unset layers
@@ -396,9 +402,11 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     if (!vm.count("log.stack_hex_limit")) {
       args->stack.log.stack_hex_limit = args->log.all_hex_limit;
     }
+#ifdef ENABLE_RIC_AGENT
     if (!vm.count("ric.agent.log_hex_limit")) {
       args->ric_agent.log_hex_limit = args->log.all_hex_limit;
     }
+#endif
   }
 
   // Check remaining eNB config files

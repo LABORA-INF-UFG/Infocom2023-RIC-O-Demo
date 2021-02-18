@@ -327,6 +327,7 @@ void rrc::ue::mac_controller::update_mac(proc_stage_t stage)
   }
 }
 
+#ifdef ENABLE_SLICER
 bool rrc::ue::mac_controller::is_slicer_enabled()
 {
   return mac->is_slicer_enabled();
@@ -341,6 +342,7 @@ void rrc::ue::mac_controller::tmsi_capture(uint32_t tmsi, uint16_t rnti)
 {
   mac->handle_tmsi_capture(tmsi, rnti);
 }
+#endif
 
 void ue_cfg_apply_phy_cfg_ded(ue_cfg_t& ue_cfg, const asn1::rrc::phys_cfg_ded_s& phy_cfg, const rrc_cfg_t& rrc_cfg)
 {

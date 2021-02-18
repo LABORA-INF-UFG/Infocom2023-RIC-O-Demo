@@ -145,7 +145,9 @@ public:
     std::vector<cc_cfg_t>               supported_cc_list; ///< list of UE supported CCs. First index for PCell
     ant_info_ded_t                      dl_ant_info;
     bool                                use_tbs_index_alt = false;
+#ifdef ENABLE_SLICER
     bool                                in_cur_slice = false;
+#endif
   };
 
   typedef struct {

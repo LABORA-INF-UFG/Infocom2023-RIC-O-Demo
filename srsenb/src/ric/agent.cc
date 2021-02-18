@@ -19,10 +19,15 @@
 #include "srsenb/hdr/ric/e2ap_generate.h"
 #include "srsenb/hdr/ric/e2sm.h"
 #include "srsenb/hdr/ric/e2sm_gnb_nrt.h"
+#ifdef ENABLE_RIC_AGENT_KPM
 #include "srsenb/hdr/ric/e2sm_kpm.h"
+#endif
+#ifdef ENABLE_SLICER
 #include "srsenb/hdr/ric/e2sm_nexran.h"
-
+#endif
+#ifdef ENABLE_SLICER
 #include "srsenb/hdr/stack/mac/slicer_test_utils.h"
+#endif
 
 namespace ric {
 
@@ -30,11 +35,17 @@ bool e2ap_xer_print;
 bool e2sm_xer_print;
 
 agent::agent(srslte::logger* logger_,
-	     srsenb::enb_metrics_interface *enb_metrics_interface_,
-	     srsenb::enb_slicer_interface *enb_slicer_interface_)
+	     srsenb::enb_metrics_interface *enb_metrics_interface_
+#ifdef ENABLE_SLICER
+	     ,
+	     srsenb::enb_slicer_interface *enb_slicer_interface_
+#endif
+  )
   : logger(logger_),
     enb_metrics_interface(enb_metrics_interface_),
+#ifdef ENABLE_SLICER
     enb_slicer_interface(enb_slicer_interface_),
+#endif
     thread("RIC")
 {
   agent_queue_id = pending_tasks.add_queue();
@@ -110,6 +121,7 @@ int agent::init(const srsenb::all_args_t& args_,
   }
 
   /* Add E2SM service models. */
+#ifdef ENABLE_RIC_AGENT_KPM
   model = new kpm_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-KPM model; aborting!\n");
@@ -118,7 +130,9 @@ int agent::init(const srsenb::all_args_t& args_,
   }
   service_models.push_back(model);
   RIC_INFO("added model %s\n",model->name.c_str());
+#endif
 
+#ifdef ENABLE_SLICER
   model = new nexran_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
@@ -127,6 +141,7 @@ int agent::init(const srsenb::all_args_t& args_,
   }
   service_models.push_back(model);
   RIC_INFO("added model %s\n",model->name.c_str());
+#endif
 
   model = new gnb_nrt_model(this);
   if (model->init()) {
@@ -175,6 +190,7 @@ int agent::init(const srsenb::all_args_t& args_,
   return SRSLTE_SUCCESS;
 }
 
+#ifdef ENABLE_SLICER
 void agent::test_slicer_interface()
 {
   srslte::console("[agent] testing slicer interface...\n");
@@ -237,6 +253,7 @@ void agent::test_slicer_interface()
     slicer_test::print_slice(*it);
   }
 }
+#endif
 
 void agent::run_thread()
 {

@@ -73,6 +73,7 @@ if("${RIC_GENERATED_E2SM_GNB_NRT_BINDING_DIR}" STREQUAL "")
     DEPENDS ${E2SM_GNB_NRT_ASN_FILE})
 endif()
 
+if(ENABLE_RIC_AGENT_KPM)
 if("${RIC_GENERATED_E2SM_KPM_BINDING_DIR}" STREQUAL "")
   set(E2SM_KPM_ASN_FILE ${RIC_ASN_DIR}/e2sm-kpm-v01.00.asn1)
   set(E2SM_KPM_C_DIR ${CMAKE_CURRENT_BINARY_DIR}/messages/E2SM-KPM/)
@@ -92,7 +93,9 @@ if("${RIC_GENERATED_E2SM_KPM_BINDING_DIR}" STREQUAL "")
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_asn1c_includes.sh "${E2SM_KPM_C_DIR}" "${E2SM_KPM_ASN_FILE}" "E2SM_KPM_" -fno-include-deps -fincludes-quoted
     DEPENDS ${E2SM_KPM_ASN_FILE})
 endif()
+endif()
 
+if(ENABLE_SLICER)
 if("${RIC_GENERATED_E2SM_NEXRAN_BINDING_DIR}" STREQUAL "")
   set(E2SM_NEXRAN_ASN_FILE ${RIC_ASN_DIR}/e2sm-nexran-v01.00.asn1)
   set(E2SM_NEXRAN_C_DIR ${CMAKE_CURRENT_BINARY_DIR}/messages/E2SM-NEXRAN/)
@@ -112,12 +115,11 @@ if("${RIC_GENERATED_E2SM_NEXRAN_BINDING_DIR}" STREQUAL "")
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_asn1c_includes.sh "${E2SM_NEXRAN_C_DIR}" "${E2SM_NEXRAN_ASN_FILE}" "E2SM_NEXRAN_" -fno-include-deps -fincludes-quoted
     DEPENDS ${E2SM_NEXRAN_ASN_FILE})
 endif()
+endif()
 
 set(RIC_SOURCES
   ${E2AP_source}
   ${E2SM_GNB_NRT_source}
-  ${E2SM_KPM_source}
-  ${E2SM_NEXRAN_source}
   e2ap_encode.cc
   e2ap_generate.cc
   e2ap_decode.cc
@@ -125,12 +127,28 @@ set(RIC_SOURCES
   timer_queue.cc
   e2sm.cc
   e2sm_gnb_nrt.cc
-  e2sm_kpm.cc
-  e2sm_nexran.cc
   agent.cc)
+
+if(ENABLE_RIC_AGENT_KPM)
+set(RIC_SOURCES
+  ${RIC_SOURCES}
+  ${E2SM_KPM_source}
+  e2sm_kpm.cc)
+endif()
+
+if(ENABLE_SLICER)
+set(RIC_SOURCES
+  ${RIC_SOURCES}
+  ${E2SM_NEXRAN_source}
+  e2sm_nexran.cc)
+endif()
 
 add_library(srsenb_ric STATIC ${RIC_SOURCES})
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_GNB_NRT_C_DIR})
-target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_KPM_C_DIR})
-target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_NEXRAN_C_DIR})
+if(ENABLE_RIC_AGENT_KPM)
+  target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_KPM_C_DIR})
+endif()
+if(ENABLE_SLICER)
+  target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_NEXRAN_C_DIR})
+endif()
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2AP_C_DIR})

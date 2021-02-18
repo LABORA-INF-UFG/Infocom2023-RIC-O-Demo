@@ -190,8 +190,10 @@ public:
   const sched_interface::ue_cfg_t& get_ue_cfg() const { return cfg; }
   uint32_t                         get_aggr_level(uint32_t ue_cc_idx, uint32_t nof_bits);
   void                             ul_buffer_add(uint8_t lcid, uint32_t bytes);
+#ifdef ENABLE_SLICER
   void                             set_in_cur_slice(bool val) { in_cur_slice = val; }
   bool                             is_in_cur_slice() const { return in_cur_slice; }
+#endif
 
   /*******************************************************
    * Functions used by scheduler metric objects
@@ -310,7 +312,9 @@ private:
   /* User State */
   int next_tpc_pusch = 0;
   int next_tpc_pucch = 0;
+#ifdef ENABLE_SLICER
   bool in_cur_slice  = false;
+#endif
 
   bool phy_config_dedicated_enabled = false;
 

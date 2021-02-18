@@ -84,11 +84,17 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
       return SRSLTE_ERROR;
     }
 
+#ifdef ENABLE_RIC_AGENT
+#ifdef ENABLE_SLICER
     ric_agent.reset(new ric::agent(logger,this,this));
+#else
+    ric_agent.reset(new ric::agent(logger,this));
+#endif
     if (!ric_agent) {
       srslte::console("Error creating RIC agent instance.\n");
       return SRSLTE_ERROR;
     }
+#endif
 
     // Init Radio
     if (lte_radio->init(args.rf, lte_phy.get())) {
@@ -112,15 +118,19 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
       }
     }
 
+#ifdef ENABLE_RIC_AGENT
     if (ric_agent->init(args, phy_cfg, rrc_cfg)) {
       srslte::console("Error initializing RIC agent.\n");
       ret = SRSLTE_ERROR;
     }
+#endif
 
     stack = std::move(lte_stack);
     phy   = std::move(lte_phy);
     radio = std::move(lte_radio);
+#ifdef ENABLE_RIC_AGENT
     ric_agent = std::move(ric_agent);
+#endif
 
   } else if (args.stack.type == "nr") {
 #ifdef HAVE_5GNR
@@ -168,9 +178,11 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
   if (ret == SRSLTE_SUCCESS) {
     srslte::console("\n==== eNodeB started ===\n");
     srslte::console("Type <t> to view trace\n");
+#if defined(ENABLE_RIC_AGENT) && defined(ENABLE_SLICER)
     if (args.stack.mac.slicer.enable && args.stack.mac.slicer.slice_db_filename.empty()) {
       ric_agent->test_slicer_interface();
     }
+#endif
   } else {
     // if any of the layers failed to start, make sure the rest is stopped in a controlled manner
     stop();
@@ -182,9 +194,11 @@ void enb::stop()
 {
   if (started) {
     // tear down in reverse order
+#ifdef ENABLE_RIC_AGENT
     if (ric_agent) {
       ric_agent->stop();
     }
+#endif
 
     if (phy) {
       phy->stop();
@@ -233,6 +247,7 @@ void enb::cmd_cell_gain(uint32_t cell_id, float gain)
   phy->cmd_cell_gain(cell_id, gain);
 }
 
+#ifdef ENABLE_SLICER
 // eNodeB slicer interface
 bool enb::slice_config(std::vector<slicer::slice_config_t> slice_configs)
 {
@@ -258,6 +273,7 @@ bool enb::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_lis
 {
   return stack->slice_ue_unbind(slice_name, imsi_list);
 }
+#endif
 
 srslte::LOG_LEVEL_ENUM enb::level(std::string l)
 {

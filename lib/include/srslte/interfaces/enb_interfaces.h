@@ -299,9 +299,11 @@ public:
    * @return value of the allocated C-RNTI
    */
   virtual uint16_t reserve_new_crnti(const sched_interface::ue_cfg_t& ue_cfg) = 0;
+#ifdef ENABLE_SLICER
   virtual bool is_slicer_enabled() = 0;
   virtual void handle_imsi_capture(uint64_t imsi, uint16_t rnti) = 0;
   virtual void handle_tmsi_capture(uint32_t imsi, uint16_t rnti) = 0;
+#endif
 };
 
 
@@ -370,7 +372,11 @@ public:
   virtual void add_user(uint16_t rnti)                                                               = 0;
   virtual void rem_user(uint16_t rnti)                                                               = 0;
   virtual void write_sdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t sdu)             = 0;
-  virtual void add_bearer(uint16_t rnti, uint32_t lcid, int8_t qci, srslte::pdcp_config_t cnfg)                  = 0;
+#ifdef ENABLE_RIC_AGENT_KPM
+  virtual void add_bearer(uint16_t rnti, uint32_t lcid, int8_t qci, srslte::pdcp_config_t cnfg)      = 0;
+#else
+  virtual void add_bearer(uint16_t rnti, uint32_t lcid, srslte::pdcp_config_t cnfg)                  = 0;
+#endif
   virtual void del_bearer(uint16_t rnti, uint32_t lcid)                                              = 0;
   virtual void config_security(uint16_t rnti, uint32_t lcid, srslte::as_security_config_t sec_cfg)   = 0;
   virtual void enable_integrity(uint16_t rnti, uint32_t lcid)                                        = 0;
@@ -555,17 +561,21 @@ typedef struct {
   std::string enb_name;
 } s1ap_args_t;
 
+#ifdef ENABLE_SLICER
 typedef struct {
   bool        enable;
   std::string slice_db_filename;
   bool        workshare;
 } slicer_args_t;
+#endif
 
 typedef struct {
   uint32_t                      nof_prb; ///< Needed to dimension MAC softbuffers for all cells
   sched_interface::sched_args_t sched;
   int                           nr_tb_size = -1;
+#ifdef ENABLE_SLICER
   slicer_args_t                 slicer;
+#endif
 } mac_args_t;
 
 class stack_interface_s1ap_lte

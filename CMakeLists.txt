@@ -99,6 +99,24 @@ option(FORCE_32BIT     "Add flags to force 32 bit compilation"    OFF)
 # (gcc-ar, gcc-nm, ...).
 option(BUILD_WITH_LTO  "Enable LTO (experimental)"                OFF)
 
+option(ENABLE_RIC_AGENT        "Enable RIC E2 Agent"              ON)
+option(ENABLE_RIC_AGENT_KPM    "Enable RIC E2 Agent KPM metrics"  ON)
+option(ENABLE_RIC_AGENT_NEXRAN "Enable RIC E2 Agent NexRAN model" ON)
+option(ENABLE_SLICER           "Enable NexRAN Slicer"             ON)
+
+if(ENABLE_RIC_AGENT)
+  add_definitions(-DENABLE_RIC_AGENT)
+else()
+  set(ENABLE_RIC_AGENT_KPM OFF)
+endif()
+if(ENABLE_RIC_AGENT_KPM)
+  add_definitions(-DENABLE_RIC_AGENT_KPM)
+endif()
+if(ENABLE_SLICER)
+  add_definitions(-DENABLE_SLICER)
+endif()
+
+
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES "aarch64")
   set(GCC_ARCH armv8-a CACHE STRING "GCC compile for specific architecture.")
   message(STATUS "Detected aarch64 processor")

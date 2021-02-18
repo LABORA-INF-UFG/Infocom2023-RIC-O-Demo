@@ -23,6 +23,9 @@
 #define SRSENB_MAC_H
 
 #include "scheduler.h"
+#ifndef ENABLE_SLICER
+#include "scheduler_metric.h"
+#endif
 #include "srslte/common/log.h"
 #include "srslte/common/mac_pcap.h"
 #include "srslte/common/task_scheduler.h"
@@ -35,7 +38,9 @@
 #include "ta.h"
 #include "ue.h"
 
+#ifdef ENABLE_SLICER
 #include "srsenb/hdr/stack/mac/slicer.h"
+#endif
 #include <vector>
 
 namespace srsenb {
@@ -103,12 +108,15 @@ public:
   void
   write_mcch(asn1::rrc::sib_type2_s* sib2, asn1::rrc::sib_type13_r9_s* sib13, asn1::rrc::mcch_msg_s* mcch) override;
 
+#ifdef ENABLE_SLICER
   // Interface from RRC to slicer
   bool is_slicer_enabled();
   void handle_imsi_capture(uint64_t imsi, uint16_t rnti) override;
   void handle_tmsi_capture(uint32_t tmsi, uint16_t rnti) override;
 
   slicer::slicer slicer;
+#endif
+
 private:
   static const uint32_t cfi = 3;
 

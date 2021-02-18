@@ -24,7 +24,9 @@
 #include "srslte/common/network_utils.h"
 #include "srslte/srslte.h"
 #include <srslte/interfaces/enb_metrics_interface.h>
+#ifdef ENABLE_SLICER
 #include <srslte/interfaces/enb_slicer_interface.h>
+#endif
 
 using namespace srslte;
 
@@ -183,7 +185,9 @@ bool enb_stack_lte::get_metrics(stack_metrics_t* metrics)
     stack_metrics_t metrics{};
     mac.get_metrics(metrics.mac);
     rrc.get_metrics(metrics.rrc);
+#ifdef ENABLE_RIC_AGENT_KPM
     pdcp.get_metrics(metrics.pdcp);
+#endif
     s1ap.get_metrics(metrics.s1ap);
     pending_stack_metrics.push(metrics);
   });
@@ -253,6 +257,7 @@ void enb_stack_lte::add_gtpu_m1u_socket_handler(int fd)
   rx_sockets->add_socket_pdu_handler(fd, gtpu_m1u_handler);
 }
 
+#ifdef ENABLE_SLICER
 // eNodeB slicer interface
 bool enb_stack_lte::slice_config(std::vector<slicer::slice_config_t> slice_configs)
 {
@@ -278,5 +283,6 @@ bool enb_stack_lte::slice_ue_unbind(std::string slice_name, std::vector<uint64_t
 {
   return mac.slicer.slice_ue_unbind(slice_name, imsi_list);
 }
+#endif
 
 } // namespace srsenb
