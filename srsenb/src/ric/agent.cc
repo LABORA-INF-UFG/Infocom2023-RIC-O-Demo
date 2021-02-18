@@ -119,18 +119,18 @@ int agent::init(const srsenb::all_args_t& args_,
   service_models.push_back(model);
   RIC_INFO("added model %s\n",model->name.c_str());
 
-  model = new gnb_nrt_model(this);
+  model = new nexran_model(this);
   if (model->init()) {
-    RIC_ERROR("failed to add E2SM-gNB-NRT model; aborting!\n");
+    RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }
   service_models.push_back(model);
   RIC_INFO("added model %s\n",model->name.c_str());
 
-  model = new nexran_model(this);
+  model = new gnb_nrt_model(this);
   if (model->init()) {
-    RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
+    RIC_ERROR("failed to add E2SM-gNB-NRT model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }
