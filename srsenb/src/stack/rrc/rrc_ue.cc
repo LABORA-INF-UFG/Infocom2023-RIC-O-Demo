@@ -285,7 +285,7 @@ void rrc::ue::handle_rrc_con_req(rrc_conn_request_s* msg)
 
   rrc_conn_request_r8_ies_s* msg_r8 = &msg->crit_exts.rrc_conn_request_r8();
 
-  if (msg_r8->ue_id.type() == init_ue_id_c::types::s_tmsi) {
+  if (mac_ctrl->is_slicer_enabled() && msg_r8->ue_id.type() == init_ue_id_c::types::s_tmsi) {
     mmec     = (uint8_t)msg_r8->ue_id.s_tmsi().mmec.to_number();
     m_tmsi   = (uint32_t)msg_r8->ue_id.s_tmsi().m_tmsi.to_number();
     has_tmsi = true;
@@ -667,7 +667,7 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
 
   // srslte::console("[slicer rrc] [RNTI: 0x%x] size of ded_info_nas_list: %u\n",
   //                 rnti, conn_reconf->ded_info_nas_list.size());
-  if (conn_reconf->ded_info_nas_list_present) {
+  if (mac_ctrl->is_slicer_enabled() && conn_reconf->ded_info_nas_list_present) {
     for (auto it = conn_reconf->ded_info_nas_list.begin();
          it != conn_reconf->ded_info_nas_list.end(); ++it) {
       // srslte::console("[slicer rrc] [RNTI: 0x%x] size of ded_info_nas pdu: %u\n", rnti, it->size());
