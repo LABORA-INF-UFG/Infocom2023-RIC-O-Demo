@@ -51,9 +51,12 @@
 #include "srslte/interfaces/enb_metrics_interface.h"
 #include "srslte/interfaces/sched_interface.h"
 #include "srslte/interfaces/ue_interfaces.h"
+#ifdef ENABLE_SLICER
 #include "srslte/interfaces/enb_slicer_interface.h"
-
+#endif
+#ifdef ENABLE_RIC_AGENT
 #include "srsenb/hdr/ric/agent_defs.h"
+#endif
 
 namespace srsenb {
 
@@ -109,20 +112,26 @@ struct all_args_t {
   general_args_t    general;
   phy_args_t        phy;
   stack_args_t      stack;
+#ifdef ENABLE_RIC_AGENT
   ric::agent_args_t ric_agent;
+#endif
 };
 
+#ifdef ENABLE_RIC_AGENT
 }
-
 #include "srsenb/hdr/ric/agent.h"
-
 namespace srsenb {
+#endif
 
 /*******************************************************************************
   Main eNB class
 *******************************************************************************/
 
+#ifdef ENABLE_SLICER
 class enb : public enb_metrics_interface, enb_command_interface, enb_slicer_interface
+#else
+class enb : public enb_metrics_interface, enb_command_interface
+#endif
 {
 public:
   enb();
@@ -143,12 +152,14 @@ public:
   // eNodeB command interface
   void cmd_cell_gain(uint32_t cell_id, float gain) override;
 
+#ifdef ENABLE_SLICER
   // eNodeB slicer interface
   bool slice_config(std::vector<slicer::slice_config_t> slice_configs) override;
   bool slice_delete(std::vector<std::string> slice_names) override;
   std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) override;
   bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
   bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
+#endif
 
 private:
   const static int ENB_POOL_SIZE = 1024 * 10;
@@ -156,7 +167,9 @@ private:
   int parse_args(const all_args_t& args_);
 
   // eNB components
+#ifdef ENABLE_RIC_AGENT
   std::unique_ptr<ric::agent>  ric_agent = nullptr;
+#endif
   std::unique_ptr<enb_stack_base>     stack = nullptr;
   std::unique_ptr<srslte::radio_base> radio = nullptr;
   std::unique_ptr<enb_phy_base>       phy   = nullptr;

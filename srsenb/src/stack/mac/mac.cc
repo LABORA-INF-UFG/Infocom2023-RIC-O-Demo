@@ -73,9 +73,11 @@ bool mac::init(const mac_args_t&        args_,
 
     scheduler.init(rrc);
 
+#ifdef ENABLE_SLICER
     if (args.slicer.enable) {
       slicer.init(args.slicer.slice_db_filename, args.slicer.workshare);
     }
+#endif
 
     // Set default scheduler configuration
     scheduler.set_sched_cfg(&args.sched);
@@ -290,6 +292,7 @@ void mac::get_metrics(mac_metrics_t metrics[ENB_METRICS_MAX_USERS])
   }
 }
 
+#ifdef ENABLE_SLICER
 bool mac::is_slicer_enabled()
 {
   return slicer.enable;
@@ -304,6 +307,7 @@ void mac::handle_tmsi_capture(uint32_t tmsi, uint16_t rnti)
 {
   slicer.upd_member_crnti(tmsi, rnti);
 }
+#endif
 
 /********************************************************
  *
@@ -577,6 +581,7 @@ int mac::get_dl_sched(uint32_t tti_tx_dl, dl_sched_list_t& dl_sched_res_list)
     return 0;
   }
 
+#ifdef ENABLE_SLICER
   // Sets a flag to indicate to the scheduler whether or not UEs belong to the
   // slice that owns this subframe.
   if (slicer.enable) {
@@ -590,6 +595,7 @@ int mac::get_dl_sched(uint32_t tti_tx_dl, dl_sched_list_t& dl_sched_res_list)
       }
     }
   }
+#endif
 
   log_h->step(TTI_SUB(tti_tx_dl, FDD_HARQ_DELAY_UL_MS));
 

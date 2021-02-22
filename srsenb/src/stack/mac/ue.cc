@@ -39,8 +39,12 @@ ue::ue(uint16_t                 rnti_,
        srslte::log_ref          log_,
        uint32_t                 nof_cells_,
        uint32_t                 nof_rx_harq_proc_,
-       uint32_t                 nof_tx_harq_proc_,
-       bool                     in_cur_slice) :
+       uint32_t                 nof_tx_harq_proc_
+#ifdef ENABLE_SLICER
+       ,
+       bool                     in_cur_slice
+#endif
+  ) :
   rnti(rnti_),
   nof_prb(nof_prb_),
   sched(sched_),

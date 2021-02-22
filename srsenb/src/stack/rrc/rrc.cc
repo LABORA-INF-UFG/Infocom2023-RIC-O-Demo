@@ -113,7 +113,9 @@ void rrc::get_metrics(rrc_metrics_t& m)
     m.n_ues = 0;
     for (auto iter = users.begin(); m.n_ues < ENB_METRICS_MAX_USERS && iter != users.end(); ++iter) {
       ue* u                  = iter->second.get();
+#ifdef ENABLE_RIC_AGENT_KPM
       m.ues[m.n_ues].rnti = u->rnti;
+#endif
       m.ues[m.n_ues++].state = u->get_state();
     }
   }
@@ -184,7 +186,11 @@ void rrc::add_user(uint16_t rnti, const sched_interface::ue_cfg_t& sched_ue_cfg)
       // adding UE object to MAC for MRNTI without scheduling configuration (broadcast not part of regular scheduling)
       mac->ue_cfg(SRSLTE_MRNTI, NULL);
       rlc->add_bearer_mrb(SRSLTE_MRNTI, lcid);
+#ifdef ENABLE_RIC_AGENT_KPM
       pdcp->add_bearer(SRSLTE_MRNTI, lcid, 0, srslte::make_drb_pdcp_config_t(1, false));
+#else
+      pdcp->add_bearer(SRSLTE_MRNTI, lcid, srslte::make_drb_pdcp_config_t(1, false));
+#endif
       teid_in = gtpu->add_bearer(SRSLTE_MRNTI, lcid, 1, 1);
     }
   }

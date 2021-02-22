@@ -22,10 +22,14 @@
 #include "srsenb/hdr/stack/rrc/rrc_ue.h"
 #include "srsenb/hdr/stack/rrc/mac_controller.h"
 #include "srsenb/hdr/stack/rrc/rrc_mobility.h"
+#ifdef ENABLE_SLICER
 #include "srslte/asn1/s1ap_asn1.h"
+#endif
 #include "srslte/asn1/rrc_asn1_utils.h"
+#ifdef ENABLE_SLICER
 #include "srslte/asn1/liblte_common.h"
 #include "srslte/asn1/liblte_mme.h"
+#endif
 #include "srslte/common/int_helpers.h"
 
 using namespace asn1::rrc;
@@ -180,6 +184,7 @@ void rrc::ue::parse_ul_dcch(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
                  .data(),
              pdu->N_bytes);
 
+#ifdef ENABLE_SLICER
       if (mac_ctrl->is_slicer_enabled()) {
         // Decode NAS message security header type and protocol discriminator
         uint8_t  pd, msg_type, sec_hdr_type, msg_start;
@@ -227,6 +232,7 @@ void rrc::ue::parse_ul_dcch(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
           }
         }
       }
+#endif
       parent->s1ap->write_pdu(rnti, std::move(pdu));
       break;
     case ul_dcch_msg_type_c::c1_c_::types::rrc_conn_recfg_complete:
@@ -285,13 +291,19 @@ void rrc::ue::handle_rrc_con_req(rrc_conn_request_s* msg)
 
   rrc_conn_request_r8_ies_s* msg_r8 = &msg->crit_exts.rrc_conn_request_r8();
 
-  if (mac_ctrl->is_slicer_enabled() && msg_r8->ue_id.type() == init_ue_id_c::types::s_tmsi) {
+  if (msg_r8->ue_id.type() == init_ue_id_c::types::s_tmsi
+#ifdef ENABLE_SLICER
+      && mac_ctrl->is_slicer_enabled()
+#endif
+      ) {
     mmec     = (uint8_t)msg_r8->ue_id.s_tmsi().mmec.to_number();
     m_tmsi   = (uint32_t)msg_r8->ue_id.s_tmsi().m_tmsi.to_number();
     has_tmsi = true;
+#ifdef ENABLE_SLICER
     srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionRequest with TMSI...\n", rnti);
     srslte::console("[slicer rrc] [RNTI: 0x%x] captured TMSI: %u\n", rnti, m_tmsi);
     mac_ctrl->tmsi_capture(m_tmsi, rnti);
+#endif
   }
   establishment_cause = msg_r8->establishment_cause;
   send_connection_setup();
@@ -345,6 +357,7 @@ void rrc::ue::handle_rrc_con_setup_complete(rrc_conn_setup_complete_s* msg, srsl
   pdu->N_bytes = msg_r8->ded_info_nas.size();
   memcpy(pdu->msg, msg_r8->ded_info_nas.data(), pdu->N_bytes);
 
+#ifdef ENABLE_SLICER
   if (mac_ctrl->is_slicer_enabled()) {
     // Decode NAS message security header type and protocol discriminator
     uint8_t  pd, msg_type, sec_hdr_type, msg_start;
@@ -398,6 +411,7 @@ void rrc::ue::handle_rrc_con_setup_complete(rrc_conn_setup_complete_s* msg, srsl
       }
     }
   }
+#endif
 
   // Flag completion of RadioResource Configuration
   bearer_list.rr_ded_cfg_complete();
@@ -665,6 +679,7 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
   // Add pending NAS info
   bearer_list.fill_pending_nas_info(conn_reconf);
 
+#ifdef ENABLE_SLICER
   // srslte::console("[slicer rrc] [RNTI: 0x%x] size of ded_info_nas_list: %u\n",
   //                 rnti, conn_reconf->ded_info_nas_list.size());
   if (mac_ctrl->is_slicer_enabled() && conn_reconf->ded_info_nas_list_present) {
@@ -712,7 +727,7 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
       }
     }
   }
-
+#endif
 
   if (mobility_handler != nullptr) {
     mobility_handler->fill_conn_recfg_no_ho_cmd(conn_reconf);
@@ -1579,7 +1594,11 @@ void rrc::ue::apply_reconf_phy_config(const rrc_conn_recfg_r8_ies_s& reconfig_r8
 void rrc::ue::apply_pdcp_srb_updates()
 {
   for (const srb_to_add_mod_s& srb : bearer_list.get_pending_addmod_srbs()) {
+#ifdef ENABLE_RIC_AGENT_KPM
     parent->pdcp->add_bearer(rnti, srb.srb_id, 0, srslte::make_srb_pdcp_config_t(srb.srb_id, false));
+#else
+    parent->pdcp->add_bearer(rnti, srb.srb_id, srslte::make_srb_pdcp_config_t(srb.srb_id, false));
+#endif
 
     // For SRB2, enable security/encryption/integrity
     if (ue_security_cfg.is_as_sec_cfg_valid()) {
@@ -1599,10 +1618,18 @@ void rrc::ue::apply_pdcp_drb_updates()
     // Configure DRB1 in PDCP
     if (drb.pdcp_cfg_present) {
       srslte::pdcp_config_t pdcp_cnfg_drb = srslte::make_drb_pdcp_config_t(drb.drb_id, false, drb.pdcp_cfg);
+#ifdef ENABLE_RIC_AGENT_KPM
       parent->pdcp->add_bearer(rnti, drb.lc_ch_id, bearer_list.erabs[drb.lc_ch_id + 2].qos_params.qci, pdcp_cnfg_drb);
+#else
+      parent->pdcp->add_bearer(rnti, drb.lc_ch_id, pdcp_cnfg_drb);
+#endif
     } else {
       srslte::pdcp_config_t pdcp_cnfg_drb = srslte::make_drb_pdcp_config_t(drb.drb_id, false);
+#ifdef ENABLE_RIC_AGENT_KPM
       parent->pdcp->add_bearer(rnti, drb.lc_ch_id, bearer_list.erabs[drb.lc_ch_id + 2].qos_params.qci, pdcp_cnfg_drb);
+#else
+      parent->pdcp->add_bearer(rnti, drb.lc_ch_id, pdcp_cnfg_drb);
+#endif
     }
 
     if (ue_security_cfg.is_as_sec_cfg_valid()) {

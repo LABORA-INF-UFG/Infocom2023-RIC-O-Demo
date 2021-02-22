@@ -41,7 +41,9 @@ typedef enum {
 
 struct rrc_ue_metrics_t {
   rrc_state_t state;
+#ifdef ENABLE_RIC_AGENT_KPM
   uint16_t    rnti;
+#endif
 };
 
 struct rrc_metrics_t {

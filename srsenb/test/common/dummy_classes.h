@@ -41,9 +41,11 @@ public:
   {}
   uint16_t reserve_new_crnti(const sched_interface::ue_cfg_t& ue_cfg) override { return last_rnti++; }
 
+#ifdef ENABLE_SLICER
   bool is_slicer_enabled() override { return false; };
   void handle_imsi_capture(uint64_t imsi, uint16_t rnti) override {};
   void handle_tmsi_capture(uint32_t tmsi, uint16_t rnti) override {};
+#endif
 
   uint16_t last_rnti = 70;
 };
@@ -71,7 +73,11 @@ public:
   void add_user(uint16_t rnti) override {}
   void rem_user(uint16_t rnti) override {}
   void write_sdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t sdu) override {}
+#ifdef ENABLE_RIC_AGENT_KPM
   void add_bearer(uint16_t rnti, uint32_t lcid, int8_t qci, srslte::pdcp_config_t cnfg) override {}
+#else
+  void add_bearer(uint16_t rnti, uint32_t lcid, srslte::pdcp_config_t cnfg) override {}
+#endif
   void del_bearer(uint16_t rnti, uint32_t lcid) override {}
   void config_security(uint16_t rnti, uint32_t lcid, srslte::as_security_config_t sec_cfg_) override {}
   void enable_integrity(uint16_t rnti, uint32_t lcid) override {}

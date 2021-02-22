@@ -41,7 +41,9 @@ struct dl_metrics_t {
 };
 
 struct phy_metrics_t {
+#ifdef ENABLE_RIC_AGENT_KPM
   uint32_t cc_idx;
+#endif
   dl_metrics_t dl;
   ul_metrics_t ul;
 };
