@@ -174,7 +174,7 @@ void nexran_model::handle_control(ric::control_t *rc)
     {
       E2SM_NEXRAN_SliceConfigRequest_t *req = \
 	  &cm.choice.controlMessageFormat1.choice.sliceConfigRequest;
-      std::vector<slicer::slice_config_t> slice_configs(req->sliceConfigList.list.count);
+      std::vector<slicer::slice_config_t> slice_configs;
       for (int i = 0; i < req->sliceConfigList.list.count; ++i) {
         E2SM_NEXRAN_SliceConfig_t *sc = (E2SM_NEXRAN_SliceConfig_t *) \
 	    req->sliceConfigList.list.array[i];
@@ -233,8 +233,8 @@ void nexran_model::handle_control(ric::control_t *rc)
 	  ret = 1;
 	  break;
       }
-      std::vector<std::string> binds(req->imsiList.list.count);
-      std::vector<uint64_t> imsi_uints(req->imsiList.list.count);
+      std::vector<std::string> binds;
+      std::vector<uint64_t> imsi_uints;
       for (int i = 0; i < req->imsiList.list.count; ++i) {
         E2SM_NEXRAN_IMSI_t *imsi = (E2SM_NEXRAN_IMSI_t *) \
 	    req->imsiList.list.array[i];
@@ -266,8 +266,8 @@ void nexran_model::handle_control(ric::control_t *rc)
 	  ret = 1;
 	  break;
       }
-      std::vector<std::string> unbinds(req->imsiList.list.count);
-      std::vector<uint64_t> imsi_uints(req->imsiList.list.count);
+      std::vector<std::string> unbinds;
+      std::vector<uint64_t> imsi_uints;
       for (int i = 0; i < req->imsiList.list.count; ++i) {
         E2SM_NEXRAN_IMSI_t *imsi = (E2SM_NEXRAN_IMSI_t *) \
 	    req->imsiList.list.array[i];
