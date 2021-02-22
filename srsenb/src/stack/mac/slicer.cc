@@ -94,6 +94,8 @@ bool slicer::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_li
                          s_it->second.imsi_list.end(), *it);
     if (it2 == s_it->second.imsi_list.end()) {
       s_it->second.imsi_list.push_back(*it);
+      srslte::console("[slicer] slice %s bound to IMSI %lu\n",
+		      slice_name.c_str(),*it);
     }
   }
 
@@ -114,6 +116,8 @@ bool slicer::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_
     auto it2 = std::find(s_it->second.imsi_list.begin(),
                          s_it->second.imsi_list.end(), *it);
     if (it2 != s_it->second.imsi_list.end()) {
+      srslte::console("[slicer] slice %s unbound from IMSI %lu\n",
+		      slice_name.c_str(),*it);
       s_it->second.imsi_list.erase(it2);
     }
   }
