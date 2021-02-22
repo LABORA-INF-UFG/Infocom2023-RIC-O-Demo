@@ -243,7 +243,7 @@ void nexran_model::handle_control(ric::control_t *rc)
 	    ret = 1;
 	    break;
 	}
-	binds.push_back(slice_name);
+	binds.push_back(imsi_str);
 	imsi_uints.push_back(std::stoul(imsi_str));
       }
       if (ret)
@@ -276,7 +276,7 @@ void nexran_model::handle_control(ric::control_t *rc)
 	    ret = 1;
 	    break;
 	}
-	unbinds.push_back(slice_name);
+	unbinds.push_back(imsi_str);
 	imsi_uints.push_back(std::stoul(imsi_str));
       }
       if (ret)
