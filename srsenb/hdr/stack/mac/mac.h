@@ -113,6 +113,7 @@ public:
   bool is_slicer_enabled();
   void handle_imsi_capture(uint64_t imsi, uint16_t rnti) override;
   void handle_tmsi_capture(uint32_t tmsi, uint16_t rnti) override;
+  void handle_rnti_update(uint16_t old_rnti, uint16_t new_rnti) override;
 
   slicer::slicer slicer;
 #endif

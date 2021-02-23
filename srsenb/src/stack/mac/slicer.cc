@@ -160,7 +160,6 @@ int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
 
 int slicer::upd_member_crnti(uint32_t tmsi, uint16_t crnti)
 {
-  // if (std::find(tmsi_to_imsi.begin(), tmsi_to_imsi.end(), tmsi) == tmsi_to_imsi.end()) {
   if (tmsi_to_imsi.find(tmsi) == tmsi_to_imsi.end()) {
     srslte::console("[slicer] new TMSI: %u with RNTI: 0x%x\n", tmsi, crnti);
     tmsi_to_imsi[tmsi] = 0;
@@ -190,6 +189,30 @@ int slicer::upd_member_crnti(uint32_t tmsi, uint16_t crnti)
       upd_slice_crntis(slice_iter->first);
     }
   }
+  return 0;
+}
+
+int slicer::upd_member_crnti(uint16_t old_crnti, uint16_t new_crnti)
+{
+  std::lock_guard<std::mutex> lock(slicer_mutex);
+  srslte::console("[slicer] updating RNTI: 0x%x with RNTI: 0x%x\n", old_crnti, new_crnti);
+  for (auto it = imsi_to_crnti.begin(); it != imsi_to_crnti.end(); ++it) {
+    if (it->second == old_crnti) {
+      it->second = new_crnti;
+      auto imsi = it->first;
+      srslte::console("[slicer] updated RNTI for IMSI: %015" PRIu64 " from 0x%x to 0x%x\n",
+                      imsi, old_crnti, new_crnti);
+      for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
+        std::vector<uint64_t> *s_imsis = &slice_iter->second.imsi_list;
+        if (std::find(s_imsis->begin(), s_imsis->end(), imsi) != s_imsis->end()) {
+          srslte::console("[slicer] new RNTI 0x%x belongs to slice %s\n", new_crnti, slice_iter->first.c_str());
+          upd_slice_crntis(slice_iter->first);
+        }
+      }
+      break;
+    }
+  }
+
   return 0;
 }
 

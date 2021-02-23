@@ -307,6 +307,11 @@ void mac::handle_tmsi_capture(uint32_t tmsi, uint16_t rnti)
 {
   slicer.upd_member_crnti(tmsi, rnti);
 }
+
+void mac::handle_rnti_update(uint16_t old_rnti, uint16_t new_rnti)
+{
+  slicer.upd_member_crnti(old_rnti, new_rnti);
+}
 #endif
 
 /********************************************************

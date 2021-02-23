@@ -62,6 +62,7 @@ public:
   bool is_slicer_enabled();
   void imsi_capture(uint64_t imsi, uint16_t rnti);
   void tmsi_capture(uint32_t tmsi, uint16_t rnti);
+  void rnti_update(uint16_t old_rnti, uint16_t new_rnti);
 #endif
 
 private:

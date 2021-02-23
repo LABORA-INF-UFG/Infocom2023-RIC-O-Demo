@@ -32,6 +32,7 @@ class slicer {
     // for rrc
     int upd_member_crnti(uint64_t imsi, uint16_t crnti);
     int upd_member_crnti(uint32_t tmsi, uint16_t crnti);
+    int upd_member_crnti(uint16_t old_crnti, uint16_t new_crnti);
 
     bool enable = false;
     bool initialized = false;

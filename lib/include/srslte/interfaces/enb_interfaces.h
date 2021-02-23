@@ -303,6 +303,7 @@ public:
   virtual bool is_slicer_enabled() = 0;
   virtual void handle_imsi_capture(uint64_t imsi, uint16_t rnti) = 0;
   virtual void handle_tmsi_capture(uint32_t imsi, uint16_t rnti) = 0;
+  virtual void handle_rnti_update(uint16_t old_rnti, uint16_t new_rnti) = 0;
 #endif
 };
 

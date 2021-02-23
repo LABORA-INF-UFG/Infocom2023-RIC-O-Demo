@@ -166,6 +166,12 @@ void rrc::ue::parse_ul_dcch(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
       handle_rrc_con_setup_complete(&ul_dcch_msg.msg.c1().rrc_conn_setup_complete(), std::move(pdu));
       break;
     case ul_dcch_msg_type_c::c1_c_::types::rrc_conn_reest_complete:
+#ifdef ENABLE_SLICER
+      srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionReestComplete...\n", rnti);
+      srslte::console("[slicer rrc] [RNTI: 0x%x] updating old RNTI: 0x%x with new RNTI: 0x%x\n",
+                      rnti, old_reest_rnti, rnti);
+      mac_ctrl->rnti_update(old_reest_rnti, rnti);
+#endif
       handle_rrc_con_reest_complete(&ul_dcch_msg.msg.c1().rrc_conn_reest_complete(), std::move(pdu));
       break;
     case ul_dcch_msg_type_c::c1_c_::types::ul_info_transfer:
