@@ -98,6 +98,7 @@ bool slicer::slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_li
 		      slice_name.c_str(),*it);
     }
   }
+  upd_slice_crntis(slice_name);
 
   return true;
 }
@@ -121,6 +122,7 @@ bool slicer::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_
       s_it->second.imsi_list.erase(it2);
     }
   }
+  upd_slice_crntis(slice_name);
 
   return true;
 }
