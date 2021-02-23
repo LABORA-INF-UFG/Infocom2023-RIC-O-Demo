@@ -297,18 +297,17 @@ void rrc::ue::handle_rrc_con_req(rrc_conn_request_s* msg)
 
   rrc_conn_request_r8_ies_s* msg_r8 = &msg->crit_exts.rrc_conn_request_r8();
 
-  if (msg_r8->ue_id.type() == init_ue_id_c::types::s_tmsi
-#ifdef ENABLE_SLICER
-      && mac_ctrl->is_slicer_enabled()
-#endif
-      ) {
+  if (msg_r8->ue_id.type() == init_ue_id_c::types::s_tmsi) {
     mmec     = (uint8_t)msg_r8->ue_id.s_tmsi().mmec.to_number();
     m_tmsi   = (uint32_t)msg_r8->ue_id.s_tmsi().m_tmsi.to_number();
     has_tmsi = true;
+
 #ifdef ENABLE_SLICER
-    srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionRequest with TMSI...\n", rnti);
-    srslte::console("[slicer rrc] [RNTI: 0x%x] captured TMSI: %u\n", rnti, m_tmsi);
-    mac_ctrl->tmsi_capture(m_tmsi, rnti);
+    if (mac_ctrl->is_slicer_enabled()) {
+      srslte::console("[slicer rrc] [RNTI: 0x%x] RRCConnectionRequest with TMSI...\n", rnti);
+      srslte::console("[slicer rrc] [RNTI: 0x%x] captured TMSI: %u\n", rnti, m_tmsi);
+      mac_ctrl->tmsi_capture(m_tmsi, rnti);
+    }
 #endif
   }
   establishment_cause = msg_r8->establishment_cause;
