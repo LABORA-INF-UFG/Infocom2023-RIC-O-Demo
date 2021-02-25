@@ -14,17 +14,18 @@ slicer::slicer() {
 
 slicer::~slicer() {}
 
-void slicer::init(std::string slice_db_fname, bool workshare_)
+void slicer::init(const srsenb::slicer_args_t& args_)
 {
   std::lock_guard<std::mutex> lock(slicer_mutex);
-  if (!slice_db_fname.empty()) {
-    if (!read_slice_db_file(slice_db_fname)) {
-      srslte::console("[slicer] Couldn't read slice_db file: %s\n", slice_db_fname.c_str());
+  if (!args_.test_agent_interface) {
+    if (!read_slice_db_file(args_.slice_db_filename)) {
+      srslte::console("[slicer] Couldn't read slice_db file: %s\n", args_.slice_db_filename.c_str());
       exit(SRSLTE_ERROR);
     }
   }
-  workshare = workshare_;
-  enable = true;
+
+  workshare = args_.workshare;
+  enable = args_.enable;
   initialized = true;
 }
 

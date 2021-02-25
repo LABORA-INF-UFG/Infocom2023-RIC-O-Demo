@@ -565,6 +565,7 @@ typedef struct {
 #ifdef ENABLE_SLICER
 typedef struct {
   bool        enable;
+  bool        test_agent_interface;
   std::string slice_db_filename;
   bool        workshare;
 } slicer_args_t;

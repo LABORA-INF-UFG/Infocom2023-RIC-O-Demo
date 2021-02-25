@@ -179,7 +179,7 @@ int enb::init(const all_args_t& args_, srslte::logger* logger_)
     srslte::console("\n==== eNodeB started ===\n");
     srslte::console("Type <t> to view trace\n");
 #if defined(ENABLE_RIC_AGENT) && defined(ENABLE_SLICER)
-    if (args.stack.mac.slicer.enable && args.stack.mac.slicer.slice_db_filename.empty()) {
+    if (args.stack.mac.slicer.enable && args.stack.mac.slicer.test_agent_interface) {
       ric_agent->test_slicer_interface();
     }
 #endif

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "srslte/interfaces/enb_interfaces.h"
 #include "slicer_defs.h"
 
 namespace slicer {
@@ -19,7 +20,7 @@ class slicer {
     ~slicer();
 
     // for mac
-    void init(std::string slice_db_fname, bool workshare_);
+    void init(const srsenb::slicer_args_t& args_);
     std::vector<uint16_t> get_cur_sf_crntis(uint32_t tti_tx_dl);
 
     // slicer interface for agent

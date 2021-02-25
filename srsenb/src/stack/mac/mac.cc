@@ -75,7 +75,7 @@ bool mac::init(const mac_args_t&        args_,
 
 #ifdef ENABLE_SLICER
     if (args.slicer.enable) {
-      slicer.init(args.slicer.slice_db_filename, args.slicer.workshare);
+      slicer.init(args.slicer);
     }
 #endif
 
