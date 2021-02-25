@@ -236,6 +236,35 @@ void rrc::ue::parse_ul_dcch(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
               }
             }
           }
+          else if (msg_type == LIBLTE_MME_MSG_TYPE_ATTACH_REQUEST) {
+            // extract IMSI
+            LIBLTE_MME_EPS_MOBILE_ID_STRUCT eps_mobile_id;
+            // LIBLTE_MME_ATTACH_REQUEST_MSG_STRUCT attach_req = {};
+            uint64_t imsi = 0;
+            uint8* msg_ptr = &pdu->msg[msg_start + 2]; // eps mobile id starts here
+            LIBLTE_ERROR_ENUM err = liblte_mme_unpack_eps_mobile_id_ie(&msg_ptr, &eps_mobile_id);
+            if (err != LIBLTE_SUCCESS) {
+              srslte::console("[slicer rrc] error unpacking attach request. error: %s\n", liblte_error_text[err]);
+            } else {
+              // parent->rrc_log->debug_hex((const uint8*) &eps_mobile_id, sizeof(eps_mobile_id), "eps_mobile_id");
+              // srslte::console("[slicer rrc] id type: %i\n", eps_mobile_id.type_of_id);
+              srslte::console("[slicer rrc] [RNTI: 0x%x] ULInformationTransfer...\n", rnti);
+              if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_IMSI) {
+                for (int i = 0; i <= 14; i++) {
+                  imsi += eps_mobile_id.imsi[i] * std::pow(10, 14 - i);
+                }
+                srslte::console("[slicer rrc] [RNTI: 0x%x] attach request with IMSI...\n", rnti);
+                srslte::console("[slicer rrc] [RNTI: 0x%x] captured IMSI: %015" PRIu64 "\n", rnti, imsi);
+                mac_ctrl->imsi_capture(imsi, rnti);
+                // parent->slicer.upd_member_crnti(imsi, rnti);
+              }
+              else if (eps_mobile_id.type_of_id == LIBLTE_MME_EPS_MOBILE_ID_TYPE_GUTI) {
+                srslte::console("[slicer rrc] [RNTI: 0x%x] attach request with TMSI...\n", rnti);
+                srslte::console("[slicer rrc] [RNTI: 0x%x] captured TMSI: %u\n", rnti, eps_mobile_id.guti.m_tmsi);
+                mac_ctrl->tmsi_capture(eps_mobile_id.guti.m_tmsi, rnti);
+              }
+            }
+          }
         }
       }
 #endif
