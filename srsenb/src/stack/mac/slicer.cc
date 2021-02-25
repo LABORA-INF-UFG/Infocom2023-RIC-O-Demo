@@ -160,6 +160,7 @@ int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
 
 int slicer::upd_member_crnti(uint32_t tmsi, uint16_t crnti)
 {
+  std::lock_guard<std::mutex> lock(slicer_mutex);
   if (tmsi_to_imsi.find(tmsi) == tmsi_to_imsi.end()) {
     srslte::console("[slicer] new TMSI: %u with RNTI: 0x%x\n", tmsi, crnti);
     tmsi_to_imsi[tmsi] = 0;
