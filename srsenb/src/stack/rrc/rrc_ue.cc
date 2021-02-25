@@ -712,7 +712,8 @@ void rrc::ue::send_connection_reconf(srslte::unique_byte_buffer_t pdu)
 
           liblte_mme_unpack_eps_attach_result_ie(&msg_ptr, 0, &attach_accept.eps_attach_result);
           msg_ptr++;
-          if (attach_accept.eps_attach_result == LIBLTE_MME_EPS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH) {
+          if (attach_accept.eps_attach_result == LIBLTE_MME_EPS_ATTACH_RESULT_COMBINED_EPS_IMSI_ATTACH ||
+              attach_accept.eps_attach_result == LIBLTE_MME_EPS_ATTACH_RESULT_EPS_ONLY) {
             // some funcs increment the pointer.. using for convenience right now
             liblte_mme_unpack_gprs_timer_ie(&msg_ptr, &attach_accept.t3412);
             liblte_mme_unpack_tracking_area_identity_list_ie(&msg_ptr, &attach_accept.tai_list);
