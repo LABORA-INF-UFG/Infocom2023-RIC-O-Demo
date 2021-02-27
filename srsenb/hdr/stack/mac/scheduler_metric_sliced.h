@@ -31,6 +31,9 @@ class dl_metric_sliced : public sched::metric_dl
   const static int MAX_RBG = 25;
 
 public:
+  dl_metric_sliced(bool workshare_) : workshare(workshare_) {
+    srslte::console("[slicer metric] worksharing: %u", workshare_);
+  };
   void set_params(const sched_cell_params_t& cell_params_) final;
   void sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sched_itf* tti_sched) final;
 
@@ -41,6 +44,7 @@ private:
   const sched_cell_params_t* cc_cfg = nullptr;
   srslte::log_ref            log_h;
   dl_sf_sched_itf*           tti_alloc = nullptr;
+  bool                       workshare = true;
 };
 
 class ul_metric_sliced : public sched::metric_ul

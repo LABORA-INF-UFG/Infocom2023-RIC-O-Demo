@@ -156,7 +156,7 @@ void sched_ue::set_cfg(const sched_interface::ue_cfg_t& cfg_)
   }
 
 #ifdef ENABLE_SLICER
-  in_cur_slice = cfg_.in_cur_slice;
+  slice_status = cfg_.slice_status;
 #endif
   check_ue_cfg_correctness();
 }

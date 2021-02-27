@@ -288,7 +288,11 @@ void sched::carrier_sched::reset()
   bc_sched_ptr.reset();
 }
 
+#ifdef ENABLE_SLICER
+void sched::carrier_sched::carrier_cfg(const sched_cell_params_t& cell_params_, bool workshare)
+#else
 void sched::carrier_sched::carrier_cfg(const sched_cell_params_t& cell_params_)
+#endif
 {
   // carrier_sched is now fully set
   cc_cfg = &cell_params_;
@@ -299,7 +303,7 @@ void sched::carrier_sched::carrier_cfg(const sched_cell_params_t& cell_params_)
 
   // Setup data scheduling algorithms
 #ifdef ENABLE_SLICER
-  dl_metric.reset(new srsenb::dl_metric_sliced{});
+  dl_metric.reset(new srsenb::dl_metric_sliced(workshare));
 #else
   dl_metric.reset(new srsenb::dl_metric_rr{});
 #endif

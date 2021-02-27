@@ -8,10 +8,7 @@
 
 namespace slicer {
 
-slicer::slicer() {
-  std::cout << "testing ... " << std::endl;
-}
-
+slicer::slicer() {}
 slicer::~slicer() {}
 
 void slicer::init(const srsenb::slicer_args_t& args_)
@@ -26,6 +23,7 @@ void slicer::init(const srsenb::slicer_args_t& args_)
 
   workshare = args_.workshare;
   enable = args_.enable;
+  sliced_unsliced_ratio = args_.sliced_unsliced_ratio;
   initialized = true;
 }
 
@@ -36,12 +34,30 @@ std::vector<uint16_t> slicer::get_cur_sf_crntis(uint32_t tti_tx_dl)
     return {};
   }
 
-  uint32_t alloc_index = tti_tx_dl % total_sf_alloc;
-  slice_iter = slices.begin();
-  // std::cout << sf_alloc[alloc_index] << " ";
-  std::advance(slice_iter, sf_alloc[alloc_index]);
+  // if enabled, preserve unsliced subframe
+  if (sliced_unsliced_ratio && (tti_tx_dl % sliced_unsliced_ratio == 0)) {
+    return {};
+  } else {
+    slice_iter = slices.begin();
+    // std::cout << alloc_index << " " << sf_alloc[alloc_index] << " ";
+    std::advance(slice_iter, sf_alloc[alloc_index]);
+    alloc_index++;
+    if (alloc_index == total_sf_alloc) {
+      alloc_index = 0;
+      // std::cout << "\n";
+    }
+    return slice_to_crnti_vec[slice_iter->first];
+  }
+}
 
-  return slice_to_crnti_vec[slice_iter->first];
+std::vector<uint16_t> slicer::get_all_slice_crntis()
+{
+  std::lock_guard<std::mutex> lock(slicer_mutex);
+  if (!has_alloc) {
+    return {};
+  }
+
+  return all_slice_crntis;
 }
 
 std::vector<slice_status_t> slicer::slice_status(std::vector<std::string> slice_names)
@@ -313,6 +329,18 @@ void slicer::upd_slice_crntis(std::string s_name)
     }
   }
   srslte::console("[slicer] updated RNTIs for slice %s\n", s_name.c_str());
+  srslte::console("[slicer] RNTIs: ");
+  for (auto it = slice_to_crnti_vec[s_name].begin(); it != slice_to_crnti_vec[s_name].end(); ++it) {
+    srslte::console("0x%x ", *it);
+  }
+  srslte::console("\n");
+
+  all_slice_crntis.clear();
+  for (auto it = slice_to_crnti_vec.begin(); it != slice_to_crnti_vec.end(); ++it) {
+    for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
+      all_slice_crntis.push_back(*it2);
+    }
+  }
 }
 
 // helper functions

@@ -25,6 +25,8 @@
 #include "srslte/common/logmap.h"
 #include <string.h>
 
+#include "srsenb/hdr/stack/mac/slicer_defs.h"
+
 namespace srsenb {
 
 /*****************************************************************
@@ -47,54 +49,103 @@ void dl_metric_sliced::sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sc
     return;
   }
 
-  // separate current slice from the rest of the UEs so we can
-  // do RR within
-  std::vector<uint16_t> cur_slice_rntis, other_rntis;
+  // Divide UE RNTIs into groups: cur_slice, other_slice, no_slice
+  std::vector<uint16_t> cur_slice_rntis, other_slice_rntis, no_slice_rntis;
   auto iter = ue_db.begin();
   for (uint32_t ue_count = 0; ue_count < ue_db.size(); ++iter, ++ue_count) {
-    if (iter->second.is_in_cur_slice()) {
-      cur_slice_rntis.push_back(iter->first);
-    }
-    else {
-      other_rntis.push_back(iter->first);
+    // srslte::console("rnti: 0x%x  slice_status: %u\n", iter->second.get_rnti(), iter->second.get_slice_status());
+    switch (iter->second.get_slice_status()) {
+      case IN_CUR_SLICE:
+        cur_slice_rntis.push_back(iter->first);
+        break;
+      case IN_OTHER_SLICE:
+        other_slice_rntis.push_back(iter->first);
+        break;
+      case IN_NO_SLICE:
+        no_slice_rntis.push_back(iter->first);
+        break;
     }
   }
 
-  // Schedule current slice first.
-  // Give priority in a time-domain RR basis.
-  if (!cur_slice_rntis.empty()) {
-    // srslte::console("cur slice num UEs %u\n", cur_slice_rntis.size());
+  if (cur_slice_rntis.empty()) {
+    // sf is reserved for general traffic or UEs haven't been associated with this slice.
+    // Schedule rntis with no slice to allow for srb0 (msg4) and other traffic,
+    // then schedule rntis from slices.
+
+    if (!no_slice_rntis.empty()) {
+      uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)no_slice_rntis.size();
+      auto it = no_slice_rntis.begin();
+      std::advance(it, priority_idx);
+
+      for (uint32_t ue_count = 0; ue_count < no_slice_rntis.size(); ++it, ++ue_count) {
+        if (it == no_slice_rntis.end()) {
+          it = no_slice_rntis.begin();
+        }
+        sched_ue* user = &ue_db[*it];
+        // srslte::console("scheduling other UE crnti 0x%x\n", user->get_rnti());
+        allocate_user(user);
+      }
+    }
+
+    if (!other_slice_rntis.empty()) {
+      uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)other_slice_rntis.size();
+      auto it = other_slice_rntis.begin();
+      std::advance(it, priority_idx);
+
+      for (uint32_t ue_count = 0; ue_count < other_slice_rntis.size(); ++it, ++ue_count) {
+        if (it == other_slice_rntis.end()) {
+          it = other_slice_rntis.begin();
+        }
+        sched_ue* user = &ue_db[*it];
+        allocate_user(user);
+      }
+    }
+  } else {
+    // Schedule current slice first. Give priority in a time-domain RR basis.
     uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)cur_slice_rntis.size();
     auto it = cur_slice_rntis.begin();
     std::advance(it, priority_idx);
-
+    // srslte::console("cur slice num UEs %u\n", cur_slice_rntis.size());
     for (uint32_t ue_count = 0; ue_count < cur_slice_rntis.size(); ++it, ++ue_count) {
       if (it == cur_slice_rntis.end()) {
         it = cur_slice_rntis.begin();
       }
       sched_ue* user = &ue_db[*it];
-      if (user->is_in_cur_slice()) {
-        // srslte::console("scheduling current slice crnti 0x%x\n", user->get_rnti());
-        allocate_user(user);
-      }
-    }
-  }
-
-  // Schedule other UEs if possible.
-  // If the slicer is disabled, this behaves like the original RR metric.
-  if (!other_rntis.empty()) {
-    // srslte::console("other slice num UEs %u\n", other_rntis.size());
-    uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)other_rntis.size();
-    auto it = other_rntis.begin();
-    std::advance(it, priority_idx);
-
-    for (uint32_t ue_count = 0; ue_count < other_rntis.size(); ++it, ++ue_count) {
-      if (it == other_rntis.end()) {
-        it = other_rntis.begin();
-      }
-      sched_ue* user = &ue_db[*it];
-      // srslte::console("scheduling other UE crnti 0x%x\n", user->get_rnti());
+      // srslte::console("scheduling current slice crnti 0x%x\n", user->get_rnti());
       allocate_user(user);
+    }
+
+    if (workshare) {
+      // Schedule other slices, then UEs without a slice.
+      if (!other_slice_rntis.empty()) {
+        // srslte::console("other slice num UEs %u\n", other_slice_rntis.size());
+        uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)other_slice_rntis.size();
+        auto it = other_slice_rntis.begin();
+        std::advance(it, priority_idx);
+
+        for (uint32_t ue_count = 0; ue_count < other_slice_rntis.size(); ++it, ++ue_count) {
+          if (it == other_slice_rntis.end()) {
+            it = other_slice_rntis.begin();
+          }
+          sched_ue* user = &ue_db[*it];
+          allocate_user(user);
+        }
+      }
+
+      if (!no_slice_rntis.empty()) {
+        uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)no_slice_rntis.size();
+        auto it = no_slice_rntis.begin();
+        std::advance(it, priority_idx);
+
+        for (uint32_t ue_count = 0; ue_count < no_slice_rntis.size(); ++it, ++ue_count) {
+          if (it == no_slice_rntis.end()) {
+            it = no_slice_rntis.begin();
+          }
+          sched_ue* user = &ue_db[*it];
+          allocate_user(user);
+        }
+      }
+
     }
   }
 }

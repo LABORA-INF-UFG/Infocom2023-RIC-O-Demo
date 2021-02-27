@@ -5,6 +5,10 @@
 #include <string>
 #include <vector>
 
+#define IN_CUR_SLICE 0
+#define IN_OTHER_SLICE 1
+#define IN_NO_SLICE 2
+
 namespace slicer {
 
 typedef struct prop_alloc_policy {

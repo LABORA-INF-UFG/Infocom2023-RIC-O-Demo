@@ -76,6 +76,7 @@ bool mac::init(const mac_args_t&        args_,
 #ifdef ENABLE_SLICER
     if (args.slicer.enable) {
       slicer.init(args.slicer);
+      scheduler.set_slicer_workshare(slicer.workshare);
     }
 #endif
 
@@ -587,16 +588,30 @@ int mac::get_dl_sched(uint32_t tti_tx_dl, dl_sched_list_t& dl_sched_res_list)
   }
 
 #ifdef ENABLE_SLICER
-  // Sets a flag to indicate to the scheduler whether or not UEs belong to the
-  // slice that owns this subframe.
+  // Sets a variable on each sched_ue to indicate to the scheduler if it belongs
+  // to the the current slice, another slice, or no slice.
   if (slicer.enable) {
-    std::vector<uint16_t> cur_sf_crntis = slicer.get_cur_sf_crntis(tti_tx_dl);
-    for (auto& u : ue_db) {
-      if (std::find(cur_sf_crntis.begin(), cur_sf_crntis.end(), u.second->get_rnti()) != cur_sf_crntis.end()) {
-        scheduler.set_is_in_cur_slice(u.second->get_rnti(), true);
+    auto sliced_crntis = slicer.get_all_slice_crntis();
+    auto cur_sf_crntis = slicer.get_cur_sf_crntis(tti_tx_dl);
+    if (sliced_crntis.empty()) {
+      for (auto& u : ue_db) {
+        scheduler.set_ue_slice_status(u.second->get_rnti(), 2);
       }
-      else {
-        scheduler.set_is_in_cur_slice(u.second->get_rnti(), false);
+    } else {
+      for (auto& u : ue_db) {
+        if (std::find(cur_sf_crntis.begin(), cur_sf_crntis.end(), u.second->get_rnti()) != cur_sf_crntis.end()) {
+          // srslte::console("[slicer mac] RNTI: 0x%x slice_status: %u tti: %u ", u.second->get_rnti(), 0, tti_tx_dl);
+          scheduler.set_ue_slice_status(u.second->get_rnti(), IN_CUR_SLICE);
+        }
+        else if (std::find(sliced_crntis.begin(), sliced_crntis.end(), u.second->get_rnti()) != sliced_crntis.end())
+        {
+          // srslte::console("[slicer mac] RNTI: 0x%x slice_status: %u tti: %u ", u.second->get_rnti(), 1, tti_tx_dl);
+          scheduler.set_ue_slice_status(u.second->get_rnti(), IN_OTHER_SLICE);
+        }
+        else {
+          // srslte::console("[slicer mac] RNTI: 0x%x slice_status: %u tti: %u ", u.second->get_rnti(), 2, tti_tx_dl);
+          scheduler.set_ue_slice_status(u.second->get_rnti(), IN_NO_SLICE);
+        }
       }
     }
   }

@@ -51,7 +51,7 @@ public:
      uint32_t                 nof_tx_harq_proc = SRSLTE_FDD_NOF_HARQ * SRSLTE_MAX_TB
 #ifdef ENABLE_SLICER
      ,
-     bool                     in_cur_slice = false
+     uint8_t                  slice_status = false
 #endif
   );
   virtual ~ue();

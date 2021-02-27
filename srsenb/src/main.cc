@@ -232,6 +232,7 @@ void parse_args(all_args_t* args, int argc, char* argv[])
     ("slicer.test_agent_interface", bpo::value<bool>(&args->stack.mac.slicer.test_agent_interface)->default_value(false), "Test interface from agent. Leaves a slice configuration in place for other testing.")
     ("slicer.slice_db_filename", bpo::value<string>(&args->stack.mac.slicer.slice_db_filename)->default_value("/etc/srslte/slice_db.csv"), "Path for slice configuration file.")
     ("slicer.workshare", bpo::value<bool>(&args->stack.mac.slicer.workshare)->default_value(true), "Allow slices to share leftover RBGs with other slices.")
+    ("slicer.sliced_unsliced_ratio", bpo::value<uint32_t>(&args->stack.mac.slicer.sliced_unsliced_ratio)->default_value(20), "A single unsliced subframe (where the scheduler prioritizes new RNTIs) will accompany every set of sliced_unsliced_ratio subframes. 0 to disable unsliced subframes.")
 #endif
 
 #ifdef ENABLE_RIC_AGENT

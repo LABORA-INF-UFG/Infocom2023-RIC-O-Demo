@@ -568,6 +568,7 @@ typedef struct {
   bool        test_agent_interface;
   std::string slice_db_filename;
   bool        workshare;
+  uint32_t    sliced_unsliced_ratio;
 } slicer_args_t;
 #endif
 

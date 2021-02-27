@@ -264,7 +264,6 @@ void rrc::release_complete(uint16_t rnti)
 
 bool rrc::setup_ue_ctxt(uint16_t rnti, const asn1::s1ap::init_context_setup_request_s& msg)
 {
-  // TODO: decode M-TMSI and update slicer
   rrc_log->info("Adding initial context for 0x%x\n", rnti);
   auto user_it = users.find(rnti);
 

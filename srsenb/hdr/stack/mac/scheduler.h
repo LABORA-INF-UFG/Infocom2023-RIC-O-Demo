@@ -135,7 +135,9 @@ public:
   std::array<int, SRSLTE_MAX_CARRIERS> get_enb_ue_cc_map(uint16_t rnti) final;
   int                                  ul_buffer_add(uint16_t rnti, uint32_t lcid, uint32_t bytes) final;
 #ifdef ENABLE_SLICER
-  void                                 set_is_in_cur_slice(uint16_t rnti, bool val);
+  void                                 set_ue_slice_status(uint16_t rnti, uint8_t status);
+  void                                 set_slicer_workshare(bool workshare);
+  bool                                 slicer_workshare = true;
 #endif
 
   class carrier_sched;

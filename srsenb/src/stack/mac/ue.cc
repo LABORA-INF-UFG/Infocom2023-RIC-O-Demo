@@ -42,7 +42,7 @@ ue::ue(uint16_t                 rnti_,
        uint32_t                 nof_tx_harq_proc_
 #ifdef ENABLE_SLICER
        ,
-       bool                     in_cur_slice
+       uint8_t                  slice_status
 #endif
   ) :
   rnti(rnti_),
