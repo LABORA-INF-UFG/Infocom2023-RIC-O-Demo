@@ -306,6 +306,7 @@ void slicer::upd_sf_alloc()
   }
   uint32_t gcf = calc_gcf_vec(slice_shares);
   // srslte::console("gcf: %u", gcf);
+  alloc_index = 0;
   total_sf_alloc = 0;
   sf_alloc.clear();
   uint32_t slice_cnt = 0, tmp = 0;
