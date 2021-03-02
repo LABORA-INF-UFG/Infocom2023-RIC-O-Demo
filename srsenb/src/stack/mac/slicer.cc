@@ -14,7 +14,7 @@ slicer::~slicer() {}
 void slicer::init(const srsenb::slicer_args_t& args_)
 {
   std::lock_guard<std::mutex> lock(slicer_mutex);
-  if (!args_.test_agent_interface) {
+  if (!args_.test_agent_interface && !args_.slice_db_filename.empty()) {
     if (!read_slice_db_file(args_.slice_db_filename)) {
       srslte::console("[slicer] Couldn't read slice_db file: %s\n", args_.slice_db_filename.c_str());
       exit(SRSLTE_ERROR);
