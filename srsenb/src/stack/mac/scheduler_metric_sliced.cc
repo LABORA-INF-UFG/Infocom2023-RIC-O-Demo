@@ -87,7 +87,7 @@ void dl_metric_sliced::sched_users(std::map<uint16_t, sched_ue>& ue_db, dl_sf_sc
       }
     }
 
-    if (!other_slice_rntis.empty()) {
+    if (workshare && !other_slice_rntis.empty()) {
       uint32_t priority_idx = tti_alloc->get_tti_tx_dl() % (uint32_t)other_slice_rntis.size();
       auto it = other_slice_rntis.begin();
       std::advance(it, priority_idx);
