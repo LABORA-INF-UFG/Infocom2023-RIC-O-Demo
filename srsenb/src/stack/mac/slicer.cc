@@ -194,15 +194,19 @@ int slicer::upd_member_crnti(uint32_t tmsi, uint16_t crnti)
 
   if (tmsi_to_imsi[tmsi] == 0) {
     srslte::console("[slicer] TMSI: %u for RNTI: 0x%x not yet mapped to an IMSI\n", tmsi, crnti);
-    srslte::console("[slicer] will not update slice crntis.\n");
     return 0;
+  } else {
+    // update RNTI for for TMSI/IMSI
+    srslte::console("[slicer] updating RNTI: 0x%x to 0x%x for TMSI: %u and IMSI: %015" PRIu64 "\n",
+                    imsi_to_crnti[tmsi_to_imsi[tmsi]], crnti, tmsi, tmsi_to_imsi[tmsi]);
+    imsi_to_crnti[tmsi_to_imsi[tmsi]] = crnti;
   }
 
+  // update slice RNTIs if necessary
   for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
     std::vector<uint64_t> *s_imsis = &slice_iter->second.imsi_list;
     auto it = std::find(s_imsis->begin(), s_imsis->end(), tmsi_to_imsi[tmsi]);
     if (it != s_imsis->end()) {
-      imsi_to_crnti[*it] = crnti;
       srslte::console("[slicer] RNTI: 0x%x belongs to slice %s\n", crnti, slice_iter->first.c_str());
       upd_slice_crntis(slice_iter->first);
     }
