@@ -51,7 +51,7 @@ public:
   int reset();
   bool send_sctp_data(uint8_t *buf,ssize_t len);
   bool is_function_enabled(std::string &function_name);
-  void set_state(agent_state_t state_) { state = state_; };
+  void set_state(agent_state_t state_);
   void set_ric_id(uint32_t id,uint16_t mcc,uint16_t mnc);
   ric::ran_function_t *lookup_ran_function(ran_function_id_t function_id);
   ric::subscription_t *lookup_subscription(long request_id,long instance_id,

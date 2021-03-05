@@ -262,6 +262,7 @@ void agent::run_thread()
     if (pending_tasks.wait_pop(&task) >= 0)
       task();
   }
+  RIC_INFO("exiting agent thread\n");
 }
 
 bool agent::is_function_enabled(std::string &function_name)
@@ -339,9 +340,11 @@ void agent::handle_connection_error()
   }
   else {
     RIC_INFO("resetting agent connection (reconnect enabled)\n");
+    RIC_INFO("pushing connection_reset (%lu)\n",pending_tasks.size(agent_queue_id));
     pending_tasks.push(agent_queue_id,[this]() {
       connection_reset();
     });
+    RIC_INFO("pushed connection_reset (%lu)\n",pending_tasks.size(agent_queue_id));
   }
 }
 
@@ -427,9 +430,6 @@ int agent::connect()
   }
   RIC_INFO("sent E2setupRequest to RIC\n");
   free(buf);
-
-  /* We have a successful connection, so clear our current delay. */
-  current_reconnect_delay = 0;
 
   return 0;
 }
@@ -518,6 +518,7 @@ void agent::stop_impl()
   disconnect();
   rx_sockets->stop();
   pending_tasks.erase_queue(agent_queue_id);
+  agent_queue_id = pending_tasks.add_queue();
   state = RIC_INITIALIZED;
   agent_thread_started = false;
 }
@@ -534,6 +535,15 @@ int agent::reset()
   subscriptions.clear();
 
   return SRSLTE_SUCCESS;
+}
+
+void agent::set_state(agent_state_t state_)
+{
+    state = state_;
+    if (state == RIC_ESTABLISHED) {
+	/* We have a successful connection, so clear our current delay. */
+	current_reconnect_delay = 0;
+    }
 }
 
 /**
@@ -554,8 +564,10 @@ int agent::connection_reset(int delay)
   reset();
   disconnect();
   pending_tasks.erase_queue(agent_queue_id);
+  agent_queue_id = pending_tasks.add_queue();
   state = RIC_INITIALIZED;
   /* This is only "safe" because the agent_queue was just cleared. */
+  RIC_INFO("delaying new connection for %d seconds",delay);
   sleep(delay);
   return connect();
 }
