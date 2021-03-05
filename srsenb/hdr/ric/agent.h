@@ -1,6 +1,7 @@
 #ifndef RIC_AGENT_H
 #define RIC_AGENT_H
 
+#include <ctime>
 #include <list>
 #include <map>
 
@@ -52,6 +53,7 @@ public:
   bool send_sctp_data(uint8_t *buf,ssize_t len);
   bool is_function_enabled(std::string &function_name);
   void set_state(agent_state_t state_);
+  bool is_state_stale(int seconds);
   void set_ric_id(uint32_t id,uint16_t mcc,uint16_t mnc);
   ric::ran_function_t *lookup_ran_function(ran_function_id_t function_id);
   ric::subscription_t *lookup_subscription(long request_id,long instance_id,
@@ -94,6 +96,7 @@ private:
 		      int flags);
 
   agent_state_t state;
+  std::time_t state_time;
   std::map<ric::ran_function_id_t,ric::ran_function_t *> function_id_map;
   std::list<subscription_t *> subscriptions;
   srslte::socket_handler_t ric_socket;

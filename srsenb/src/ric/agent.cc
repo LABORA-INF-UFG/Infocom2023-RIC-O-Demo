@@ -89,7 +89,7 @@ int agent::init(const srsenb::all_args_t& args_,
   e2sm_xer_print = (log.e2sm_level >= srslte::LOG_LEVEL_DEBUG);
 
   if (args.ric_agent.disabled) {
-    state = RIC_DISABLED;
+    set_state(RIC_DISABLED);
     return SRSLTE_SUCCESS;
   }
 
@@ -174,7 +174,7 @@ int agent::init(const srsenb::all_args_t& args_,
     }
   }
 
-  state = RIC_INITIALIZED;
+  set_state(RIC_INITIALIZED);
 
   /* Start up our recv socket thread and agent thread. */
   rx_sockets.reset(new srslte::rx_multisocket_handler("RICSOCKET",
@@ -333,7 +333,7 @@ void agent::handle_connection_error()
   if (args.ric_agent.no_reconnect) {
     RIC_INFO("disabling further RIC reconnects\n");
     /* stop(); */
-    state = RIC_DISABLED;
+    set_state(RIC_DISABLED);
     pending_tasks.push(agent_queue_id,[this]() {
       disconnect();
     });
@@ -360,13 +360,15 @@ int agent::connect()
     return SRSLTE_ERROR;
 
   /* Open a connection to the RIC. */
+  if (ric_socket.is_init())
+      ric_socket.close();
   if (!ric_socket.open_socket(srslte::net_utils::addr_family::ipv4,
 			      srslte::net_utils::socket_type::stream,
 			      srslte::net_utils::protocol_type::SCTP)) {
     RIC_ERROR("failed to open an SCTP socket to RIC; stopping agent\n");
     /* Cannot recover from this error, so stop the agent. */
     stop();
-    state = RIC_DISABLED;
+    set_state(RIC_DISABLED);
     return SRSLTE_ERROR;
   }
 
@@ -379,7 +381,7 @@ int agent::connect()
     ric_socket.reset();
     /* Cannot recover from this error, so stop the agent. */
     stop();
-    state = RIC_DISABLED;
+    set_state(RIC_DISABLED);
     return SRSLTE_ERROR;
   }
   int reuse = 1;
@@ -407,7 +409,7 @@ int agent::connect()
   };
   rx_sockets->add_socket_sctp_pdu_handler(ric_socket.fd(),ric_socket_handler);
 
-  state = RIC_CONNECTED;
+  set_state(RIC_CONNECTED);
   RIC_INFO("connected to RIC on %s",
 	   args.ric_agent.remote_ipv4_addr.c_str());
 
@@ -416,7 +418,7 @@ int agent::connect()
   if (ret) {
     RIC_ERROR("failed to generate E2setupRequest; disabling RIC agent!\n");
     stop();
-    state = RIC_DISABLED;
+    set_state(RIC_DISABLED);
     if (buf)
       free(buf);
     return 1;
@@ -430,6 +432,22 @@ int agent::connect()
   }
   RIC_INFO("sent E2setupRequest to RIC\n");
   free(buf);
+
+  /*
+   * Wait for E2setupResponse or Failure.  For now, it's ok to busy-wait
+   * in this thread since it's dedicated to the connection.  Later, we
+   * need to be more careful.
+   */
+  while (state == RIC_CONNECTED && !is_state_stale(6)) {
+    RIC_DEBUG("waiting for E2setupResponse...\n");
+    sleep(2);
+  }
+  if (state != RIC_ESTABLISHED) {
+    RIC_ERROR("did not receive successful E2setupResponse; aborting connect\n");
+    set_state(RIC_FAILURE);
+    handle_connection_error();
+    return 1;
+  }
 
   return 0;
 }
@@ -499,7 +517,7 @@ void agent::disconnect(bool use_shutdown)
   ric_mcc = ric_mnc = 0;
   ric_id = 0;
 
-  state = RIC_DISCONNECTED;
+  set_state(RIC_DISCONNECTED);
 }
 
 void agent::stop()
@@ -519,7 +537,7 @@ void agent::stop_impl()
   rx_sockets->stop();
   pending_tasks.erase_queue(agent_queue_id);
   agent_queue_id = pending_tasks.add_queue();
-  state = RIC_INITIALIZED;
+  set_state(RIC_INITIALIZED);
   agent_thread_started = false;
 }
 
@@ -537,6 +555,28 @@ int agent::reset()
   return SRSLTE_SUCCESS;
 }
 
+static const char *state_to_string(agent_state_t state)
+{
+    switch (state) {
+    case RIC_UNINITIALIZED:
+	return "UNINITIALIZED";
+    case RIC_INITIALIZED:
+	return "INITIALIZED";
+    case RIC_CONNECTED:
+	return "CONNECTED";
+    case RIC_ESTABLISHED:
+	return "ESTABLISHED";
+    case RIC_FAILURE:
+	return "FAILURE";
+    case RIC_DISCONNECTED:
+	return "DISCONNECTED";
+    case RIC_DISABLED:
+	return "DISABLED";
+    default:
+	return "INVALID";
+    }
+}
+
 void agent::set_state(agent_state_t state_)
 {
     state = state_;
@@ -544,6 +584,15 @@ void agent::set_state(agent_state_t state_)
 	/* We have a successful connection, so clear our current delay. */
 	current_reconnect_delay = 0;
     }
+    state_time = std::time(NULL);
+    RIC_DEBUG("RIC state -> %s\n",state_to_string(state_));
+}
+
+bool agent::is_state_stale(int seconds)
+{
+    if ((std::time(NULL) - state_time) >= seconds)
+	return true;
+    return false;
 }
 
 /**
@@ -565,7 +614,7 @@ int agent::connection_reset(int delay)
   disconnect();
   pending_tasks.erase_queue(agent_queue_id);
   agent_queue_id = pending_tasks.add_queue();
-  state = RIC_INITIALIZED;
+  set_state(RIC_INITIALIZED);
   /* This is only "safe" because the agent_queue was just cleared. */
   RIC_INFO("delaying new connection for %d seconds",delay);
   sleep(delay);
