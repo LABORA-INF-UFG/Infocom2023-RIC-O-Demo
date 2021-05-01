@@ -207,14 +207,14 @@ void agent::test_slicer_interface()
   srslte::console("[agent] checking all single slice status'...\n");
   std::vector<slicer::slice_status_t> s_status = enb_slicer_interface->slice_status({});
   for (auto it = s_status.begin(); it != s_status.end(); ++it) {
-    slicer_test::print_slice(*it);
+    slicer_test::print_slice_status(*it);
   }
 
   auto slice_name = slicer_test::slices[0].config.name;
   srslte::console("[agent] checking slice status for slice %s...\n", slice_name.c_str());
   s_status = enb_slicer_interface->slice_status({slice_name});
   for (auto it = s_status.begin(); it != s_status.end(); ++it) {
-    slicer_test::print_slice(*it);
+    slicer_test::print_slice_status(*it);
   }
 
   for (auto it = slicer_test::slices.begin(); it != slicer_test::slices.end(); ++it) {
@@ -225,7 +225,7 @@ void agent::test_slicer_interface()
   srslte::console("[agent] checking all slice status' after binding UEs...\n");
   s_status = enb_slicer_interface->slice_status({});
   for (auto it = s_status.begin(); it != s_status.end(); ++it) {
-    slicer_test::print_slice(*it);
+    slicer_test::print_slice_status(*it);
   }
 
   for (auto it = slicer_test::imsis_to_unbind.begin(); it != slicer_test::imsis_to_unbind.end(); ++it) {
@@ -237,7 +237,7 @@ void agent::test_slicer_interface()
   srslte::console("[agent] checking all slice status' after unbinding UEs...\n");
   s_status = enb_slicer_interface->slice_status({});
   for (auto it = s_status.begin(); it != s_status.end(); ++it) {
-    slicer_test::print_slice(*it);
+    slicer_test::print_slice_status(*it);
   }
 
   srslte::console("[agent] deleting slices ");
@@ -250,7 +250,7 @@ void agent::test_slicer_interface()
   srslte::console("[agent] checking all slice status' after unbinding UEs...\n");
   s_status = enb_slicer_interface->slice_status({});
   for (auto it = s_status.begin(); it != s_status.end(); ++it) {
-    slicer_test::print_slice(*it);
+    slicer_test::print_slice_status(*it);
   }
 }
 #endif

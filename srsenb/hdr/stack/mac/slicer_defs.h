@@ -28,7 +28,18 @@ typedef struct slice_imsis {
 typedef struct slice {
   slice_config_t config;
   std::vector<uint64_t> imsi_list;
-} slice_t, slice_status_t;
+} slice_t;
+
+typedef struct ue_status {
+    uint64_t imsi;
+    bool connected;
+    uint16_t crnti;
+} ue_status_t;
+
+typedef struct slice_status {
+  slice_config_t config;
+  std::vector<ue_status_t> ue_list;
+} slice_status_t;
 
 } // namespace slicer
 

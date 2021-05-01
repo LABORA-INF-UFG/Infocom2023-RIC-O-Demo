@@ -23,10 +23,18 @@ class nexran_model : public service_model
 {
 public:
 
+  typedef struct subscription_model_data {
+    long period;
+    bool on_events;
+    int timer_id;
+  } subscription_model_data_t;
+
   nexran_model(ric::agent *agent_);
   int init();
   void stop();
   virtual ~nexran_model() { stop(); };
+  static void *timer_callback(int timer_id,void *arg);
+  void send_indications(int timer_id);
   int handle_subscription_add(ric::subscription_t *sub);
   int handle_subscription_del(ric::subscription_t *sub,int force,
 			      long *cause,long *cause_detail);
@@ -37,6 +45,8 @@ private:
   std::map<std::string,std::list<std::string>> ues;
   pthread_mutex_t lock;
   long serial_number;
+  std::list<ric::subscription_t *> subscriptions;
+  timer_queue queue;
 };
 
 }

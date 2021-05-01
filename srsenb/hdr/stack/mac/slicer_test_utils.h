@@ -39,6 +39,22 @@ void print_slice(slicer::slice_t slice) {
   print_imsis(slice.imsi_list);
 }
 
+void print_ue_status(slicer::ue_status_t status) {
+  std::cout << "imsi: " << std::setw(16) << std::left << status.imsi
+            << "connected: " << std::setw(6) << std::left << status.connected
+            << "crnti: " << std::setw(8) << std::left << status.crnti;
+  std::cout << std::endl;
+}
+
+void print_slice_status(slicer::slice_status_t status) {
+  std::cout << "name: " << std::setw(10) << std::left << status.config.name
+            << "share: " << std::setw(6) << std::left << status.config.prop_alloc_policy.share
+            << "ue_list: ";
+  std::cout << std::endl;
+  for (auto it = status.ue_list.begin(); it != status.ue_list.end(); ++it)
+    print_ue_status(*it);
+}
+
 } // namespace slicer
 
 #endif // __SLICER_TEST_UTILS_H_

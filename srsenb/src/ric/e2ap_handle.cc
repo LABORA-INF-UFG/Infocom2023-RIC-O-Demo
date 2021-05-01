@@ -106,6 +106,8 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
 
   /* We need to create an ric_subscription to generate errors. */
   rs = new ric::subscription_t;
+  rs->event_trigger.buf = NULL;
+  rs->event_trigger.size = 0;
 
   for (ptr = req->protocolIEs.list.array;
        ptr < &req->protocolIEs.list.array[req->protocolIEs.list.count];

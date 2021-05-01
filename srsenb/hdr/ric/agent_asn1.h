@@ -16,10 +16,16 @@ extern bool e2ap_xer_print;
 extern bool e2sm_xer_print;
 }
 
-#define E2AP_XER_PRINT(stream,type,pdu) \
-    do { if (ric::e2ap_xer_print) xer_fprint(stream,type,pdu); } while (0);
-#define E2SM_XER_PRINT(stream,type,pdu) \
-    do { if (ric::e2sm_xer_print) xer_fprint(stream,type,pdu); } while (0);
+#define E2AP_XER_PRINT(stream,type,pdu)					\
+    do {								\
+	if (ric::e2ap_xer_print)					\
+	    xer_fprint((stream == NULL) ? stderr : stream,type,pdu);	\
+    } while (0);
+#define E2SM_XER_PRINT(stream,type,pdu)					\
+    do {								\
+	if (ric::e2sm_xer_print)					\
+	    xer_fprint((stream == NULL) ? stderr : stream,type,pdu);	\
+    } while (0);
 
 #define HUNDREDS(_val)	\
   ((_val) / 100)

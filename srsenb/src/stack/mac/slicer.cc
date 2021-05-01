@@ -65,18 +65,26 @@ std::vector<slice_status_t> slicer::slice_status(std::vector<std::string> slice_
   std::lock_guard<std::mutex> lock(slicer_mutex);
   srslte::console("[slicer] getting slice status...\n");
   std::vector<slice_status_t> ret;
-  if (slice_names.empty()) {
-    for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
-      ret.push_back(slice_iter->second);
+
+  for (slice_iter = slices.begin(); slice_iter != slices.end(); ++slice_iter) {
+    slice_t& slice = slice_iter->second;
+
+    if (!slice_names.empty()
+	&& std::find(slice_names.begin(),slice_names.end(),slice_iter->first) == slice_names.end())
+      continue;
+
+    slice_status_t status;
+    status.config = slice.config;
+
+    for (auto it = slice.imsi_list.begin(); it != slice.imsi_list.end(); ++it) {
+      uint16_t crnti = 0;
+      if (imsi_to_crnti.count(*it) > 0)
+	crnti = imsi_to_crnti[*it];
+      ue_status_t ue{*it,(crnti > 0) ? true : false,crnti};
+      status.ue_list.push_back(ue);
     }
-  }
-  else {
-    for (auto it = slice_names.begin(); it != slice_names.end(); ++it) {
-      auto it1 = slices.find(*it);
-      if (it1 != slices.end()) {
-        ret.push_back(it1->second);
-      }
-    }
+
+    ret.push_back(status);
   }
 
   return ret;
