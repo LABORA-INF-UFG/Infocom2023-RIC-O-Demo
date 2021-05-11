@@ -217,7 +217,7 @@ static void fill_slice_status_report(E2SM_NEXRAN_SliceStatusReport *report,
     item->schedPolicy.choice.proportionalAllocationPolicy.share = \
 	status.config.prop_alloc_policy.share;
 
-    for (auto it2 = status.ue_list.begin(); it2 != status.ue_list.end(); ++it) {
+    for (auto it2 = status.ue_list.begin(); it2 != status.ue_list.end(); ++it2) {
       E2SM_NEXRAN_UeStatus *ue_item = (E2SM_NEXRAN_UeStatus *)calloc(1,sizeof(*ue_item));
 
       char imsi_buf[32];
