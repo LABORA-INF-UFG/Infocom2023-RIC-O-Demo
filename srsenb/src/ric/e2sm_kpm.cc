@@ -152,6 +152,8 @@ void metrics::update(srsenb::enb_metrics_t *em)
    * Handle MAC counters.
    *
    * NB: these zero on every read, so this is broken for > 1 subscription.
+   * ... except the RB counters are read every time from sched_ue objects,
+   * and those counters are total.
    */
   for (uint16_t i = 0; i < ENB_METRICS_MAX_USERS; ++i) {
     uint16_t rnti = em->stack.mac[i].rnti;
@@ -167,9 +169,9 @@ void metrics::update(srsenb::enb_metrics_t *em)
       total_ues[rnti] = ues[rnti] = nm;
     }
     else {
-      ues[rnti].dl_prbs = em->stack.mac[i].dl_rb;
-      ues[rnti].ul_prbs = em->stack.mac[i].ul_rb;
+      DELTA(ues[rnti].dl_prbs,total_ues[rnti].dl_prbs,em->stack.mac[i].dl_rb,UINT64_MAX);
       total_ues[rnti].dl_prbs = em->stack.mac[i].dl_rb;
+      DELTA(ues[rnti].ul_prbs,total_ues[rnti].ul_prbs,em->stack.mac[i].ul_rb,UINT64_MAX);
       total_ues[rnti].ul_prbs = em->stack.mac[i].ul_rb;
     }
   }
