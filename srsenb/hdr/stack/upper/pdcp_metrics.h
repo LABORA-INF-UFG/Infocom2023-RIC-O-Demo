@@ -29,9 +29,11 @@ namespace srsenb {
 
 struct pdcp_ue_metrics_t {
   uint16_t rnti;
-  uint64_t dl_bytes[SRSENB_N_RADIO_BEARERS];
+  uint64_t dl_bytes;
+  uint64_t ul_bytes;
+  uint64_t dl_bytes_by_bearer[SRSENB_N_RADIO_BEARERS];
   uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
-  uint64_t ul_bytes[SRSENB_N_RADIO_BEARERS];
+  uint64_t ul_bytes_by_bearer[SRSENB_N_RADIO_BEARERS];
   uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
 };
 

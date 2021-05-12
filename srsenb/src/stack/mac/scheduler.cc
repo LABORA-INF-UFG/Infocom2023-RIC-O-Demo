@@ -275,6 +275,20 @@ uint32_t sched::get_ul_buffer(uint16_t rnti)
   return ret;
 }
 
+uint64_t sched::get_dl_rb_total(uint16_t rnti)
+{
+  uint64_t ret = SRSLTE_ERROR;
+  ue_db_access(rnti, [&ret](sched_ue& ue) { ret = ue.get_dl_rb_total(); }, __PRETTY_FUNCTION__);
+  return ret;
+}
+
+uint64_t sched::get_ul_rb_total(uint16_t rnti)
+{
+  uint64_t ret = SRSLTE_ERROR;
+  ue_db_access(rnti, [&ret](sched_ue& ue) { ret = ue.get_ul_rb_total(); }, __PRETTY_FUNCTION__);
+  return ret;
+}
+
 int sched::dl_rlc_buffer_state(uint16_t rnti, uint32_t lc_id, uint32_t tx_queue, uint32_t retx_queue)
 {
   return ue_db_access(rnti, [&](sched_ue& ue) { ue.dl_buffer_state(lc_id, tx_queue, retx_queue); });

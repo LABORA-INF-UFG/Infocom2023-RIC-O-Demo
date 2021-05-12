@@ -194,6 +194,8 @@ public:
   void                             set_slice_status(uint8_t status) { slice_status = status; }
   uint8_t                          get_slice_status() const { return slice_status; }
 #endif
+  uint64_t                   get_dl_rb_total() { return dl_rb_total; };
+  uint64_t                   get_ul_rb_total() { return ul_rb_total; };
 
   /*******************************************************
    * Functions used by scheduler metric objects
@@ -211,6 +213,9 @@ public:
   dl_harq_proc* get_pending_dl_harq(uint32_t tti_tx_dl, uint32_t cc_idx);
   dl_harq_proc* get_empty_dl_harq(uint32_t tti_tx_dl, uint32_t cc_idx);
   ul_harq_proc* get_ul_harq(uint32_t tti, uint32_t ue_cc_idx);
+
+  void                       add_dl_rb(uint32_t rb) { dl_rb_total += rb; };
+  void                       add_ul_rb(uint32_t rb) { ul_rb_total += rb; };
 
   /*******************************************************
    * Functions used by the scheduler carrier object
@@ -308,6 +313,9 @@ private:
   uint32_t cqi_request_tti = 0;
   uint16_t rnti            = 0;
   uint32_t max_msg3retx    = 0;
+
+  uint64_t dl_rb_total = 0;
+  uint64_t ul_rb_total = 0;
 
   /* User State */
   int next_tpc_pusch = 0;

@@ -30,6 +30,7 @@ class slicer {
     bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list);
     bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list);
     bool slice_delete(std::vector<std::string> slice_names);
+    std::map<std::string,std::vector<uint16_t>> get_slice_map();
 
     // for rrc
     int upd_member_crnti(uint64_t imsi, uint16_t crnti);

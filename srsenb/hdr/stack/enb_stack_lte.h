@@ -65,6 +65,7 @@ public:
   std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) final;
   bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) final;
   bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) final;
+  std::map<std::string,std::vector<uint16_t>> get_slice_map() final;
 #endif
 
   /* PHY-MAC interface */

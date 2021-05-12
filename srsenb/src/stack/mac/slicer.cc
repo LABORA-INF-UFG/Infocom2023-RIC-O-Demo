@@ -167,6 +167,12 @@ bool slicer::slice_delete(std::vector<std::string> slice_names)
   return false;
 }
 
+std::map<std::string,std::vector<uint16_t>> slicer::get_slice_map()
+{
+  std::lock_guard<std::mutex> lock(slicer_mutex);
+  return slice_to_crnti_vec;
+}
+
 int slicer::upd_member_crnti(uint64_t imsi, uint16_t crnti)
 {
   std::lock_guard<std::mutex> lock(slicer_mutex);

@@ -41,6 +41,8 @@ struct mac_metrics_t {
   float    dl_ri;
   float    dl_pmi;
   float    phr;
+  uint64_t dl_rb;
+  uint64_t ul_rb;
 };
 
 } // namespace srsenb

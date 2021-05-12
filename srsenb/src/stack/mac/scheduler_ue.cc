@@ -175,6 +175,9 @@ void sched_ue::reset()
   for (uint32_t i = 0; i < cfg.ue_bearers.size(); ++i) {
     lch_handler.config_lcid(i, {});
   }
+
+  dl_rb_total = 0;
+  ul_rb_total = 0;
 }
 
 void sched_ue::new_tti(srslte::tti_point new_tti)

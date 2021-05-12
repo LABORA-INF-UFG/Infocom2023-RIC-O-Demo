@@ -159,6 +159,7 @@ public:
   std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) override;
   bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
   bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) override;
+  std::map<std::string,std::vector<uint16_t>> get_slice_map() override;
 #endif
 
 private:

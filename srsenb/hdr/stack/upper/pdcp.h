@@ -73,8 +73,9 @@ private:
   public:
     uint16_t                    rnti;
 #ifdef ENABLE_RIC_AGENT_KPM
+    uint64_t                    dl_bytes;
     int8_t                      bearer_qci_map[SRSENB_N_RADIO_BEARERS];
-    uint64_t                    dl_bytes[SRSENB_N_RADIO_BEARERS];
+    uint64_t                    dl_bytes_by_bearer[SRSENB_N_RADIO_BEARERS];
     uint64_t                    dl_bytes_by_qci[MAX_NOF_QCI];
 #endif
     srsenb::rlc_interface_pdcp* rlc;
@@ -90,8 +91,9 @@ private:
   public:
     uint16_t                     rnti;
 #ifdef ENABLE_RIC_AGENT_KPM
+    uint64_t                     ul_bytes;
     int8_t                       bearer_qci_map[SRSENB_N_RADIO_BEARERS];
-    uint64_t                     ul_bytes[SRSENB_N_RADIO_BEARERS];
+    uint64_t                     ul_bytes_by_bearer[SRSENB_N_RADIO_BEARERS];
     uint64_t                     ul_bytes_by_qci[MAX_NOF_QCI];
 #endif
     srsenb::gtpu_interface_pdcp* gtpu;

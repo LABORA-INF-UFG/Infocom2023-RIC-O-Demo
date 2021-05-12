@@ -102,6 +102,7 @@ public:
   virtual std::vector<slicer::slice_status_t> slice_status(std::vector<std::string> slice_names) = 0;
   virtual bool slice_ue_bind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
   virtual bool slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_list) = 0;
+  virtual std::map<std::string,std::vector<uint16_t>> get_slice_map() = 0;
 #endif
 
 };

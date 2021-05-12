@@ -283,6 +283,11 @@ bool enb_stack_lte::slice_ue_unbind(std::string slice_name, std::vector<uint64_t
 {
   return mac.slicer.slice_ue_unbind(slice_name, imsi_list);
 }
+
+std::map<std::string,std::vector<uint16_t>> enb_stack_lte::get_slice_map()
+{
+  return mac.slicer.get_slice_map();
+}
 #endif
 
 } // namespace srsenb

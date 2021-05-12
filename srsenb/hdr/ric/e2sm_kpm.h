@@ -19,30 +19,61 @@
 #include "E2SM_KPM_RT-Period-IE.h"
 
 namespace ric {
+namespace kpm {
 
 #define NUM_PERIODS (E2SM_KPM_RT_Period_IE_ms10240 + 1)
+
+typedef struct entity_metrics
+{
+  uint64_t dl_bytes;
+  uint64_t ul_bytes;
+  uint64_t dl_prbs;
+  uint64_t ul_prbs;
+  uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
+  uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
+} entity_metrics_t;
+
+class metrics;
+
+#ifdef ENABLE_SLICER
+class slice_metrics
+{
+public:
+
+  slice_metrics() : slices() { };
+  virtual ~slice_metrics() = default;
+  void update(metrics *m,std::map<std::string,std::vector<uint16_t>> slice_map);
+  void reset();
+
+  std::map<std::string,entity_metrics_t> slices;
+};
+#endif
+
+class metrics
+{
+public:
+
+  metrics()
+    : have_prbs(false),active_ue_count(0),ues(),total_ues(),
+      dl_bytes_by_qci{0},ul_bytes_by_qci{0} {};
+  virtual ~metrics() = default;
+  void update(srsenb::enb_metrics_t *em);
+  void reset();
+
+  /* Current per-period deltas. */
+  bool have_prbs;
+  long active_ue_count;
+  std::map<uint16_t,entity_metrics_t> ues;
+  uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
+  uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
+
+  /* Current total counters. */
+  std::map<uint16_t,entity_metrics_t> total_ues;
+};
 
 class kpm_model : public service_model
 {
 public:
-
-  class metrics
-  {
-  public:
-
-    metrics();
-    metrics(srsenb::enb_metrics_t *em);
-    void merge_diff(metrics &nm);
-    void reset();
-
-    bool have_bytes;
-    bool have_prbs;
-    long active_ue_count;
-    uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
-    uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
-    uint64_t dl_prbs_by_qci[MAX_NOF_QCI];
-    uint64_t ul_prbs_by_qci[MAX_NOF_QCI];
-  };
 
   typedef struct subscription_model_data {
     std::list<int> periods;
@@ -52,6 +83,9 @@ public:
     int ms;
     int timer_id;
     metrics last_metrics;
+#ifdef ENABLE_SLICER
+    slice_metrics last_slice_metrics;
+#endif
     std::list<ric::subscription_t *> subscriptions;
   } report_period_t;
 
@@ -74,6 +108,7 @@ private:
   timer_queue queue;
 };
 
+}
 }
 
 #endif

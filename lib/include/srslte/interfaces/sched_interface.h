@@ -257,6 +257,9 @@ public:
   virtual uint32_t get_ul_buffer(uint16_t rnti) = 0;
   virtual uint32_t get_dl_buffer(uint16_t rnti) = 0;
 
+  virtual uint64_t get_dl_rb_total(uint16_t rnti) = 0;
+  virtual uint64_t get_ul_rb_total(uint16_t rnti) = 0;
+
   /******************* Scheduling Interface ***********************/
 
   /**

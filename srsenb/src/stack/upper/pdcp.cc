@@ -52,8 +52,10 @@ void pdcp::get_metrics(pdcp_metrics_t& m)
   for (auto iter = users.begin(); m.n_ues < ENB_METRICS_MAX_USERS && iter != users.end(); ++iter) {
     user_interface& u = iter->second;
     m.ues[m.n_ues].rnti = u.rlc_itf.rnti;
-    memcpy(m.ues[m.n_ues].dl_bytes,u.rlc_itf.dl_bytes,sizeof(m.ues[m.n_ues].dl_bytes));
-    memcpy(m.ues[m.n_ues].ul_bytes,u.gtpu_itf.ul_bytes,sizeof(m.ues[m.n_ues].ul_bytes));
+    m.ues[m.n_ues].dl_bytes = u.rlc_itf.dl_bytes;
+    m.ues[m.n_ues].ul_bytes = u.gtpu_itf.ul_bytes;
+    memcpy(m.ues[m.n_ues].dl_bytes_by_bearer,u.rlc_itf.dl_bytes_by_bearer,sizeof(m.ues[m.n_ues].dl_bytes_by_bearer));
+    memcpy(m.ues[m.n_ues].ul_bytes_by_bearer,u.gtpu_itf.ul_bytes_by_bearer,sizeof(m.ues[m.n_ues].ul_bytes_by_bearer));
     memcpy(m.ues[m.n_ues].dl_bytes_by_qci,u.rlc_itf.dl_bytes_by_qci,sizeof(m.ues[m.n_ues].dl_bytes_by_qci));
     memcpy(m.ues[m.n_ues].ul_bytes_by_qci,u.gtpu_itf.ul_bytes_by_qci,sizeof(m.ues[m.n_ues].ul_bytes_by_qci));
     ++m.n_ues;
@@ -74,6 +76,16 @@ void pdcp::add_user(uint16_t rnti)
     users[rnti].rlc_itf.rlc   = rlc;
     users[rnti].gtpu_itf.gtpu = gtpu;
     users[rnti].pdcp          = obj;
+#ifdef ENABLE_RIC_AGENT_KPM
+    users[rnti].rlc_itf.dl_bytes = 0;
+    memset(users[rnti].rlc_itf.dl_bytes_by_bearer,0,sizeof(users[rnti].rlc_itf.dl_bytes_by_bearer));
+    memset(users[rnti].rlc_itf.dl_bytes_by_qci,0,sizeof(users[rnti].rlc_itf.dl_bytes_by_qci));
+    memset(users[rnti].rlc_itf.bearer_qci_map,0,sizeof(users[rnti].rlc_itf.bearer_qci_map));
+    users[rnti].gtpu_itf.ul_bytes = 0;
+    memset(users[rnti].gtpu_itf.ul_bytes_by_bearer,0,sizeof(users[rnti].gtpu_itf.ul_bytes_by_bearer));
+    memset(users[rnti].gtpu_itf.ul_bytes_by_qci,0,sizeof(users[rnti].gtpu_itf.ul_bytes_by_qci));
+    memset(users[rnti].gtpu_itf.bearer_qci_map,0,sizeof(users[rnti].gtpu_itf.bearer_qci_map));
+#endif
   }
 }
 
@@ -188,7 +200,8 @@ void pdcp::write_sdu(uint16_t rnti, uint32_t lcid, srslte::unique_byte_buffer_t 
 void pdcp::user_interface_gtpu::write_pdu(uint32_t lcid, srslte::unique_byte_buffer_t pdu)
 {
 #ifdef ENABLE_RIC_AGENT_KPM
-  ul_bytes[lcid] += pdu->N_bytes;
+  ul_bytes += pdu->N_bytes;
+  ul_bytes_by_bearer[lcid] += pdu->N_bytes;
   ul_bytes_by_qci[bearer_qci_map[lcid]] += pdu->N_bytes;
 #endif
   gtpu->write_pdu(rnti, lcid, std::move(pdu));
@@ -197,7 +210,8 @@ void pdcp::user_interface_gtpu::write_pdu(uint32_t lcid, srslte::unique_byte_buf
 void pdcp::user_interface_rlc::write_sdu(uint32_t lcid, srslte::unique_byte_buffer_t sdu)
 {
 #ifdef ENABLE_RIC_AGENT_KPM
-  dl_bytes[lcid] += sdu->N_bytes;
+  dl_bytes += sdu->N_bytes;
+  dl_bytes_by_bearer[lcid] += sdu->N_bytes;
   dl_bytes_by_qci[bearer_qci_map[lcid]] += sdu->N_bytes;
 #endif
   rlc->write_sdu(rnti, lcid, std::move(sdu));

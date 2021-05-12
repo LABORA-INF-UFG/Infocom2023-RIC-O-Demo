@@ -125,7 +125,7 @@ int agent::init(const srsenb::all_args_t& args_,
 
   /* Add E2SM service models. */
 #ifdef ENABLE_RIC_AGENT_KPM
-  model = new kpm_model(this);
+  model = new ric::kpm::kpm_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-KPM model; aborting!\n");
     delete model;

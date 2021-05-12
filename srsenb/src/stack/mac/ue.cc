@@ -550,6 +550,8 @@ void ue::metrics_read(mac_metrics_t* metrics_)
   metrics.rnti      = rnti;
   metrics.ul_buffer = sched->get_ul_buffer(rnti);
   metrics.dl_buffer = sched->get_dl_buffer(rnti);
+  metrics.dl_rb     = sched->get_dl_rb_total(rnti);
+  metrics.ul_rb     = sched->get_ul_rb_total(rnti);
 
   memcpy(metrics_, &metrics, sizeof(mac_metrics_t));
 

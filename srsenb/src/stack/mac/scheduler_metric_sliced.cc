@@ -195,6 +195,7 @@ dl_harq_proc* dl_metric_sliced::allocate_user(sched_ue* user)
     rbgmask_t retx_mask = h->get_rbgmask();
     code                = tti_alloc->alloc_dl_user(user, retx_mask, h->get_id());
     if (code == alloc_outcome_t::SUCCESS) {
+      user->add_dl_rb(retx_mask.count());
       return h;
     }
     if (code == alloc_outcome_t::DCI_COLLISION) {
@@ -208,6 +209,7 @@ dl_harq_proc* dl_metric_sliced::allocate_user(sched_ue* user)
     if (find_allocation(nof_rbg, nof_rbg, &retx_mask)) {
       code = tti_alloc->alloc_dl_user(user, retx_mask, h->get_id());
       if (code == alloc_outcome_t::SUCCESS) {
+	user->add_dl_rb(nof_rbg);
         return h;
       }
       if (code == alloc_outcome_t::DCI_COLLISION) {
@@ -228,6 +230,7 @@ dl_harq_proc* dl_metric_sliced::allocate_user(sched_ue* user)
         // some empty spaces were found
         code = tti_alloc->alloc_dl_user(user, newtx_mask, h->get_id());
         if (code == alloc_outcome_t::SUCCESS) {
+	  user->add_dl_rb(newtx_mask.count());
           return h;
         } else if (code == alloc_outcome_t::DCI_COLLISION) {
           log_h->info("SCHED: Couldn't find space in PDCCH for DL tx for rnti=0x%x\n", user->get_rnti());
@@ -345,6 +348,7 @@ ul_harq_proc* ul_metric_sliced::allocate_user_retx_prbs(sched_ue* user)
     // If can schedule the same mask, do it
     ret = tti_alloc->alloc_ul_user(user, alloc);
     if (ret == alloc_outcome_t::SUCCESS) {
+      user->add_ul_rb(alloc.length());
       return h;
     }
     if (ret == alloc_outcome_t::DCI_COLLISION) {
@@ -355,6 +359,7 @@ ul_harq_proc* ul_metric_sliced::allocate_user_retx_prbs(sched_ue* user)
     if (find_allocation(alloc.length(), &alloc)) {
       ret = tti_alloc->alloc_ul_user(user, alloc);
       if (ret == alloc_outcome_t::SUCCESS) {
+	user->add_ul_rb(alloc.length());
         return h;
       }
       if (ret == alloc_outcome_t::DCI_COLLISION) {
@@ -389,6 +394,7 @@ ul_harq_proc* ul_metric_sliced::allocate_user_newtx_prbs(sched_ue* user)
     if (alloc.length() > 0) { // at least one PRB was scheduled
       alloc_outcome_t ret = tti_alloc->alloc_ul_user(user, alloc);
       if (ret == alloc_outcome_t::SUCCESS) {
+	user->add_ul_rb(alloc.length());
         return h;
       }
       if (ret == alloc_outcome_t::DCI_COLLISION) {

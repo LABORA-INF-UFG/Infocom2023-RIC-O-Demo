@@ -273,6 +273,11 @@ bool enb::slice_ue_unbind(std::string slice_name, std::vector<uint64_t> imsi_lis
 {
   return stack->slice_ue_unbind(slice_name, imsi_list);
 }
+
+std::map<std::string,std::vector<uint16_t>> enb::get_slice_map()
+{
+  return stack->get_slice_map();
+}
 #endif
 
 srslte::LOG_LEVEL_ENUM enb::level(std::string l)
