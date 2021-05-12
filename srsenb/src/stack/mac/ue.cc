@@ -544,13 +544,34 @@ uint8_t* ue::generate_mch_pdu(uint32_t                      harq_pid,
   return ret;
 }
 
+static inline unsigned int rbg_to_rb_factor(uint32_t nof_prb)
+{
+  switch (nof_prb)
+  {
+  case 6:
+    return 1;
+  case 15:
+    return 2;
+  case 25:
+    return 2;
+  case 50:
+    return 3;
+  case 75:
+    return 4;
+  case 100:
+    return 4;
+  default:
+    return 1;
+  }
+}
+
 /******* METRICS interface ***************/
 void ue::metrics_read(mac_metrics_t* metrics_)
 {
   metrics.rnti      = rnti;
   metrics.ul_buffer = sched->get_ul_buffer(rnti);
   metrics.dl_buffer = sched->get_dl_buffer(rnti);
-  metrics.dl_rb     = sched->get_dl_rb_total(rnti);
+  metrics.dl_rb     = sched->get_dl_rbg_total(rnti) * rbg_to_rb_factor(nof_prb);
   metrics.ul_rb     = sched->get_ul_rb_total(rnti);
 
   memcpy(metrics_, &metrics, sizeof(mac_metrics_t));

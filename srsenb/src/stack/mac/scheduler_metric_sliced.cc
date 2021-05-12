@@ -195,7 +195,7 @@ dl_harq_proc* dl_metric_sliced::allocate_user(sched_ue* user)
     rbgmask_t retx_mask = h->get_rbgmask();
     code                = tti_alloc->alloc_dl_user(user, retx_mask, h->get_id());
     if (code == alloc_outcome_t::SUCCESS) {
-      user->add_dl_rb(retx_mask.count());
+      user->add_dl_rbg(retx_mask.count());
       return h;
     }
     if (code == alloc_outcome_t::DCI_COLLISION) {
@@ -209,7 +209,7 @@ dl_harq_proc* dl_metric_sliced::allocate_user(sched_ue* user)
     if (find_allocation(nof_rbg, nof_rbg, &retx_mask)) {
       code = tti_alloc->alloc_dl_user(user, retx_mask, h->get_id());
       if (code == alloc_outcome_t::SUCCESS) {
-	user->add_dl_rb(nof_rbg);
+	user->add_dl_rbg(nof_rbg);
         return h;
       }
       if (code == alloc_outcome_t::DCI_COLLISION) {
@@ -230,7 +230,7 @@ dl_harq_proc* dl_metric_sliced::allocate_user(sched_ue* user)
         // some empty spaces were found
         code = tti_alloc->alloc_dl_user(user, newtx_mask, h->get_id());
         if (code == alloc_outcome_t::SUCCESS) {
-	  user->add_dl_rb(newtx_mask.count());
+	  user->add_dl_rbg(newtx_mask.count());
           return h;
         } else if (code == alloc_outcome_t::DCI_COLLISION) {
           log_h->info("SCHED: Couldn't find space in PDCCH for DL tx for rnti=0x%x\n", user->get_rnti());

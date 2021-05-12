@@ -176,7 +176,7 @@ void sched_ue::reset()
     lch_handler.config_lcid(i, {});
   }
 
-  dl_rb_total = 0;
+  dl_rbg_total = 0;
   ul_rb_total = 0;
 }
 

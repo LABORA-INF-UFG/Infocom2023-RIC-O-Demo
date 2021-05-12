@@ -110,7 +110,7 @@ public:
   uint32_t get_ul_buffer(uint16_t rnti) final;
   uint32_t get_dl_buffer(uint16_t rnti) final;
 
-  uint64_t get_dl_rb_total(uint16_t rnti) final;
+  uint64_t get_dl_rbg_total(uint16_t rnti) final;
   uint64_t get_ul_rb_total(uint16_t rnti) final;
 
   int dl_rlc_buffer_state(uint16_t rnti, uint32_t lc_id, uint32_t tx_queue, uint32_t retx_queue) final;

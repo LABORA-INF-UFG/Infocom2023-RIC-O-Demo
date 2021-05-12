@@ -275,10 +275,10 @@ uint32_t sched::get_ul_buffer(uint16_t rnti)
   return ret;
 }
 
-uint64_t sched::get_dl_rb_total(uint16_t rnti)
+uint64_t sched::get_dl_rbg_total(uint16_t rnti)
 {
   uint64_t ret = SRSLTE_ERROR;
-  ue_db_access(rnti, [&ret](sched_ue& ue) { ret = ue.get_dl_rb_total(); }, __PRETTY_FUNCTION__);
+  ue_db_access(rnti, [&ret](sched_ue& ue) { ret = ue.get_dl_rbg_total(); }, __PRETTY_FUNCTION__);
   return ret;
 }
 
