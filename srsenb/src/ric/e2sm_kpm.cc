@@ -36,6 +36,7 @@
 #include "E2SM_KPM_PerUEReportListItem.h"
 #ifdef ENABLE_SLICER
 #include "E2SM_KPM_PerSliceReportListItemFormat.h"
+#include "E2SM_KPM_PerSliceReportListItem.h"
 #endif
 
 namespace ric {
@@ -634,17 +635,36 @@ void kpm_model::send_indications(int timer_id)
       (E2SM_KPM_PerQCIReportListItem_t *)calloc(1,sizeof(*pqi));
     ASN_SEQUENCE_ADD(&duc->perQCIReportList.list,pqi);
 
+    served_item->du_PM_EPC = duc;
+
     if (dm->have_prbs) {
       duc->perUEReportList = (E2SM_KPM_EPC_DU_PM_Container::E2SM_KPM_EPC_DU_PM_Container__perUEReportList *)calloc(1,sizeof(*duc->perUEReportList));
       for (auto it = dm->ues.begin(); it != dm->ues.end(); ++it) {
-        E2SM_KPM_PerUEReportListItem_t *pui = \
+	E2SM_KPM_PerUEReportListItem_t *pui = \
 	  (E2SM_KPM_PerUEReportListItem_t *)calloc(1,sizeof(*pui));
 	pui->rnti = it->first;
-	pui->dl_PRBUsage = it->second.dl_prbs;
-	pui->ul_PRBUsage = it->second.ul_prbs;
+	asn_uint642INTEGER(&pui->dl_PRBUsage,it->second.dl_prbs);
+	asn_uint642INTEGER(&pui->ul_PRBUsage,it->second.ul_prbs);
 	ASN_SEQUENCE_ADD(&duc->perUEReportList->list,pui);
       }
-      served_item->du_PM_EPC = duc;
+
+#ifdef ENABLE_SLICER
+      if (sm->slices.size() > 0) {
+	  duc->perSliceReportList = \
+	    (E2SM_KPM_EPC_DU_PM_Container::E2SM_KPM_EPC_DU_PM_Container__perSliceReportList *)calloc(1,sizeof(*duc->perSliceReportList));
+	  for (auto it = sm->slices.begin(); it != sm->slices.end(); ++it) {
+	    E2SM_KPM_PerSliceReportListItem_t *slice_item = \
+	      (E2SM_KPM_PerSliceReportListItem_t *)calloc(1,sizeof(*slice_item));
+	    slice_item->sliceName.buf = (uint8_t *)malloc(it->first.size());
+	    slice_item->sliceName.size = it->first.size();
+	    strncpy((char *)slice_item->sliceName.buf,it->first.c_str(),
+		    slice_item->sliceName.size);
+	    asn_uint642INTEGER(&slice_item->dl_PRBUsage,it->second.dl_prbs);
+	    asn_uint642INTEGER(&slice_item->ul_PRBUsage,it->second.ul_prbs);
+	    ASN_SEQUENCE_ADD(&duc->perSliceReportList->list,slice_item);
+	  }
+      }
+#endif
     }
 
     ASN_SEQUENCE_ADD(&crr_item->servedPlmnPerCellList.list,served_item);
