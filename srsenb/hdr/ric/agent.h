@@ -114,6 +114,8 @@ private:
   std::list<std::string> functions_disabled;
   std::string remote_ipv4_addr;
   uint16_t remote_port;
+  std::string local_ipv4_addr;
+  uint16_t local_port;
 };
 
 #define RIC_DEBUG(msg,args...) log.ric.debug(msg,##args)

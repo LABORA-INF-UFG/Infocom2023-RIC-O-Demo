@@ -372,6 +372,19 @@ int agent::connect()
     return SRSLTE_ERROR;
   }
 
+  if (strlen(args.ric_agent.local_ipv4_addr.c_str()) > 0
+      || args.ric_agent.local_port) {
+    if (!ric_socket.bind_addr(args.ric_agent.local_ipv4_addr.c_str(),
+			      args.ric_agent.local_port)) {
+      RIC_ERROR("failed to bind local SCTP address/port (%s,%d)\n",
+		args.ric_agent.local_ipv4_addr.c_str(),
+		args.ric_agent.local_port);
+      stop();
+      set_state(RIC_DISABLED);
+      return SRSLTE_ERROR;
+    }
+  }
+
   /* Set specific stream options for this socket. */
   struct sctp_initmsg initmsg = { 1,1,3,5 };
   if (setsockopt(ric_socket.fd(),IPPROTO_SCTP,SCTP_INITMSG,
