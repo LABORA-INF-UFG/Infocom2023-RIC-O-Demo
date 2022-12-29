@@ -27,7 +27,6 @@ E2SIM_VALUES = 'helm-charts/e2sim-helm/values.yaml'
 
 #Globals
 optimization_interation= 1
-input_deployed = '{}'
 
 #A function to read YAML file
 #def read_yaml():
@@ -53,22 +52,9 @@ def update_node_yaml(values,node_name):
 #    with open('hwxapp-ns/values-edit.yaml', 'w') as file:
 #        yaml.dump(data, file)
 
-#A function to write edited YAML file
 def write_yaml(data, path_file):
     with open(path_file, 'w') as file:
         yaml.dump(data, file)
-
-#A function to write edited YAML file
-def sorting(item):
-    if isinstance(item, dict):
-        return sorted((key, sorting(values)) for key, values in item.items())
-    if isinstance(item, list):
-        return sorted(sorting(x) for x in item)
-    else:
-        return item
-
-def compare_json(json1_dict,json2_dict):
-    return sorting(json1_dict) == sorting(json2_dict)
 
 #A function to read json result
 def read_json():
@@ -374,7 +360,24 @@ def alert():
         if (i['labels']['alertname'] == TRIGGER_ALLERT_LOOPING and data['status'] == STATUS_ALLERT)\
             or (i['labels']['alertname'] == TRIGGER_ALLERT_NODE and data['status'] == STATUS_ALLERT):
             print('Trigger activated, calling optimization solution')
-            return run_deployment()
+            json_url = urllib.request.urlopen("http://service-optimizer.ricinfra.svc.cluster.local/optimizer-optimal")
+            input = json.loads(json_url.read())
+            #TODO comparar ultima otimização verificar se não é igual
+            pprint.pprint(input)
+            #print('Upgrade e2term deployment')
+            #input = read_json()
+            #upgrade_e2term_deploy(input)
+            print('Upgrade e2sim deployment')
+            upgrade_e2sim_deploy(input)
+            print('Upgrade xApp1 deployment')
+            xapp_name =  'xApp1'
+            upgrade_xapp_deploy(input, xapp_name)
+            print('Remove last optimized functions')
+            remove_OPT_VNFs()
+            global optimization_interation 
+            optimization_interation += 1
+            print('RIC optimization complete')
+            return 'RIC environment optimized\n'
     return 'Nothing to do. Untreatable alert\n'
             
 
@@ -385,26 +388,14 @@ def hello():
 def run_deployment():
     json_url = urllib.request.urlopen("http://service-optimizer.ricinfra.svc.cluster.local/optimizer-optimal")
     input = json.loads(json_url.read())
-    #TODO comparar ultima otimização verificar se não é igual
-    pprint.pprint(input)
-    #print('Upgrade e2term deployment')
     #input = read_json()
     #upgrade_e2term_deploy(input)
-    global input_deployed
-    if compare_json(input_deployed,input):
-        return 'No change in optization result\n'
-    else:
-        print('Upgrade e2sim deployment')
-        upgrade_e2sim_deploy(input)
-        print('Upgrade xApp1 deployment')
-        xapp_name =  'xApp1'
-        upgrade_xapp_deploy(input, xapp_name)
-        print('Remove last optimized functions')
-        remove_OPT_VNFs()
-        global optimization_interation 
-        optimization_interation += 1
-        input_deployed = input
-        return 'RIC environment optimized\n'
+    upgrade_e2sim_deploy(input)
+    xapp_name =  'xApp1'
+    upgrade_xapp_deploy(input, xapp_name)
+    remove_OPT_VNFs()
+    global optimization_interation 
+    optimization_interation += 1
 
 if __name__ == '__main__':
     print('Deployer started')
