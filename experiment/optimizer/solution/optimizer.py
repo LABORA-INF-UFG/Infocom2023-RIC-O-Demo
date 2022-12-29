@@ -85,7 +85,7 @@ def generate_input():
             E2_cost = 4
             SDL_cost = 2
             DB_cost = 0
-            xApp_cost = 1
+            xApp_cost = 2
         else:
             cpu = 9999
             storage = 9999
