@@ -149,7 +149,7 @@ def generate_input():
     ###### Taking links delay from node 3 ######
 
     for from_node in crs_id_list:
-        result = prom.get_current_metric_value(metric_name='sum by (job) (avg_over_time(probe_http_duration_seconds{app_kubernetes_io_instance="blackbox-node'+str(from_node)+'", phase!="resolve", phase!="tls"}[1m]))')
+        result = prom.get_current_metric_value(metric_name='sum by (job) (avg_over_time(probe_http_duration_seconds{app_kubernetes_io_instance="blackbox-node'+str(from_node)+'", phase!="resolve", phase!="tls", phase!="processing"}[1m]))')
         # result = [{'metric': {'job': 'blackbox-node5'}, 'value': [1661218428.604, '0.0018186399999999998']},
         #         {'metric': {'job': 'blackbox-node2'}, 'value': [1661218428.604, '0.0018372592']},
         #         {'metric': {'job': 'blackbox-node4'}, 'value': [1661218428.604, '0.0019681388']},
