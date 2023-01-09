@@ -1,0 +1,377 @@
+ASN_MODULE_SRCS=	\
+	EXACT/E2AP_E2AP-PDU.c	\
+	EXACT/E2AP_InitiatingMessage.c	\
+	EXACT/E2AP_SuccessfulOutcome.c	\
+	EXACT/E2AP_UnsuccessfulOutcome.c	\
+	EXACT/E2AP_RICsubscriptionRequest.c	\
+	EXACT/E2AP_RICsubscriptionDetails.c	\
+	EXACT/E2AP_RICactions-ToBeSetup-List.c	\
+	EXACT/E2AP_RICaction-ToBeSetup-Item.c	\
+	EXACT/E2AP_RICsubscriptionResponse.c	\
+	EXACT/E2AP_RICaction-Admitted-List.c	\
+	EXACT/E2AP_RICaction-Admitted-Item.c	\
+	EXACT/E2AP_RICaction-NotAdmitted-List.c	\
+	EXACT/E2AP_RICaction-NotAdmitted-Item.c	\
+	EXACT/E2AP_RICsubscriptionFailure.c	\
+	EXACT/E2AP_RICsubscriptionDeleteRequest.c	\
+	EXACT/E2AP_RICsubscriptionDeleteResponse.c	\
+	EXACT/E2AP_RICsubscriptionDeleteFailure.c	\
+	EXACT/E2AP_RICsubscriptionDeleteRequired.c	\
+	EXACT/E2AP_RICsubscription-List-withCause.c	\
+	EXACT/E2AP_RICsubscription-withCause-Item.c	\
+	EXACT/E2AP_RICindication.c	\
+	EXACT/E2AP_RICcontrolRequest.c	\
+	EXACT/E2AP_RICcontrolAcknowledge.c	\
+	EXACT/E2AP_RICcontrolFailure.c	\
+	EXACT/E2AP_ErrorIndication.c	\
+	EXACT/E2AP_E2setupRequest.c	\
+	EXACT/E2AP_E2setupResponse.c	\
+	EXACT/E2AP_E2setupFailure.c	\
+	EXACT/E2AP_E2connectionUpdate.c	\
+	EXACT/E2AP_E2connectionUpdate-List.c	\
+	EXACT/E2AP_E2connectionUpdate-Item.c	\
+	EXACT/E2AP_E2connectionUpdateRemove-List.c	\
+	EXACT/E2AP_E2connectionUpdateRemove-Item.c	\
+	EXACT/E2AP_E2connectionUpdateAcknowledge.c	\
+	EXACT/E2AP_E2connectionSetupFailed-List.c	\
+	EXACT/E2AP_E2connectionSetupFailed-Item.c	\
+	EXACT/E2AP_E2connectionUpdateFailure.c	\
+	EXACT/E2AP_E2nodeConfigurationUpdate.c	\
+	EXACT/E2AP_E2nodeComponentConfigAddition-List.c	\
+	EXACT/E2AP_E2nodeComponentConfigAddition-Item.c	\
+	EXACT/E2AP_E2nodeComponentConfigUpdate-List.c	\
+	EXACT/E2AP_E2nodeComponentConfigUpdate-Item.c	\
+	EXACT/E2AP_E2nodeComponentConfigRemoval-List.c	\
+	EXACT/E2AP_E2nodeComponentConfigRemoval-Item.c	\
+	EXACT/E2AP_E2nodeTNLassociationRemoval-List.c	\
+	EXACT/E2AP_E2nodeTNLassociationRemoval-Item.c	\
+	EXACT/E2AP_E2nodeConfigurationUpdateAcknowledge.c	\
+	EXACT/E2AP_E2nodeComponentConfigAdditionAck-List.c	\
+	EXACT/E2AP_E2nodeComponentConfigAdditionAck-Item.c	\
+	EXACT/E2AP_E2nodeComponentConfigUpdateAck-List.c	\
+	EXACT/E2AP_E2nodeComponentConfigUpdateAck-Item.c	\
+	EXACT/E2AP_E2nodeComponentConfigRemovalAck-List.c	\
+	EXACT/E2AP_E2nodeComponentConfigRemovalAck-Item.c	\
+	EXACT/E2AP_E2nodeConfigurationUpdateFailure.c	\
+	EXACT/E2AP_ResetRequest.c	\
+	EXACT/E2AP_ResetResponse.c	\
+	EXACT/E2AP_RICserviceUpdate.c	\
+	EXACT/E2AP_RANfunctions-List.c	\
+	EXACT/E2AP_RANfunction-Item.c	\
+	EXACT/E2AP_RANfunctionsID-List.c	\
+	EXACT/E2AP_RANfunctionID-Item.c	\
+	EXACT/E2AP_RICserviceUpdateAcknowledge.c	\
+	EXACT/E2AP_RANfunctionsIDcause-List.c	\
+	EXACT/E2AP_RANfunctionIDcause-Item.c	\
+	EXACT/E2AP_RICserviceUpdateFailure.c	\
+	EXACT/E2AP_RICserviceQuery.c	\
+	EXACT/E2AP_E2RemovalRequest.c	\
+	EXACT/E2AP_E2RemovalResponse.c	\
+	EXACT/E2AP_E2RemovalFailure.c	\
+	EXACT/E2AP_AMFName.c	\
+	EXACT/E2AP_Cause.c	\
+	EXACT/E2AP_CauseE2node.c	\
+	EXACT/E2AP_CauseMisc.c	\
+	EXACT/E2AP_CauseProtocol.c	\
+	EXACT/E2AP_CauseRICrequest.c	\
+	EXACT/E2AP_CauseRICservice.c	\
+	EXACT/E2AP_CauseTransport.c	\
+	EXACT/E2AP_CriticalityDiagnostics.c	\
+	EXACT/E2AP_CriticalityDiagnostics-IE-List.c	\
+	EXACT/E2AP_CriticalityDiagnostics-IE-Item.c	\
+	EXACT/E2AP_E2nodeComponentConfiguration.c	\
+	EXACT/E2AP_E2nodeComponentConfigurationAck.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceType.c	\
+	EXACT/E2AP_E2nodeComponentID.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceE1.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceF1.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceNG.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceS1.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceX2.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceXn.c	\
+	EXACT/E2AP_E2nodeComponentInterfaceW1.c	\
+	EXACT/E2AP_ENB-ID.c	\
+	EXACT/E2AP_ENB-ID-Choice.c	\
+	EXACT/E2AP_ENGNB-ID.c	\
+	EXACT/E2AP_GlobalE2node-ID.c	\
+	EXACT/E2AP_GlobalE2node-en-gNB-ID.c	\
+	EXACT/E2AP_GlobalE2node-eNB-ID.c	\
+	EXACT/E2AP_GlobalE2node-gNB-ID.c	\
+	EXACT/E2AP_GlobalE2node-ng-eNB-ID.c	\
+	EXACT/E2AP_GlobalENB-ID.c	\
+	EXACT/E2AP_GlobalenGNB-ID.c	\
+	EXACT/E2AP_GlobalgNB-ID.c	\
+	EXACT/E2AP_GlobalngeNB-ID.c	\
+	EXACT/E2AP_GlobalNG-RANNode-ID.c	\
+	EXACT/E2AP_GlobalRIC-ID.c	\
+	EXACT/E2AP_GNB-CU-UP-ID.c	\
+	EXACT/E2AP_GNB-DU-ID.c	\
+	EXACT/E2AP_GNB-ID-Choice.c	\
+	EXACT/E2AP_MMEname.c	\
+	EXACT/E2AP_NGENB-DU-ID.c	\
+	EXACT/E2AP_PLMN-Identity.c	\
+	EXACT/E2AP_RANfunctionDefinition.c	\
+	EXACT/E2AP_RANfunctionID.c	\
+	EXACT/E2AP_RANfunctionOID.c	\
+	EXACT/E2AP_RANfunctionRevision.c	\
+	EXACT/E2AP_RICactionDefinition.c	\
+	EXACT/E2AP_RICactionID.c	\
+	EXACT/E2AP_RICactionType.c	\
+	EXACT/E2AP_RICcallProcessID.c	\
+	EXACT/E2AP_RICcontrolAckRequest.c	\
+	EXACT/E2AP_RICcontrolHeader.c	\
+	EXACT/E2AP_RICcontrolMessage.c	\
+	EXACT/E2AP_RICcontrolOutcome.c	\
+	EXACT/E2AP_RICeventTriggerDefinition.c	\
+	EXACT/E2AP_RICindicationHeader.c	\
+	EXACT/E2AP_RICindicationMessage.c	\
+	EXACT/E2AP_RICindicationSN.c	\
+	EXACT/E2AP_RICindicationType.c	\
+	EXACT/E2AP_RICrequestID.c	\
+	EXACT/E2AP_RICsubsequentAction.c	\
+	EXACT/E2AP_RICsubsequentActionType.c	\
+	EXACT/E2AP_RICtimeToWait.c	\
+	EXACT/E2AP_TimeToWait.c	\
+	EXACT/E2AP_TNLinformation.c	\
+	EXACT/E2AP_TNLusage.c	\
+	EXACT/E2AP_TransactionID.c	\
+	EXACT/E2AP_TypeOfError.c	\
+	EXACT/E2AP_Criticality.c	\
+	EXACT/E2AP_Presence.c	\
+	EXACT/E2AP_ProcedureCode.c	\
+	EXACT/E2AP_ProtocolIE-ID.c	\
+	EXACT/E2AP_TriggeringMessage.c	\
+	EXACT/E2AP_ProtocolIE-Container.c	\
+	EXACT/E2AP_ProtocolIE-SingleContainer.c	\
+	EXACT/E2AP_ProtocolIE-Field.c	\
+	EXACT/E2AP_ProtocolIE-ContainerPair.c	\
+	EXACT/E2AP_ProtocolIE-FieldPair.c	\
+	EXACT/E2AP_ProtocolIE-ContainerList.c	\
+	EXACT/E2AP_ProtocolIE-ContainerPairList.c
+
+ASN_MODULE_HDRS=	\
+	EXACT/E2AP_E2AP-PDU.h	\
+	EXACT/E2AP_InitiatingMessage.h	\
+	EXACT/E2AP_SuccessfulOutcome.h	\
+	EXACT/E2AP_UnsuccessfulOutcome.h	\
+	EXACT/E2AP_RICsubscriptionRequest.h	\
+	EXACT/E2AP_RICsubscriptionDetails.h	\
+	EXACT/E2AP_RICactions-ToBeSetup-List.h	\
+	EXACT/E2AP_RICaction-ToBeSetup-Item.h	\
+	EXACT/E2AP_RICsubscriptionResponse.h	\
+	EXACT/E2AP_RICaction-Admitted-List.h	\
+	EXACT/E2AP_RICaction-Admitted-Item.h	\
+	EXACT/E2AP_RICaction-NotAdmitted-List.h	\
+	EXACT/E2AP_RICaction-NotAdmitted-Item.h	\
+	EXACT/E2AP_RICsubscriptionFailure.h	\
+	EXACT/E2AP_RICsubscriptionDeleteRequest.h	\
+	EXACT/E2AP_RICsubscriptionDeleteResponse.h	\
+	EXACT/E2AP_RICsubscriptionDeleteFailure.h	\
+	EXACT/E2AP_RICsubscriptionDeleteRequired.h	\
+	EXACT/E2AP_RICsubscription-List-withCause.h	\
+	EXACT/E2AP_RICsubscription-withCause-Item.h	\
+	EXACT/E2AP_RICindication.h	\
+	EXACT/E2AP_RICcontrolRequest.h	\
+	EXACT/E2AP_RICcontrolAcknowledge.h	\
+	EXACT/E2AP_RICcontrolFailure.h	\
+	EXACT/E2AP_ErrorIndication.h	\
+	EXACT/E2AP_E2setupRequest.h	\
+	EXACT/E2AP_E2setupResponse.h	\
+	EXACT/E2AP_E2setupFailure.h	\
+	EXACT/E2AP_E2connectionUpdate.h	\
+	EXACT/E2AP_E2connectionUpdate-List.h	\
+	EXACT/E2AP_E2connectionUpdate-Item.h	\
+	EXACT/E2AP_E2connectionUpdateRemove-List.h	\
+	EXACT/E2AP_E2connectionUpdateRemove-Item.h	\
+	EXACT/E2AP_E2connectionUpdateAcknowledge.h	\
+	EXACT/E2AP_E2connectionSetupFailed-List.h	\
+	EXACT/E2AP_E2connectionSetupFailed-Item.h	\
+	EXACT/E2AP_E2connectionUpdateFailure.h	\
+	EXACT/E2AP_E2nodeConfigurationUpdate.h	\
+	EXACT/E2AP_E2nodeComponentConfigAddition-List.h	\
+	EXACT/E2AP_E2nodeComponentConfigAddition-Item.h	\
+	EXACT/E2AP_E2nodeComponentConfigUpdate-List.h	\
+	EXACT/E2AP_E2nodeComponentConfigUpdate-Item.h	\
+	EXACT/E2AP_E2nodeComponentConfigRemoval-List.h	\
+	EXACT/E2AP_E2nodeComponentConfigRemoval-Item.h	\
+	EXACT/E2AP_E2nodeTNLassociationRemoval-List.h	\
+	EXACT/E2AP_E2nodeTNLassociationRemoval-Item.h	\
+	EXACT/E2AP_E2nodeConfigurationUpdateAcknowledge.h	\
+	EXACT/E2AP_E2nodeComponentConfigAdditionAck-List.h	\
+	EXACT/E2AP_E2nodeComponentConfigAdditionAck-Item.h	\
+	EXACT/E2AP_E2nodeComponentConfigUpdateAck-List.h	\
+	EXACT/E2AP_E2nodeComponentConfigUpdateAck-Item.h	\
+	EXACT/E2AP_E2nodeComponentConfigRemovalAck-List.h	\
+	EXACT/E2AP_E2nodeComponentConfigRemovalAck-Item.h	\
+	EXACT/E2AP_E2nodeConfigurationUpdateFailure.h	\
+	EXACT/E2AP_ResetRequest.h	\
+	EXACT/E2AP_ResetResponse.h	\
+	EXACT/E2AP_RICserviceUpdate.h	\
+	EXACT/E2AP_RANfunctions-List.h	\
+	EXACT/E2AP_RANfunction-Item.h	\
+	EXACT/E2AP_RANfunctionsID-List.h	\
+	EXACT/E2AP_RANfunctionID-Item.h	\
+	EXACT/E2AP_RICserviceUpdateAcknowledge.h	\
+	EXACT/E2AP_RANfunctionsIDcause-List.h	\
+	EXACT/E2AP_RANfunctionIDcause-Item.h	\
+	EXACT/E2AP_RICserviceUpdateFailure.h	\
+	EXACT/E2AP_RICserviceQuery.h	\
+	EXACT/E2AP_E2RemovalRequest.h	\
+	EXACT/E2AP_E2RemovalResponse.h	\
+	EXACT/E2AP_E2RemovalFailure.h	\
+	EXACT/E2AP_AMFName.h	\
+	EXACT/E2AP_Cause.h	\
+	EXACT/E2AP_CauseE2node.h	\
+	EXACT/E2AP_CauseMisc.h	\
+	EXACT/E2AP_CauseProtocol.h	\
+	EXACT/E2AP_CauseRICrequest.h	\
+	EXACT/E2AP_CauseRICservice.h	\
+	EXACT/E2AP_CauseTransport.h	\
+	EXACT/E2AP_CriticalityDiagnostics.h	\
+	EXACT/E2AP_CriticalityDiagnostics-IE-List.h	\
+	EXACT/E2AP_CriticalityDiagnostics-IE-Item.h	\
+	EXACT/E2AP_E2nodeComponentConfiguration.h	\
+	EXACT/E2AP_E2nodeComponentConfigurationAck.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceType.h	\
+	EXACT/E2AP_E2nodeComponentID.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceE1.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceF1.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceNG.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceS1.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceX2.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceXn.h	\
+	EXACT/E2AP_E2nodeComponentInterfaceW1.h	\
+	EXACT/E2AP_ENB-ID.h	\
+	EXACT/E2AP_ENB-ID-Choice.h	\
+	EXACT/E2AP_ENGNB-ID.h	\
+	EXACT/E2AP_GlobalE2node-ID.h	\
+	EXACT/E2AP_GlobalE2node-en-gNB-ID.h	\
+	EXACT/E2AP_GlobalE2node-eNB-ID.h	\
+	EXACT/E2AP_GlobalE2node-gNB-ID.h	\
+	EXACT/E2AP_GlobalE2node-ng-eNB-ID.h	\
+	EXACT/E2AP_GlobalENB-ID.h	\
+	EXACT/E2AP_GlobalenGNB-ID.h	\
+	EXACT/E2AP_GlobalgNB-ID.h	\
+	EXACT/E2AP_GlobalngeNB-ID.h	\
+	EXACT/E2AP_GlobalNG-RANNode-ID.h	\
+	EXACT/E2AP_GlobalRIC-ID.h	\
+	EXACT/E2AP_GNB-CU-UP-ID.h	\
+	EXACT/E2AP_GNB-DU-ID.h	\
+	EXACT/E2AP_GNB-ID-Choice.h	\
+	EXACT/E2AP_MMEname.h	\
+	EXACT/E2AP_NGENB-DU-ID.h	\
+	EXACT/E2AP_PLMN-Identity.h	\
+	EXACT/E2AP_RANfunctionDefinition.h	\
+	EXACT/E2AP_RANfunctionID.h	\
+	EXACT/E2AP_RANfunctionOID.h	\
+	EXACT/E2AP_RANfunctionRevision.h	\
+	EXACT/E2AP_RICactionDefinition.h	\
+	EXACT/E2AP_RICactionID.h	\
+	EXACT/E2AP_RICactionType.h	\
+	EXACT/E2AP_RICcallProcessID.h	\
+	EXACT/E2AP_RICcontrolAckRequest.h	\
+	EXACT/E2AP_RICcontrolHeader.h	\
+	EXACT/E2AP_RICcontrolMessage.h	\
+	EXACT/E2AP_RICcontrolOutcome.h	\
+	EXACT/E2AP_RICeventTriggerDefinition.h	\
+	EXACT/E2AP_RICindicationHeader.h	\
+	EXACT/E2AP_RICindicationMessage.h	\
+	EXACT/E2AP_RICindicationSN.h	\
+	EXACT/E2AP_RICindicationType.h	\
+	EXACT/E2AP_RICrequestID.h	\
+	EXACT/E2AP_RICsubsequentAction.h	\
+	EXACT/E2AP_RICsubsequentActionType.h	\
+	EXACT/E2AP_RICtimeToWait.h	\
+	EXACT/E2AP_TimeToWait.h	\
+	EXACT/E2AP_TNLinformation.h	\
+	EXACT/E2AP_TNLusage.h	\
+	EXACT/E2AP_TransactionID.h	\
+	EXACT/E2AP_TypeOfError.h	\
+	EXACT/E2AP_Criticality.h	\
+	EXACT/E2AP_Presence.h	\
+	EXACT/E2AP_ProcedureCode.h	\
+	EXACT/E2AP_ProtocolIE-ID.h	\
+	EXACT/E2AP_TriggeringMessage.h	\
+	EXACT/E2AP_ProtocolIE-Container.h	\
+	EXACT/E2AP_ProtocolIE-SingleContainer.h	\
+	EXACT/E2AP_ProtocolIE-Field.h	\
+	EXACT/E2AP_ProtocolIE-ContainerPair.h	\
+	EXACT/E2AP_ProtocolIE-FieldPair.h	\
+	EXACT/E2AP_ProtocolIE-ContainerList.h	\
+	EXACT/E2AP_ProtocolIE-ContainerPairList.h
+
+ASN_MODULE_HDRS+=EXACT/ANY.h
+ASN_MODULE_SRCS+=EXACT/ANY.c
+ASN_MODULE_HDRS+=EXACT/OCTET_STRING.h
+ASN_MODULE_HDRS+=EXACT/OPEN_TYPE.h
+ASN_MODULE_SRCS+=EXACT/OPEN_TYPE.c
+ASN_MODULE_HDRS+=EXACT/constr_CHOICE.h
+ASN_MODULE_HDRS+=EXACT/INTEGER.h
+ASN_MODULE_SRCS+=EXACT/INTEGER.c
+ASN_MODULE_HDRS+=EXACT/NativeEnumerated.h
+ASN_MODULE_SRCS+=EXACT/NativeEnumerated.c
+ASN_MODULE_HDRS+=EXACT/NativeInteger.h
+ASN_MODULE_SRCS+=EXACT/NativeInteger.c
+ASN_MODULE_HDRS+=EXACT/PrintableString.h
+ASN_MODULE_SRCS+=EXACT/PrintableString.c
+ASN_MODULE_HDRS+=EXACT/asn_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=EXACT/asn_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=EXACT/asn_SET_OF.h
+ASN_MODULE_SRCS+=EXACT/asn_SET_OF.c
+ASN_MODULE_SRCS+=EXACT/constr_CHOICE.c
+ASN_MODULE_HDRS+=EXACT/constr_SEQUENCE.h
+ASN_MODULE_SRCS+=EXACT/constr_SEQUENCE.c
+ASN_MODULE_HDRS+=EXACT/constr_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=EXACT/constr_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=EXACT/constr_SET_OF.h
+ASN_MODULE_SRCS+=EXACT/constr_SET_OF.c
+ASN_MODULE_HDRS+=EXACT/asn_application.h
+ASN_MODULE_SRCS+=EXACT/asn_application.c
+ASN_MODULE_HDRS+=EXACT/asn_ioc.h
+ASN_MODULE_HDRS+=EXACT/asn_system.h
+ASN_MODULE_HDRS+=EXACT/asn_codecs.h
+ASN_MODULE_HDRS+=EXACT/asn_internal.h
+ASN_MODULE_SRCS+=EXACT/asn_internal.c
+ASN_MODULE_HDRS+=EXACT/asn_random_fill.h
+ASN_MODULE_SRCS+=EXACT/asn_random_fill.c
+ASN_MODULE_HDRS+=EXACT/asn_bit_data.h
+ASN_MODULE_SRCS+=EXACT/asn_bit_data.c
+ASN_MODULE_SRCS+=EXACT/OCTET_STRING.c
+ASN_MODULE_HDRS+=EXACT/BIT_STRING.h
+ASN_MODULE_SRCS+=EXACT/BIT_STRING.c
+ASN_MODULE_SRCS+=EXACT/asn_codecs_prim.c
+ASN_MODULE_HDRS+=EXACT/asn_codecs_prim.h
+ASN_MODULE_HDRS+=EXACT/ber_tlv_length.h
+ASN_MODULE_SRCS+=EXACT/ber_tlv_length.c
+ASN_MODULE_HDRS+=EXACT/ber_tlv_tag.h
+ASN_MODULE_SRCS+=EXACT/ber_tlv_tag.c
+ASN_MODULE_HDRS+=EXACT/ber_decoder.h
+ASN_MODULE_SRCS+=EXACT/ber_decoder.c
+ASN_MODULE_HDRS+=EXACT/der_encoder.h
+ASN_MODULE_SRCS+=EXACT/der_encoder.c
+ASN_MODULE_HDRS+=EXACT/constr_TYPE.h
+ASN_MODULE_SRCS+=EXACT/constr_TYPE.c
+ASN_MODULE_HDRS+=EXACT/constraints.h
+ASN_MODULE_SRCS+=EXACT/constraints.c
+ASN_MODULE_HDRS+=EXACT/xer_support.h
+ASN_MODULE_SRCS+=EXACT/xer_support.c
+ASN_MODULE_HDRS+=EXACT/xer_decoder.h
+ASN_MODULE_SRCS+=EXACT/xer_decoder.c
+ASN_MODULE_HDRS+=EXACT/xer_encoder.h
+ASN_MODULE_SRCS+=EXACT/xer_encoder.c
+ASN_MODULE_HDRS+=EXACT/per_support.h
+ASN_MODULE_SRCS+=EXACT/per_support.c
+ASN_MODULE_HDRS+=EXACT/per_decoder.h
+ASN_MODULE_SRCS+=EXACT/per_decoder.c
+ASN_MODULE_HDRS+=EXACT/per_encoder.h
+ASN_MODULE_SRCS+=EXACT/per_encoder.c
+ASN_MODULE_HDRS+=EXACT/per_opentype.h
+ASN_MODULE_SRCS+=EXACT/per_opentype.c
+
+ASN_MODULE_CFLAGS=-DASN_DISABLE_OER_SUPPORT 
+
+lib_LTLIBRARIES+=libasncodec.la
+libasncodec_la_SOURCES=$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)
+libasncodec_la_CPPFLAGS=-I$(top_srcdir)/EXACT/
+libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)
+libasncodec_la_LDFLAGS=-lm
