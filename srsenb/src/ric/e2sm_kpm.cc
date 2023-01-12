@@ -201,6 +201,8 @@ int kpm_model::init()
   func->revision = 0;
   func->name = "ORAN-E2SM-KPM";
   func->description = "KPM monitor";
+  func->ran_func_oid = (uint8_t*)"1.3.6.1.4.1.53148.1.2.2.2";
+  func->ran_func_oid_len = strlen((char *)func->ran_func_oid);
 
   func_def = (E2SM_KPM_E2SM_KPM_RANfunction_Description_t *) \
     calloc(1,sizeof(*func_def));

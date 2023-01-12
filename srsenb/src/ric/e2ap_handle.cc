@@ -252,13 +252,13 @@ int handle_ric_subscription_delete_request(ric::agent *agent,uint32_t stream,
   if (function_id < 0) {
     E2AP_ERROR(agent,"ran_function not specified\n");
     cause = E2AP_Cause_PR_ricRequest;
-    cause_detail = E2AP_CauseRIC_ran_function_id_Invalid;
+    cause_detail = E2AP_CauseRICrequest_ran_function_id_invalid;
     goto errout;
   }
   if (request_id < 0 || instance_id < 0) {
     E2AP_ERROR(agent,"request_id or instance_id not specified\n");
     cause = E2AP_Cause_PR_ricRequest;
-    cause_detail = E2AP_CauseRIC_request_id_unknown;
+    cause_detail = E2AP_CauseRICrequest_request_id_unknown;
     goto errout;
   }
 
@@ -266,7 +266,7 @@ int handle_ric_subscription_delete_request(ric::agent *agent,uint32_t stream,
   if (!func) {
     E2AP_ERROR(agent,"failed to find ran_function %ld\n",function_id);
     cause = E2AP_Cause_PR_ricRequest;
-    cause_detail = E2AP_CauseRIC_ran_function_id_Invalid;
+    cause_detail = E2AP_CauseRICrequest_ran_function_id_invalid;
     goto errout;
   }
 
@@ -275,7 +275,7 @@ int handle_ric_subscription_delete_request(ric::agent *agent,uint32_t stream,
     E2AP_ERROR(agent,"failed to find subscription %ld/%ld/%ld\n",
 	       request_id,instance_id,function_id);
     cause = E2AP_Cause_PR_ricRequest;
-    cause_detail = E2AP_CauseRIC_request_id_unknown;
+    cause_detail = E2AP_CauseRICrequest_request_id_unknown;
     goto errout;
   }
 

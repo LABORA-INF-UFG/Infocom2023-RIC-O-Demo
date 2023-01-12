@@ -50,6 +50,8 @@ int nexran_model::init()
   func->revision = 0;
   func->name = "ORAN-E2SM-NEXRAN";
   func->description = "NexRAN API";
+  func->ran_func_oid = (uint8_t *)"1.3.6.1.4.1.53148.1.1.2.100";
+  func->ran_func_oid_len = strlen((char *)func->ran_func_oid);
 
   func_def = (E2SM_NEXRAN_RANfunction_Description_t *) \
     calloc(1,sizeof(*func_def));

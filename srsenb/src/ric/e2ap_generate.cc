@@ -24,6 +24,7 @@ int generate_e2_setup_request(
   E2AP_E2setupRequest_t *req;
   E2AP_E2setupRequestIEs_t *ie;
   E2AP_RANfunction_ItemIEs_t *ran_function_item_ie;
+  E2AP_E2nodeComponentConfigAddition_ItemIEs_t *node_add_item_ie;
   ric::ran_function_t *func;
   std::list<ric::service_model *>::iterator it;
   std::list<ric::ran_function_t *>::iterator it2;
@@ -34,6 +35,13 @@ int generate_e2_setup_request(
   pdu.choice.initiatingMessage.criticality = E2AP_Criticality_reject;
   pdu.choice.initiatingMessage.value.present = E2AP_InitiatingMessage__value_PR_E2setupRequest;
   req = &pdu.choice.initiatingMessage.value.choice.E2setupRequest;
+
+  ie = (E2AP_E2setupRequestIEs_t *)calloc(1, sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_TransactionID;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_E2setupRequestIEs__value_PR_TransactionID;
+  ie->value.choice.TransactionID = 1;
+  ASN_SEQUENCE_ADD(&req->protocolIEs.list,ie);
 
   ie = (E2AP_E2setupRequestIEs_t *)calloc(1,sizeof(*ie));
   ie->id = E2AP_ProtocolIE_ID_id_GlobalE2node_ID;
@@ -61,29 +69,82 @@ int generate_e2_setup_request(
     for (it2 = (*it)->functions.begin(); it2 != (*it)->functions.end(); ++it2) {
       func = *it2;
       if (!(func->enabled))
-	continue;
+        continue;
 
       ran_function_item_ie = (E2AP_RANfunction_ItemIEs_t *) \
-	calloc(1,sizeof(*ran_function_item_ie));
+      calloc(1,sizeof(*ran_function_item_ie));
       ran_function_item_ie->id = E2AP_ProtocolIE_ID_id_RANfunction_Item;
       ran_function_item_ie->criticality = E2AP_Criticality_reject;
       ran_function_item_ie->value.present = \
-	E2AP_RANfunction_ItemIEs__value_PR_RANfunction_Item;
+        E2AP_RANfunction_ItemIEs__value_PR_RANfunction_Item;
       ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionID = \
-	func->function_id;
+        func->function_id;
       ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionRevision = \
         func->revision;
 
       ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionDefinition.buf = \
-	(uint8_t *)malloc(func->enc_definition_len);
+        (uint8_t *)malloc(func->enc_definition_len);
       memcpy(ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionDefinition.buf,
-	     func->enc_definition,func->enc_definition_len);
+             func->enc_definition,func->enc_definition_len);
       ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionDefinition.size = \
-	func->enc_definition_len;
-      ASN_SEQUENCE_ADD(&ie->value.choice.RANfunctions_List.list,
-		       ran_function_item_ie);
+        func->enc_definition_len;
+
+      ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionOID.buf = \
+        (uint8_t*)malloc(func->ran_func_oid_len);
+      memcpy(ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionOID.buf,
+             func->ran_func_oid,func->ran_func_oid_len);
+      ran_function_item_ie->value.choice.RANfunction_Item.ranFunctionOID.size = \
+        func->ran_func_oid_len;
+      ASN_SEQUENCE_ADD(&ie->value.choice.RANfunctions_List.list, ran_function_item_ie);
     }
   }
+  ASN_SEQUENCE_ADD(&req->protocolIEs.list, ie);
+
+  ie = (E2AP_E2setupRequestIEs_t *)calloc(1,sizeof(*ie));
+  ie->id = E2AP_ProtocolIE_ID_id_E2nodeComponentConfigAddition;
+  ie->criticality = E2AP_Criticality_reject;
+  ie->value.present = E2AP_E2setupRequestIEs__value_PR_E2nodeComponentConfigAddition_List;
+
+  node_add_item_ie = \
+    (E2AP_E2nodeComponentConfigAddition_ItemIEs_t *)calloc(1, sizeof(*node_add_item_ie));
+  node_add_item_ie->id = E2AP_ProtocolIE_ID_id_E2nodeComponentConfigAddition_Item;
+  node_add_item_ie->criticality = E2AP_Criticality_reject;
+  node_add_item_ie->value.present = \
+    E2AP_E2nodeComponentConfigAddition_ItemIEs__value_PR_E2nodeComponentConfigAddition_Item;
+  node_add_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentInterfaceType = \
+    E2AP_E2nodeComponentInterfaceType_x2;
+  node_add_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.present = \
+    E2AP_E2nodeComponentID_PR_e2nodeComponentInterfaceTypeX2;
+
+  E2AP_GlobalENB_ID_t *enb_node_component = (E2AP_GlobalENB_ID_t *) calloc(1, sizeof(E2AP_GlobalENB_ID_t));
+  enb_node_component->eNB_ID.present = E2AP_ENB_ID_PR_macro_eNB_ID;
+  ASN1_MAKE_PLMNID(
+    agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
+    &enb_node_component->pLMN_Identity);
+  ASN1_MAKE_MACRO_ENB_ID(
+    agent->args.stack.s1ap.enb_id,
+    &enb_node_component->eNB_ID.choice.macro_eNB_ID);
+  node_add_item_ie->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID
+    .choice.e2nodeComponentInterfaceTypeX2.global_eNB_ID = enb_node_component;
+  
+  /* E2 Node Component NG Interface Type */
+  // node_cfg_add_item->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentInterfaceType = \
+  //   E2AP_E2nodeComponentInterfaceType_ng;
+  // node_cfg_add_item->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.present = \
+  //   E2AP_E2nodeComponentID_PR_e2nodeComponentInterfaceTypeNG;
+  // auto *ng_interface = (E2AP_E2nodeComponentInterfaceNG_t *) calloc(1, sizeof(E2AP_E2nodeComponentInterfaceNG_t));
+  // OCTET_STRING_fromString(&ng_interface->amf_name, "nginterf");
+  // node_cfg_add_item->value.choice.E2nodeComponentConfigAddition_Item.e2nodeComponentID.choice.e2nodeComponentInterfaceTypeNG = *ng_interface;
+  
+  OCTET_STRING_t* reqpart = &node_add_item_ie->value.choice.E2nodeComponentConfigAddition_Item
+    .e2nodeComponentConfiguration.e2nodeComponentRequestPart;
+  OCTET_STRING_fromString(reqpart, "reqpart");
+  OCTET_STRING_t* respart = &node_add_item_ie->value.choice.E2nodeComponentConfigAddition_Item
+    .e2nodeComponentConfiguration.e2nodeComponentResponsePart;
+  OCTET_STRING_fromString(respart, "respart");
+
+  ASN_SEQUENCE_ADD(&ie->value.choice.E2nodeComponentConfigAddition_List.list, node_add_item_ie);
+
   ASN_SEQUENCE_ADD(&req->protocolIEs.list,ie);
 
   E2AP_XER_PRINT(NULL,&asn_DEF_E2AP_E2AP_PDU,&pdu);
@@ -171,7 +232,7 @@ int generate_ric_subscription_response(
     nai->value.choice.RICaction_NotAdmitted_Item.ricActionID = action->id;
     if (action->error_cause == 0) {
       action->error_cause = E2AP_Cause_PR_ricRequest;
-      action->error_cause_detail = E2AP_CauseRIC_unspecified;
+      action->error_cause_detail = E2AP_CauseRICrequest_unspecified;
     }
     nai->value.choice.RICaction_NotAdmitted_Item.cause.present = (E2AP_Cause_PR)action->error_cause;
     switch (nai->value.choice.RICaction_NotAdmitted_Item.cause.present) {
@@ -245,44 +306,41 @@ int generate_ric_subscription_failure(
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 
   ie = (E2AP_RICsubscriptionFailure_IEs_t *)calloc(1,sizeof(*ie));
-  ie->id = E2AP_ProtocolIE_ID_id_RICactions_NotAdmitted;
+  ie->id = E2AP_ProtocolIE_ID_id_Cause;
   ie->criticality = E2AP_Criticality_reject;
-  ie->value.present = E2AP_RICsubscriptionFailure_IEs__value_PR_RICaction_NotAdmitted_List;
-  for (it = rs->actions.begin(); it != rs->actions.end(); ++it) {
-    action = *it;
-    nai = (E2AP_RICaction_NotAdmitted_ItemIEs_t *)calloc(1,sizeof(*nai));
-    nai->id = E2AP_ProtocolIE_ID_id_RICaction_NotAdmitted_Item;
-    nai->criticality = E2AP_Criticality_reject;
-    nai->value.present = E2AP_RICaction_NotAdmitted_ItemIEs__value_PR_RICaction_NotAdmitted_Item;
-    nai->value.choice.RICaction_NotAdmitted_Item.ricActionID = action->id;
-    if (action->error_cause == 0) {
+  ie->value.present = E2AP_RICsubscriptionFailure_IEs__value_PR_Cause;
+  action = *(rs->actions.begin());
+  if (action->error_cause == 0) {
       action->error_cause = E2AP_Cause_PR_ricRequest;
-      action->error_cause_detail = E2AP_CauseRIC_unspecified;
-    }
-    nai->value.choice.RICaction_NotAdmitted_Item.cause.present = (E2AP_Cause_PR)action->error_cause;
-    switch (nai->value.choice.RICaction_NotAdmitted_Item.cause.present) {
-    case E2AP_Cause_PR_NOTHING:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = 0;
-      break;
-    case E2AP_Cause_PR_ricRequest:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricRequest = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_ricService:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.ricService = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_transport:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.transport = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_protocol:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.protocol = action->error_cause_detail;
-      break;
-    case E2AP_Cause_PR_misc:
-      nai->value.choice.RICaction_NotAdmitted_Item.cause.choice.misc = action->error_cause_detail;
-      break;
-    default:
-      break;
-    }
-    ASN_SEQUENCE_ADD(&ie->value.choice.RICaction_NotAdmitted_List.list,nai);
+      action->error_cause_detail = E2AP_CauseRICrequest_unspecified;
+  }
+  ie->value.choice.Cause.present = (E2AP_Cause_PR)action->error_cause;
+  switch (ie->value.choice.Cause.present) {
+  case E2AP_Cause_PR_NOTHING:
+    ie->value.choice.Cause.choice.ricRequest = 0;
+    break;
+  case E2AP_Cause_PR_ricRequest:
+    ie->value.choice.Cause.choice.ricRequest = action->error_cause_detail;
+    break;
+  case E2AP_Cause_PR_ricService:
+    ie->value.choice.Cause.choice.ricService = action->error_cause_detail;
+    break;
+  case E2AP_Cause_PR_e2Node:
+    ie->value.choice.Cause.choice.e2Node = action->error_cause_detail;
+    break;
+  case E2AP_Cause_PR_transport:
+    ie->value.choice.Cause.choice.transport = action->error_cause_detail;
+    break;
+  case E2AP_Cause_PR_protocol:
+    ie->value.choice.Cause.choice.protocol = action->error_cause_detail;
+    break;
+  case E2AP_Cause_PR_misc:
+    ie->value.choice.Cause.choice.misc = action->error_cause_detail;
+    break;
+  default:
+    break;
+  
+
   }
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 
@@ -438,7 +496,7 @@ int generate_ric_service_update(
   ie = (E2AP_RICserviceUpdate_IEs_t *)calloc(1,sizeof(*ie));
   ie->id = E2AP_ProtocolIE_ID_id_RANfunctionsModified;
   ie->criticality = E2AP_Criticality_reject;
-  ie->value.present = E2AP_RICserviceUpdate_IEs__value_PR_RANfunctions_List_1;
+  ie->value.present = E2AP_RICserviceUpdate_IEs__value_PR_RANfunctions_List;
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 
   ie = (E2AP_RICserviceUpdate_IEs_t *)calloc(1,sizeof(*ie));

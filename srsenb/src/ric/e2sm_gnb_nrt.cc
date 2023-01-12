@@ -30,6 +30,8 @@ int gnb_nrt_model::init()
   func->revision = 0;
   func->name = "ORAN-E2SM-gNB-NRT";
   func->description = "gNB-NRT";
+  func->ran_func_oid = (uint8_t *)"1.3.6.1.4.1.28458.99.0.21.3.3.1.3";
+  func->ran_func_oid_len = strlen((char *)func->ran_func_oid);
 
   func_def = (E2SM_GNB_NRT_E2SM_gNB_NRT_RANfunction_Definition_t *) \
     calloc(1,sizeof(*func_def));

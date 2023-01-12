@@ -21,6 +21,8 @@ typedef struct ran_function {
   std::string name;
   std::string description;
 
+  uint8_t *ran_func_oid;
+  ssize_t ran_func_oid_len;
   uint8_t *enc_definition;
   ssize_t enc_definition_len;
 
