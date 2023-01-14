@@ -31,6 +31,19 @@ typedef struct entity_metrics
   uint64_t ul_prbs;
   uint64_t dl_bytes_by_qci[MAX_NOF_QCI];
   uint64_t ul_bytes_by_qci[MAX_NOF_QCI];
+  int64_t  tx_pkts;
+  int64_t  tx_errors;
+  int64_t  tx_brate;
+  int64_t  rx_pkts;
+  int64_t  rx_errors;
+  int64_t  rx_brate;
+  float    dl_cqi;
+  float    dl_ri;
+  float    dl_pmi;
+  float    ul_phr;
+  float    ul_sinr;
+  float    ul_mcs;
+  int64_t  ul_samples;
 } entity_metrics_t;
 
 class metrics;

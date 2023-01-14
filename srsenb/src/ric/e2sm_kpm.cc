@@ -64,6 +64,11 @@ void slice_metrics::update(metrics *m,std::map<std::string,std::vector<uint16_t>
     slices[rev_map[it->first]].ul_bytes += it->second.ul_bytes;
     slices[rev_map[it->first]].dl_prbs += it->second.dl_prbs;
     slices[rev_map[it->first]].ul_prbs += it->second.ul_prbs;
+
+    slices[rev_map[it->first]].tx_pkts += it->second.tx_pkts;
+    slices[rev_map[it->first]].tx_errors += it->second.tx_errors;
+    slices[rev_map[it->first]].rx_pkts += it->second.rx_pkts;
+    slices[rev_map[it->first]].rx_errors += it->second.rx_errors;
   }
 }
 #endif
@@ -175,6 +180,27 @@ void metrics::update(srsenb::enb_metrics_t *em)
       DELTA(ues[rnti].ul_prbs,total_ues[rnti].ul_prbs,em->stack.mac[i].ul_rb,UINT64_MAX);
       total_ues[rnti].ul_prbs = em->stack.mac[i].ul_rb;
     }
+
+    ues[rnti].tx_pkts = em->stack.mac[i].tx_pkts;
+    ues[rnti].tx_errors = em->stack.mac[i].tx_errors;
+    ues[rnti].tx_brate = em->stack.mac[i].tx_brate;
+    ues[rnti].rx_pkts = em->stack.mac[i].rx_pkts;
+    ues[rnti].rx_errors = em->stack.mac[i].rx_errors;
+    ues[rnti].rx_brate = em->stack.mac[i].rx_brate;
+    if (!isnan(em->stack.mac[i].dl_cqi))
+      ues[rnti].dl_cqi = em->stack.mac[i].dl_cqi;
+    if (!isnan(em->stack.mac[i].dl_ri))
+      ues[rnti].dl_ri = em->stack.mac[i].dl_ri;
+    if (!isnan(em->stack.mac[i].dl_pmi))
+      ues[rnti].dl_pmi = em->stack.mac[i].dl_pmi;
+    if (!isnan(em->stack.mac[i].phr))
+      ues[rnti].ul_phr = em->stack.mac[i].phr;
+    // Add some phy metrics as well.
+    if (!isnan(em->phy[i].ul.sinr))
+      ues[rnti].ul_sinr = em->phy[i].ul.sinr;
+    if (!isnan(em->phy[i].ul.mcs))
+      ues[rnti].ul_mcs = em->phy[i].ul.mcs;
+    ues[rnti].ul_samples = em->phy[i].ul.n_samples;
   }
 
   /* Remove stale RNTIs. */
@@ -645,6 +671,19 @@ void kpm_model::send_indications(int timer_id)
 	pui->rnti = it->first;
 	asn_uint642INTEGER(&pui->dl_PRBUsage,it->second.dl_prbs);
 	asn_uint642INTEGER(&pui->ul_PRBUsage,it->second.ul_prbs);
+	pui->tx_pkts = it->second.tx_pkts;
+	pui->tx_errors = it->second.tx_errors;
+	pui->tx_brate = it->second.tx_brate;
+	pui->rx_pkts = it->second.rx_pkts;
+	pui->rx_errors = it->second.rx_errors;
+	pui->rx_brate = it->second.rx_brate;
+	pui->dl_cqi = it->second.dl_cqi;
+	pui->dl_ri = it->second.dl_ri;
+	pui->dl_pmi = it->second.dl_pmi;
+	pui->ul_phr = it->second.ul_phr;
+	pui->ul_sinr = it->second.ul_sinr;
+	pui->ul_mcs = it->second.ul_mcs;
+	pui->ul_samples = it->second.ul_samples;
 	ASN_SEQUENCE_ADD(&duc->perUEReportList->list,pui);
       }
 
@@ -661,6 +700,11 @@ void kpm_model::send_indications(int timer_id)
 		    slice_item->sliceName.size);
 	    asn_uint642INTEGER(&slice_item->dl_PRBUsage,it->second.dl_prbs);
 	    asn_uint642INTEGER(&slice_item->ul_PRBUsage,it->second.ul_prbs);
+	    asn_uint642INTEGER(&slice_item->dl_PRBUsage,it->second.dl_prbs);
+	    slice_item->tx_pkts = it->second.tx_pkts;
+	    slice_item->tx_errors = it->second.tx_errors;
+	    slice_item->rx_pkts = it->second.rx_pkts;
+	    slice_item->rx_errors = it->second.rx_errors;
 	    ASN_SEQUENCE_ADD(&duc->perSliceReportList->list,slice_item);
 	  }
       }
