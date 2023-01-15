@@ -112,8 +112,10 @@ void timer_queue::cancel(int id)
 
   pthread_mutex_lock(&lock);
   t = timer_map[id];
-  if (!t)
+  if (!t) {
+    pthread_mutex_unlock(&lock);
     return;
+  }
   t->canceled = true;
   t->callback = NULL;
   t->arg = NULL;
