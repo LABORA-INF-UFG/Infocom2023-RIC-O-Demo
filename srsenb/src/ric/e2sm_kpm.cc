@@ -51,8 +51,10 @@ void slice_metrics::reset()
 void slice_metrics::update(metrics *m,std::map<std::string,std::vector<uint16_t>> slice_map)
 {
   std::map<uint16_t,std::string> rev_map;
+  std::map<std::string,entity_metrics_t> slice_counters;
   for (auto it = slice_map.begin(); it != slice_map.end(); ++it) {
     slices[it->first] = entity_metrics_t{};
+    slice_counters[it->first] = entity_metrics_t{};
     for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2)
       rev_map[*it2] = std::string(it->first);
   }
@@ -69,6 +71,51 @@ void slice_metrics::update(metrics *m,std::map<std::string,std::vector<uint16_t>
     slices[rev_map[it->first]].tx_errors += it->second.tx_errors;
     slices[rev_map[it->first]].rx_pkts += it->second.rx_pkts;
     slices[rev_map[it->first]].rx_errors += it->second.rx_errors;
+
+    // Many of these averages lack meaning, but we'll compute them anyway.
+    slices[rev_map[it->first]].tx_brate += it->second.tx_brate;
+    slices[rev_map[it->first]].rx_brate += it->second.rx_brate;
+    if (!isnan(it->second.dl_cqi)) {
+      slices[rev_map[it->first]].dl_cqi += it->second.dl_cqi;
+      slice_counters[rev_map[it->first]].dl_cqi += 1;
+    }
+    if (!isnan(it->second.dl_ri)) {
+      slices[rev_map[it->first]].dl_ri += it->second.dl_ri;
+      slice_counters[rev_map[it->first]].dl_ri += 1;
+    }
+    if (!isnan(it->second.dl_pmi)) {
+      slices[rev_map[it->first]].dl_pmi += it->second.dl_pmi;
+      slice_counters[rev_map[it->first]].dl_pmi += 1;
+    }
+    if (!isnan(it->second.ul_phr)) {
+      slices[rev_map[it->first]].ul_phr += it->second.ul_phr;
+      slice_counters[rev_map[it->first]].ul_phr += 1;
+    }
+    if (!isnan(it->second.ul_mcs)) {
+      slices[rev_map[it->first]].ul_mcs += it->second.ul_mcs;
+      slice_counters[rev_map[it->first]].ul_mcs += 1;
+    }
+    slices[rev_map[it->first]].ul_samples += it->second.ul_samples;
+  }
+
+  // Now compute averages for non-counter values.
+  for (auto it = slice_counters.begin(); it != slice_counters.end(); ++it) {
+    if (slice_counters[it->first].tx_brate)
+      slices[it->first].tx_brate /= slice_counters[it->first].tx_brate;
+    if (slice_counters[it->first].rx_brate)
+      slices[it->first].rx_brate /= slice_counters[it->first].rx_brate;
+    if (slice_counters[it->first].dl_cqi)
+      slices[it->first].dl_cqi /= slice_counters[it->first].dl_cqi;
+    if (slice_counters[it->first].dl_ri)
+      slices[it->first].dl_ri /= slice_counters[it->first].dl_ri;
+    if (slice_counters[it->first].dl_pmi)
+      slices[it->first].dl_pmi /= slice_counters[it->first].dl_pmi;
+    if (slice_counters[it->first].ul_phr)
+      slices[it->first].ul_phr /= slice_counters[it->first].ul_phr;
+    if (slice_counters[it->first].ul_sinr)
+      slices[it->first].ul_sinr /= slice_counters[it->first].ul_sinr;
+    if (slice_counters[it->first].ul_mcs)
+      slices[it->first].ul_mcs /= slice_counters[it->first].ul_mcs;
   }
 }
 #endif
@@ -703,8 +750,17 @@ void kpm_model::send_indications(int timer_id)
 	    asn_uint642INTEGER(&slice_item->dl_PRBUsage,it->second.dl_prbs);
 	    slice_item->tx_pkts = it->second.tx_pkts;
 	    slice_item->tx_errors = it->second.tx_errors;
+	    slice_item->tx_brate = it->second.tx_brate;
 	    slice_item->rx_pkts = it->second.rx_pkts;
 	    slice_item->rx_errors = it->second.rx_errors;
+	    slice_item->rx_brate = it->second.rx_brate;
+	    slice_item->dl_cqi = it->second.dl_cqi;
+	    slice_item->dl_ri = it->second.dl_ri;
+	    slice_item->dl_pmi = it->second.dl_pmi;
+	    slice_item->ul_phr = it->second.ul_phr;
+	    slice_item->ul_sinr = it->second.ul_sinr;
+	    slice_item->ul_mcs = it->second.ul_mcs;
+	    slice_item->ul_samples = it->second.ul_samples;
 	    ASN_SEQUENCE_ADD(&duc->perSliceReportList->list,slice_item);
 	  }
       }
