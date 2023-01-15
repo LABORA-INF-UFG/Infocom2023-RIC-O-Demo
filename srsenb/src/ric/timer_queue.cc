@@ -98,6 +98,7 @@ int timer_queue::insert_periodic(const struct timeval &interval,
   timeradd(&now,&interval,&t->next);
   pthread_mutex_lock(&lock);
   timer_id = t->id = ++next_id;
+  timer_map[timer_id] = t;
   queue.push(t);
   pthread_mutex_unlock(&lock);
   pthread_cond_signal(&cond);
