@@ -370,8 +370,8 @@ int generate_ric_subscription_delete_response(
   E2AP_RICsubscriptionDeleteResponse_IEs_t *ie;
 
   memset(&pdu, 0, sizeof(pdu));
-  pdu.present = E2AP_E2AP_PDU_PR_unsuccessfulOutcome;
-  pdu.choice.successfulOutcome.procedureCode = E2AP_ProcedureCode_id_RICsubscription;
+  pdu.present = E2AP_E2AP_PDU_PR_successfulOutcome;
+  pdu.choice.successfulOutcome.procedureCode = E2AP_ProcedureCode_id_RICsubscriptionDelete;
   pdu.choice.successfulOutcome.criticality = E2AP_Criticality_reject;
   pdu.choice.successfulOutcome.value.present = E2AP_SuccessfulOutcome__value_PR_RICsubscriptionDeleteResponse;
   out = &pdu.choice.successfulOutcome.value.choice.RICsubscriptionDeleteResponse;
@@ -414,7 +414,7 @@ int generate_ric_subscription_delete_failure(
 
   memset(&pdu, 0, sizeof(pdu));
   pdu.present = E2AP_E2AP_PDU_PR_unsuccessfulOutcome;
-  pdu.choice.unsuccessfulOutcome.procedureCode = E2AP_ProcedureCode_id_RICsubscription;
+  pdu.choice.unsuccessfulOutcome.procedureCode = E2AP_ProcedureCode_id_RICsubscriptionDelete;
   pdu.choice.unsuccessfulOutcome.criticality = E2AP_Criticality_reject;
   pdu.choice.unsuccessfulOutcome.value.present = E2AP_UnsuccessfulOutcome__value_PR_RICsubscriptionDeleteFailure;
   out = &pdu.choice.unsuccessfulOutcome.value.choice.RICsubscriptionDeleteFailure;
@@ -435,7 +435,7 @@ int generate_ric_subscription_delete_failure(
   ASN_SEQUENCE_ADD(&out->protocolIEs.list,ie);
 
   ie = (E2AP_RICsubscriptionDeleteFailure_IEs_t *)calloc(1,sizeof(*ie));
-  ie->id = E2AP_ProtocolIE_ID_id_RICactions_NotAdmitted;
+  ie->id = E2AP_ProtocolIE_ID_id_Cause;
   ie->criticality = E2AP_Criticality_reject;
   ie->value.present = E2AP_RICsubscriptionDeleteFailure_IEs__value_PR_Cause;
   ie->value.choice.Cause.present = (E2AP_Cause_PR)cause;

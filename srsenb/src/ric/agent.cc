@@ -324,6 +324,22 @@ ric::subscription_t *agent::lookup_subscription(
   return nullptr;
 }
 
+bool agent::add_subscription(
+    ric::subscription_t *sub)
+{
+  subscriptions.push_back(sub);
+
+  return true;
+}
+
+bool agent::remove_subscription(
+    ric::subscription_t *sub)
+{
+  subscriptions.remove(sub);
+
+  return true;
+}
+
 /**
  * Handle an error or closure of the RIC socket connection.  The goal
  * here was to allow users to specify that the agent shouldn't always,

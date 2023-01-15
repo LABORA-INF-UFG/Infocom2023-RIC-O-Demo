@@ -185,6 +185,8 @@ int handle_ric_subscription_request(ric::agent *agent,uint32_t stream,
     goto errout;
   }
 
+  agent->add_subscription(rs);
+
   ret = generate_ric_subscription_response(agent,rs,&buf,&len);
   if (ret) {
     E2AP_ERROR(agent,"failed to generate RICsubscriptionResponse\n");
@@ -285,6 +287,9 @@ int handle_ric_subscription_delete_request(ric::agent *agent,uint32_t stream,
 	       rs->function_id);
     goto errout;
   }
+
+  agent->remove_subscription(rs);
+  delete rs;
 
   ret = generate_ric_subscription_delete_response(
     agent,request_id,instance_id,function_id,&buf,&len);
