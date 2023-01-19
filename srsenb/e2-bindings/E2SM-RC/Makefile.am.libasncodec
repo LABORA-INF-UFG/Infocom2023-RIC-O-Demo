@@ -1,0 +1,567 @@
+ASN_MODULE_SRCS=	\
+	E2SM-RC/E2SM_RC_LogicalOR.c	\
+	E2SM-RC/E2SM_RC_NeighborCell-List.c	\
+	E2SM-RC/E2SM_RC_NeighborCell-Item.c	\
+	E2SM-RC/E2SM_RC_NeighborCell-Item-Choice-NR.c	\
+	E2SM-RC/E2SM_RC_NeighborCell-Item-Choice-E-UTRA.c	\
+	E2SM-RC/E2SM_RC_NeighborRelation-Info.c	\
+	E2SM-RC/E2SM_RC_RRC-State.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info-Item.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info-Item-Choice-Individual.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info-Item-Choice-Group.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info-Item.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info-Item-Choice-Individual.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info-Item-Choice-Group.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-UEevent-Info.c	\
+	E2SM-RC/E2SM_RC_EventTrigger-UEevent-Info-Item.c	\
+	E2SM-RC/E2SM_RC_RANParameter-ID.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Name.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-LIST.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-LIST-Item.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-STRUCTURE.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-STRUCTURE-Item.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Value.c	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType.c	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-ElementTrue.c	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-ElementFalse.c	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-Structure.c	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-List.c	\
+	E2SM-RC/E2SM_RC_RANParameter-STRUCTURE.c	\
+	E2SM-RC/E2SM_RC_RANParameter-STRUCTURE-Item.c	\
+	E2SM-RC/E2SM_RC_RANParameter-LIST.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing.c	\
+	E2SM-RC/E2SM_RC_RANParameter-TestingCondition.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-List.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-Structure.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-ElementTrue.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-ElementFalse.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-LIST.c	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-STRUCTURE.c	\
+	E2SM-RC/E2SM_RC_RAN-CallProcess-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessType-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessType-Name.c	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessBreakpoint-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessBreakpoint-Name.c	\
+	E2SM-RC/E2SM_RC_RIC-ControlAction-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-ControlAction-Name.c	\
+	E2SM-RC/E2SM_RC_RIC-EventTriggerCondition-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-EventTrigger-UE-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-EventTrigger-UEevent-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-EventTrigger-Cell-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-InsertIndication-ID.c	\
+	E2SM-RC/E2SM_RC_RIC-InsertIndication-Name.c	\
+	E2SM-RC/E2SM_RC_RIC-PolicyAction.c	\
+	E2SM-RC/E2SM_RC_RIC-PolicyAction-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format1-Item.c	\
+	E2SM-RC/E2SM_RC_MessageType-Choice.c	\
+	E2SM-RC/E2SM_RC_MessageType-Choice-NI.c	\
+	E2SM-RC/E2SM_RC_MessageType-Choice-RRC.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format3.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format3-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format4.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format4-Item.c	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice.c	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-RRCstate.c	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-RRCstate-Item.c	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-UEID.c	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-L2state.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format5.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format1-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format2-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format3.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format3-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4-Style-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4-Indication-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4-RANP-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader-Format3.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format1-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format2-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format2-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format3.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format3-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format4.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format4-ItemUE.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format4-ItemCell.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format5.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format5-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6-Style-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6-Indication-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6-RANP-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-CallProcessID.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-CallProcessID-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlHeader.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlHeader-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlHeader-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format1-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format2-Style-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format2-ControlAction-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format1.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format1-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2-Style-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2-ControlOutcome-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2-RANP-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format3.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format3-Item.c	\
+	E2SM-RC/E2SM_RC_E2SM-RC-RANFunctionDefinition.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger-Style-Item.c	\
+	E2SM-RC/E2SM_RC_L2Parameters-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_UEIdentification-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_CellIdentification-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger-CallProcess-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger-Breakpoint-Item.c	\
+	E2SM-RC/E2SM_RC_CallProcessBreakpoint-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Report.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Report-Item.c	\
+	E2SM-RC/E2SM_RC_Report-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Insert.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Insert-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Insert-Indication-Item.c	\
+	E2SM-RC/E2SM_RC_InsertIndication-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Control.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Control-Item.c	\
+	E2SM-RC/E2SM_RC_ControlOutcome-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Control-Action-Item.c	\
+	E2SM-RC/E2SM_RC_ControlAction-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Policy.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Policy-Item.c	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Policy-Action-Item.c	\
+	E2SM-RC/E2SM_RC_PolicyAction-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_PolicyCondition-RANParameter-Item.c	\
+	E2SM-RC/E2SM_RC_CGI.c	\
+	E2SM-RC/E2SM_RC_CoreCPID.c	\
+	E2SM-RC/E2SM_RC_InterfaceIdentifier.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-NG.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-Xn.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-F1.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-E1.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-S1.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-X2.c	\
+	E2SM-RC/E2SM_RC_InterfaceID-W1.c	\
+	E2SM-RC/E2SM_RC_Interface-MessageID.c	\
+	E2SM-RC/E2SM_RC_InterfaceType.c	\
+	E2SM-RC/E2SM_RC_GroupID.c	\
+	E2SM-RC/E2SM_RC_QoSID.c	\
+	E2SM-RC/E2SM_RC_RANfunction-Name.c	\
+	E2SM-RC/E2SM_RC_RIC-Format-Type.c	\
+	E2SM-RC/E2SM_RC_RIC-Style-Type.c	\
+	E2SM-RC/E2SM_RC_RIC-Style-Name.c	\
+	E2SM-RC/E2SM_RC_RRC-MessageID.c	\
+	E2SM-RC/E2SM_RC_RRCclass-LTE.c	\
+	E2SM-RC/E2SM_RC_RRCclass-NR.c	\
+	E2SM-RC/E2SM_RC_ServingCell-ARFCN.c	\
+	E2SM-RC/E2SM_RC_ServingCell-PCI.c	\
+	E2SM-RC/E2SM_RC_UEID.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-CP-E1AP-ID-List.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-CP-E1AP-ID-Item.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-F1AP-ID-List.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-CP-F1AP-ID-Item.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB-DU.c	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-UP.c	\
+	E2SM-RC/E2SM_RC_UEID-NG-ENB.c	\
+	E2SM-RC/E2SM_RC_UEID-NG-ENB-DU.c	\
+	E2SM-RC/E2SM_RC_UEID-EN-GNB.c	\
+	E2SM-RC/E2SM_RC_UEID-ENB.c	\
+	E2SM-RC/E2SM_RC_ENB-ID.c	\
+	E2SM-RC/E2SM_RC_GlobalENB-ID.c	\
+	E2SM-RC/E2SM_RC_GUMMEI.c	\
+	E2SM-RC/E2SM_RC_MME-Group-ID.c	\
+	E2SM-RC/E2SM_RC_MME-Code.c	\
+	E2SM-RC/E2SM_RC_MME-UE-S1AP-ID.c	\
+	E2SM-RC/E2SM_RC_QCI.c	\
+	E2SM-RC/E2SM_RC_SubscriberProfileIDforRFP.c	\
+	E2SM-RC/E2SM_RC_EN-GNB-ID.c	\
+	E2SM-RC/E2SM_RC_ENB-UE-X2AP-ID.c	\
+	E2SM-RC/E2SM_RC_ENB-UE-X2AP-ID-Extension.c	\
+	E2SM-RC/E2SM_RC_E-UTRA-ARFCN.c	\
+	E2SM-RC/E2SM_RC_E-UTRA-PCI.c	\
+	E2SM-RC/E2SM_RC_E-UTRA-TAC.c	\
+	E2SM-RC/E2SM_RC_GlobalenGNB-ID.c	\
+	E2SM-RC/E2SM_RC_NGENB-CU-UE-W1AP-ID.c	\
+	E2SM-RC/E2SM_RC_NGENB-DU-ID.c	\
+	E2SM-RC/E2SM_RC_AMFPointer.c	\
+	E2SM-RC/E2SM_RC_AMFRegionID.c	\
+	E2SM-RC/E2SM_RC_AMFSetID.c	\
+	E2SM-RC/E2SM_RC_AMF-UE-NGAP-ID.c	\
+	E2SM-RC/E2SM_RC_EUTRACellIdentity.c	\
+	E2SM-RC/E2SM_RC_EUTRA-CGI.c	\
+	E2SM-RC/E2SM_RC_FiveQI.c	\
+	E2SM-RC/E2SM_RC_GlobalGNB-ID.c	\
+	E2SM-RC/E2SM_RC_GlobalNgENB-ID.c	\
+	E2SM-RC/E2SM_RC_GNB-ID.c	\
+	E2SM-RC/E2SM_RC_GUAMI.c	\
+	E2SM-RC/E2SM_RC_IndexToRFSP.c	\
+	E2SM-RC/E2SM_RC_NgENB-ID.c	\
+	E2SM-RC/E2SM_RC_NRCellIdentity.c	\
+	E2SM-RC/E2SM_RC_NR-CGI.c	\
+	E2SM-RC/E2SM_RC_PLMNIdentity.c	\
+	E2SM-RC/E2SM_RC_QosFlowIdentifier.c	\
+	E2SM-RC/E2SM_RC_SD.c	\
+	E2SM-RC/E2SM_RC_S-NSSAI.c	\
+	E2SM-RC/E2SM_RC_SST.c	\
+	E2SM-RC/E2SM_RC_NG-RANnodeUEXnAPID.c	\
+	E2SM-RC/E2SM_RC_GlobalNGRANNodeID.c	\
+	E2SM-RC/E2SM_RC_GNB-CU-CP-UE-E1AP-ID.c	\
+	E2SM-RC/E2SM_RC_GNB-CU-UP-ID.c	\
+	E2SM-RC/E2SM_RC_FiveGS-TAC.c	\
+	E2SM-RC/E2SM_RC_FreqBandNrItem.c	\
+	E2SM-RC/E2SM_RC_GNB-CU-UE-F1AP-ID.c	\
+	E2SM-RC/E2SM_RC_GNB-DU-ID.c	\
+	E2SM-RC/E2SM_RC_NR-PCI.c	\
+	E2SM-RC/E2SM_RC_NR-ARFCN.c	\
+	E2SM-RC/E2SM_RC_NRFrequencyBand-List.c	\
+	E2SM-RC/E2SM_RC_NRFrequencyBandItem.c	\
+	E2SM-RC/E2SM_RC_NRFrequencyInfo.c	\
+	E2SM-RC/E2SM_RC_NRFrequencyShift7p5khz.c	\
+	E2SM-RC/E2SM_RC_RANUEID.c	\
+	E2SM-RC/E2SM_RC_SupportedSULBandList.c	\
+	E2SM-RC/E2SM_RC_SupportedSULFreqBandItem.c
+
+ASN_MODULE_HDRS=	\
+	E2SM-RC/E2SM_RC_LogicalOR.h	\
+	E2SM-RC/E2SM_RC_NeighborCell-List.h	\
+	E2SM-RC/E2SM_RC_NeighborCell-Item.h	\
+	E2SM-RC/E2SM_RC_NeighborCell-Item-Choice-NR.h	\
+	E2SM-RC/E2SM_RC_NeighborCell-Item-Choice-E-UTRA.h	\
+	E2SM-RC/E2SM_RC_NeighborRelation-Info.h	\
+	E2SM-RC/E2SM_RC_RRC-State.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info-Item.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info-Item-Choice-Individual.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-Cell-Info-Item-Choice-Group.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info-Item.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info-Item-Choice-Individual.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-UE-Info-Item-Choice-Group.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-UEevent-Info.h	\
+	E2SM-RC/E2SM_RC_EventTrigger-UEevent-Info-Item.h	\
+	E2SM-RC/E2SM_RC_RANParameter-ID.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Name.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-LIST.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-LIST-Item.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-STRUCTURE.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Definition-Choice-STRUCTURE-Item.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Value.h	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType.h	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-ElementTrue.h	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-ElementFalse.h	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-Structure.h	\
+	E2SM-RC/E2SM_RC_RANParameter-ValueType-Choice-List.h	\
+	E2SM-RC/E2SM_RC_RANParameter-STRUCTURE.h	\
+	E2SM-RC/E2SM_RC_RANParameter-STRUCTURE-Item.h	\
+	E2SM-RC/E2SM_RC_RANParameter-LIST.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing.h	\
+	E2SM-RC/E2SM_RC_RANParameter-TestingCondition.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-List.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-Structure.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-ElementTrue.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-Item-Choice-ElementFalse.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-LIST.h	\
+	E2SM-RC/E2SM_RC_RANParameter-Testing-STRUCTURE.h	\
+	E2SM-RC/E2SM_RC_RAN-CallProcess-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessType-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessType-Name.h	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessBreakpoint-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-CallProcessBreakpoint-Name.h	\
+	E2SM-RC/E2SM_RC_RIC-ControlAction-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-ControlAction-Name.h	\
+	E2SM-RC/E2SM_RC_RIC-EventTriggerCondition-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-EventTrigger-UE-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-EventTrigger-UEevent-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-EventTrigger-Cell-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-InsertIndication-ID.h	\
+	E2SM-RC/E2SM_RC_RIC-InsertIndication-Name.h	\
+	E2SM-RC/E2SM_RC_RIC-PolicyAction.h	\
+	E2SM-RC/E2SM_RC_RIC-PolicyAction-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format1-Item.h	\
+	E2SM-RC/E2SM_RC_MessageType-Choice.h	\
+	E2SM-RC/E2SM_RC_MessageType-Choice-NI.h	\
+	E2SM-RC/E2SM_RC_MessageType-Choice-RRC.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format3.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format3-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format4.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format4-Item.h	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice.h	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-RRCstate.h	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-RRCstate-Item.h	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-UEID.h	\
+	E2SM-RC/E2SM_RC_TriggerType-Choice-L2state.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-EventTrigger-Format5.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format1-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format2-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format3.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format3-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4-Style-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4-Indication-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ActionDefinition-Format4-RANP-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationHeader-Format3.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format1-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format2-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format2-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format3.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format3-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format4.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format4-ItemUE.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format4-ItemCell.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format5.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format5-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6-Style-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6-Indication-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-IndicationMessage-Format6-RANP-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-CallProcessID.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-CallProcessID-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlHeader.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlHeader-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlHeader-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format1-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format2-Style-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlMessage-Format2-ControlAction-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format1.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format1-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2-Style-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2-ControlOutcome-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format2-RANP-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format3.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-ControlOutcome-Format3-Item.h	\
+	E2SM-RC/E2SM_RC_E2SM-RC-RANFunctionDefinition.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger-Style-Item.h	\
+	E2SM-RC/E2SM_RC_L2Parameters-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_UEIdentification-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_CellIdentification-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger-CallProcess-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-EventTrigger-Breakpoint-Item.h	\
+	E2SM-RC/E2SM_RC_CallProcessBreakpoint-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Report.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Report-Item.h	\
+	E2SM-RC/E2SM_RC_Report-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Insert.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Insert-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Insert-Indication-Item.h	\
+	E2SM-RC/E2SM_RC_InsertIndication-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Control.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Control-Item.h	\
+	E2SM-RC/E2SM_RC_ControlOutcome-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Control-Action-Item.h	\
+	E2SM-RC/E2SM_RC_ControlAction-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Policy.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Policy-Item.h	\
+	E2SM-RC/E2SM_RC_RANFunctionDefinition-Policy-Action-Item.h	\
+	E2SM-RC/E2SM_RC_PolicyAction-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_PolicyCondition-RANParameter-Item.h	\
+	E2SM-RC/E2SM_RC_CGI.h	\
+	E2SM-RC/E2SM_RC_CoreCPID.h	\
+	E2SM-RC/E2SM_RC_InterfaceIdentifier.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-NG.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-Xn.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-F1.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-E1.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-S1.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-X2.h	\
+	E2SM-RC/E2SM_RC_InterfaceID-W1.h	\
+	E2SM-RC/E2SM_RC_Interface-MessageID.h	\
+	E2SM-RC/E2SM_RC_InterfaceType.h	\
+	E2SM-RC/E2SM_RC_GroupID.h	\
+	E2SM-RC/E2SM_RC_QoSID.h	\
+	E2SM-RC/E2SM_RC_RANfunction-Name.h	\
+	E2SM-RC/E2SM_RC_RIC-Format-Type.h	\
+	E2SM-RC/E2SM_RC_RIC-Style-Type.h	\
+	E2SM-RC/E2SM_RC_RIC-Style-Name.h	\
+	E2SM-RC/E2SM_RC_RRC-MessageID.h	\
+	E2SM-RC/E2SM_RC_RRCclass-LTE.h	\
+	E2SM-RC/E2SM_RC_RRCclass-NR.h	\
+	E2SM-RC/E2SM_RC_ServingCell-ARFCN.h	\
+	E2SM-RC/E2SM_RC_ServingCell-PCI.h	\
+	E2SM-RC/E2SM_RC_UEID.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-CP-E1AP-ID-List.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-CP-E1AP-ID-Item.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-F1AP-ID-List.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-CP-F1AP-ID-Item.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB-DU.h	\
+	E2SM-RC/E2SM_RC_UEID-GNB-CU-UP.h	\
+	E2SM-RC/E2SM_RC_UEID-NG-ENB.h	\
+	E2SM-RC/E2SM_RC_UEID-NG-ENB-DU.h	\
+	E2SM-RC/E2SM_RC_UEID-EN-GNB.h	\
+	E2SM-RC/E2SM_RC_UEID-ENB.h	\
+	E2SM-RC/E2SM_RC_ENB-ID.h	\
+	E2SM-RC/E2SM_RC_GlobalENB-ID.h	\
+	E2SM-RC/E2SM_RC_GUMMEI.h	\
+	E2SM-RC/E2SM_RC_MME-Group-ID.h	\
+	E2SM-RC/E2SM_RC_MME-Code.h	\
+	E2SM-RC/E2SM_RC_MME-UE-S1AP-ID.h	\
+	E2SM-RC/E2SM_RC_QCI.h	\
+	E2SM-RC/E2SM_RC_SubscriberProfileIDforRFP.h	\
+	E2SM-RC/E2SM_RC_EN-GNB-ID.h	\
+	E2SM-RC/E2SM_RC_ENB-UE-X2AP-ID.h	\
+	E2SM-RC/E2SM_RC_ENB-UE-X2AP-ID-Extension.h	\
+	E2SM-RC/E2SM_RC_E-UTRA-ARFCN.h	\
+	E2SM-RC/E2SM_RC_E-UTRA-PCI.h	\
+	E2SM-RC/E2SM_RC_E-UTRA-TAC.h	\
+	E2SM-RC/E2SM_RC_GlobalenGNB-ID.h	\
+	E2SM-RC/E2SM_RC_NGENB-CU-UE-W1AP-ID.h	\
+	E2SM-RC/E2SM_RC_NGENB-DU-ID.h	\
+	E2SM-RC/E2SM_RC_AMFPointer.h	\
+	E2SM-RC/E2SM_RC_AMFRegionID.h	\
+	E2SM-RC/E2SM_RC_AMFSetID.h	\
+	E2SM-RC/E2SM_RC_AMF-UE-NGAP-ID.h	\
+	E2SM-RC/E2SM_RC_EUTRACellIdentity.h	\
+	E2SM-RC/E2SM_RC_EUTRA-CGI.h	\
+	E2SM-RC/E2SM_RC_FiveQI.h	\
+	E2SM-RC/E2SM_RC_GlobalGNB-ID.h	\
+	E2SM-RC/E2SM_RC_GlobalNgENB-ID.h	\
+	E2SM-RC/E2SM_RC_GNB-ID.h	\
+	E2SM-RC/E2SM_RC_GUAMI.h	\
+	E2SM-RC/E2SM_RC_IndexToRFSP.h	\
+	E2SM-RC/E2SM_RC_NgENB-ID.h	\
+	E2SM-RC/E2SM_RC_NRCellIdentity.h	\
+	E2SM-RC/E2SM_RC_NR-CGI.h	\
+	E2SM-RC/E2SM_RC_PLMNIdentity.h	\
+	E2SM-RC/E2SM_RC_QosFlowIdentifier.h	\
+	E2SM-RC/E2SM_RC_SD.h	\
+	E2SM-RC/E2SM_RC_S-NSSAI.h	\
+	E2SM-RC/E2SM_RC_SST.h	\
+	E2SM-RC/E2SM_RC_NG-RANnodeUEXnAPID.h	\
+	E2SM-RC/E2SM_RC_GlobalNGRANNodeID.h	\
+	E2SM-RC/E2SM_RC_GNB-CU-CP-UE-E1AP-ID.h	\
+	E2SM-RC/E2SM_RC_GNB-CU-UP-ID.h	\
+	E2SM-RC/E2SM_RC_FiveGS-TAC.h	\
+	E2SM-RC/E2SM_RC_FreqBandNrItem.h	\
+	E2SM-RC/E2SM_RC_GNB-CU-UE-F1AP-ID.h	\
+	E2SM-RC/E2SM_RC_GNB-DU-ID.h	\
+	E2SM-RC/E2SM_RC_NR-PCI.h	\
+	E2SM-RC/E2SM_RC_NR-ARFCN.h	\
+	E2SM-RC/E2SM_RC_NRFrequencyBand-List.h	\
+	E2SM-RC/E2SM_RC_NRFrequencyBandItem.h	\
+	E2SM-RC/E2SM_RC_NRFrequencyInfo.h	\
+	E2SM-RC/E2SM_RC_NRFrequencyShift7p5khz.h	\
+	E2SM-RC/E2SM_RC_RANUEID.h	\
+	E2SM-RC/E2SM_RC_SupportedSULBandList.h	\
+	E2SM-RC/E2SM_RC_SupportedSULFreqBandItem.h
+
+ASN_MODULE_HDRS+=E2SM-RC/OPEN_TYPE.h
+ASN_MODULE_SRCS+=E2SM-RC/OPEN_TYPE.c
+ASN_MODULE_HDRS+=E2SM-RC/constr_CHOICE.h
+ASN_MODULE_HDRS+=E2SM-RC/BOOLEAN.h
+ASN_MODULE_SRCS+=E2SM-RC/BOOLEAN.c
+ASN_MODULE_HDRS+=E2SM-RC/INTEGER.h
+ASN_MODULE_SRCS+=E2SM-RC/INTEGER.c
+ASN_MODULE_HDRS+=E2SM-RC/NativeEnumerated.h
+ASN_MODULE_SRCS+=E2SM-RC/NativeEnumerated.c
+ASN_MODULE_HDRS+=E2SM-RC/NativeInteger.h
+ASN_MODULE_SRCS+=E2SM-RC/NativeInteger.c
+ASN_MODULE_HDRS+=E2SM-RC/NativeReal.h
+ASN_MODULE_SRCS+=E2SM-RC/NativeReal.c
+ASN_MODULE_HDRS+=E2SM-RC/REAL.h
+ASN_MODULE_HDRS+=E2SM-RC/PrintableString.h
+ASN_MODULE_SRCS+=E2SM-RC/PrintableString.c
+ASN_MODULE_HDRS+=E2SM-RC/OCTET_STRING.h
+ASN_MODULE_SRCS+=E2SM-RC/REAL.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=E2SM-RC/asn_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_SET_OF.h
+ASN_MODULE_SRCS+=E2SM-RC/asn_SET_OF.c
+ASN_MODULE_SRCS+=E2SM-RC/constr_CHOICE.c
+ASN_MODULE_HDRS+=E2SM-RC/constr_SEQUENCE.h
+ASN_MODULE_SRCS+=E2SM-RC/constr_SEQUENCE.c
+ASN_MODULE_HDRS+=E2SM-RC/constr_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=E2SM-RC/constr_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=E2SM-RC/constr_SET_OF.h
+ASN_MODULE_SRCS+=E2SM-RC/constr_SET_OF.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_application.h
+ASN_MODULE_SRCS+=E2SM-RC/asn_application.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_ioc.h
+ASN_MODULE_HDRS+=E2SM-RC/asn_system.h
+ASN_MODULE_HDRS+=E2SM-RC/asn_codecs.h
+ASN_MODULE_HDRS+=E2SM-RC/asn_internal.h
+ASN_MODULE_SRCS+=E2SM-RC/asn_internal.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_random_fill.h
+ASN_MODULE_SRCS+=E2SM-RC/asn_random_fill.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_bit_data.h
+ASN_MODULE_SRCS+=E2SM-RC/asn_bit_data.c
+ASN_MODULE_SRCS+=E2SM-RC/OCTET_STRING.c
+ASN_MODULE_HDRS+=E2SM-RC/BIT_STRING.h
+ASN_MODULE_SRCS+=E2SM-RC/BIT_STRING.c
+ASN_MODULE_SRCS+=E2SM-RC/asn_codecs_prim.c
+ASN_MODULE_HDRS+=E2SM-RC/asn_codecs_prim.h
+ASN_MODULE_HDRS+=E2SM-RC/ber_tlv_length.h
+ASN_MODULE_SRCS+=E2SM-RC/ber_tlv_length.c
+ASN_MODULE_HDRS+=E2SM-RC/ber_tlv_tag.h
+ASN_MODULE_SRCS+=E2SM-RC/ber_tlv_tag.c
+ASN_MODULE_HDRS+=E2SM-RC/ber_decoder.h
+ASN_MODULE_SRCS+=E2SM-RC/ber_decoder.c
+ASN_MODULE_HDRS+=E2SM-RC/der_encoder.h
+ASN_MODULE_SRCS+=E2SM-RC/der_encoder.c
+ASN_MODULE_HDRS+=E2SM-RC/constr_TYPE.h
+ASN_MODULE_SRCS+=E2SM-RC/constr_TYPE.c
+ASN_MODULE_HDRS+=E2SM-RC/constraints.h
+ASN_MODULE_SRCS+=E2SM-RC/constraints.c
+ASN_MODULE_HDRS+=E2SM-RC/xer_support.h
+ASN_MODULE_SRCS+=E2SM-RC/xer_support.c
+ASN_MODULE_HDRS+=E2SM-RC/xer_decoder.h
+ASN_MODULE_SRCS+=E2SM-RC/xer_decoder.c
+ASN_MODULE_HDRS+=E2SM-RC/xer_encoder.h
+ASN_MODULE_SRCS+=E2SM-RC/xer_encoder.c
+ASN_MODULE_HDRS+=E2SM-RC/per_support.h
+ASN_MODULE_SRCS+=E2SM-RC/per_support.c
+ASN_MODULE_HDRS+=E2SM-RC/per_decoder.h
+ASN_MODULE_SRCS+=E2SM-RC/per_decoder.c
+ASN_MODULE_HDRS+=E2SM-RC/per_encoder.h
+ASN_MODULE_SRCS+=E2SM-RC/per_encoder.c
+ASN_MODULE_HDRS+=E2SM-RC/per_opentype.h
+ASN_MODULE_SRCS+=E2SM-RC/per_opentype.c
+
+ASN_MODULE_CFLAGS=-DASN_DISABLE_OER_SUPPORT 
+
+lib_LTLIBRARIES+=libasncodec.la
+libasncodec_la_SOURCES=$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)
+libasncodec_la_CPPFLAGS=-I$(top_srcdir)/E2SM-RC/
+libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)
+libasncodec_la_LDFLAGS=-lm
