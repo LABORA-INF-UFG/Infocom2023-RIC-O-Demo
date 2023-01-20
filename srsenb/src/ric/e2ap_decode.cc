@@ -46,7 +46,7 @@ int decode_pdu(ric::agent *agent,E2AP_E2AP_PDU_t *pdu,
 
   dres = aper_decode(NULL,&asn_DEF_E2AP_E2AP_PDU,(void **)&pdu,buf,len,0,0);
   if (dres.code != RC_OK) {
-    E2AP_ERROR(agent,"failed to decode PDU (%d)\n",dres.code);
+    E2AP_ERROR(agent,"failed to decode PDU len %lu (%d)\n",len,dres.code);
     return -1;
   }
 
