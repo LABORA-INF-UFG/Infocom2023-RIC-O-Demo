@@ -31,7 +31,7 @@ typedef enum {
 } agent_state_t;
 
 #define RIC_AGENT_RECONNECT_DELAY_INC 5
-#define RIC_AGENT_RECONNECT_DELAY_MAX 60
+#define RIC_AGENT_RECONNECT_DELAY_MAX 10
 
 class agent : public srslte::thread
 {
