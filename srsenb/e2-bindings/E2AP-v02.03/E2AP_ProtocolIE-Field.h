@@ -54,7 +54,6 @@
 #include "E2AP_RICcontrolHeader.h"
 #include "E2AP_RICcontrolMessage.h"
 #include "E2AP_RICcontrolAckRequest.h"
-#include "E2AP_RICcontrolStatus.h"
 #include "E2AP_RICcontrolOutcome.h"
 #include "E2AP_TransactionID.h"
 #include "E2AP_GlobalE2node-ID.h"
@@ -214,7 +213,6 @@ typedef enum E2AP_RICcontrolAcknowledge_IEs__value_PR {
 	E2AP_RICcontrolAcknowledge_IEs__value_PR_RICrequestID,
 	E2AP_RICcontrolAcknowledge_IEs__value_PR_RANfunctionID,
 	E2AP_RICcontrolAcknowledge_IEs__value_PR_RICcallProcessID,
-	E2AP_RICcontrolAcknowledge_IEs__value_PR_RICcontrolStatus,
 	E2AP_RICcontrolAcknowledge_IEs__value_PR_RICcontrolOutcome
 } E2AP_RICcontrolAcknowledge_IEs__value_PR;
 typedef enum E2AP_RICcontrolFailure_IEs__value_PR {
@@ -800,7 +798,6 @@ typedef struct E2AP_RICcontrolAcknowledge_IEs {
 			E2AP_RICrequestID_t	 RICrequestID;
 			E2AP_RANfunctionID_t	 RANfunctionID;
 			E2AP_RICcallProcessID_t	 RICcallProcessID;
-			E2AP_RICcontrolStatus_t	 RICcontrolStatus;
 			E2AP_RICcontrolOutcome_t	 RICcontrolOutcome;
 		} choice;
 		
