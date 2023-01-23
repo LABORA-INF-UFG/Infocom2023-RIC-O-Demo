@@ -322,11 +322,15 @@ void slicer::upd_sf_alloc()
   for (it = slices.begin(); it != slices.end(); ++it) {
     slice_shares.push_back(it->second.config.prop_alloc_policy.share);
   }
-  uint32_t gcf = calc_gcf_vec(slice_shares);
-  // srslte::console("gcf: %u", gcf);
   alloc_index = 0;
   total_sf_alloc = 0;
   sf_alloc.clear();
+  if (slice_shares.size() == 0) {
+    has_alloc = false;
+    return;
+  }
+  uint32_t gcf = calc_gcf_vec(slice_shares);
+  // srslte::console("gcf: %u", gcf);
   uint32_t slice_cnt = 0, tmp = 0;
   for (it = slices.begin(); it != slices.end(); ++it, ++slice_cnt) {
     tmp = it->second.config.prop_alloc_policy.share / gcf;
