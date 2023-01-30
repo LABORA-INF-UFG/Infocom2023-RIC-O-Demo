@@ -96,6 +96,11 @@ void slice_metrics::update(metrics *m,std::map<std::string,std::vector<uint16_t>
       slice_counters[rev_map[it->first]].ul_mcs += 1;
     }
     slices[rev_map[it->first]].ul_samples += it->second.ul_samples;
+    if (!isnan(it->second.dl_mcs)) {
+      slices[rev_map[it->first]].dl_mcs += it->second.dl_mcs;
+      slice_counters[rev_map[it->first]].dl_mcs += 1;
+    }
+    slices[rev_map[it->first]].dl_samples += it->second.dl_samples;
   }
 
   // Now compute averages for non-counter values.
@@ -116,6 +121,8 @@ void slice_metrics::update(metrics *m,std::map<std::string,std::vector<uint16_t>
       slices[it->first].ul_sinr /= slice_counters[it->first].ul_sinr;
     if (slice_counters[it->first].ul_mcs)
       slices[it->first].ul_mcs /= slice_counters[it->first].ul_mcs;
+    if (slice_counters[it->first].dl_mcs)
+      slices[it->first].dl_mcs /= slice_counters[it->first].dl_mcs;
   }
 }
 #endif
@@ -248,6 +255,9 @@ void metrics::update(srsenb::enb_metrics_t *em)
     if (!isnan(em->phy[i].ul.mcs))
       ues[rnti].ul_mcs = em->phy[i].ul.mcs;
     ues[rnti].ul_samples = em->phy[i].ul.n_samples;
+    if (!isnan(em->phy[i].dl.mcs))
+      ues[rnti].dl_mcs = em->phy[i].dl.mcs;
+    ues[rnti].dl_samples = em->phy[i].dl.n_samples;
   }
 
   /* Remove stale RNTIs. */
@@ -731,6 +741,8 @@ void kpm_model::send_indications(int timer_id)
 	pui->ul_sinr = it->second.ul_sinr;
 	pui->ul_mcs = it->second.ul_mcs;
 	pui->ul_samples = it->second.ul_samples;
+	pui->dl_mcs = it->second.dl_mcs;
+	pui->dl_samples = it->second.dl_samples;
 	ASN_SEQUENCE_ADD(&duc->perUEReportList->list,pui);
       }
 
@@ -761,6 +773,8 @@ void kpm_model::send_indications(int timer_id)
 	    slice_item->ul_sinr = it->second.ul_sinr;
 	    slice_item->ul_mcs = it->second.ul_mcs;
 	    slice_item->ul_samples = it->second.ul_samples;
+	    slice_item->dl_mcs = it->second.dl_mcs;
+	    slice_item->dl_samples = it->second.dl_samples;
 	    ASN_SEQUENCE_ADD(&duc->perSliceReportList->list,slice_item);
 	  }
       }
