@@ -16,7 +16,6 @@
 #include "E2AP_Cause.h"
 #include "E2AP_RICactionType.h"
 #include "E2AP_RICindicationType.h"
-// #include "E2AP_RICcontrolStatus.h"
 #include "E2SM_NEXRAN_RANfunction-Description.h"
 #include "E2SM_NEXRAN_E2SM-NexRAN-ControlHeader.h"
 #include "E2SM_NEXRAN_E2SM-NexRAN-ControlMessage.h"
@@ -588,7 +587,7 @@ void nexran_model::handle_control(ric::control_t *rc)
     if (enc_outcome)
       free(enc_outcome);
     if (ret) {
-      E2AP_ERROR(agent,"failed to generate RICcontrolFailure\n");
+      E2AP_ERROR(agent,"failed to generate RICcontrolAcknowledge\n");
     }
     else {
       agent->send_sctp_data(buf,len);

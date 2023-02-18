@@ -117,6 +117,28 @@ if("${RIC_GENERATED_E2SM_NEXRAN_BINDING_DIR}" STREQUAL "")
 endif()
 endif()
 
+if(ENABLE_RIC_AGENT_RC)
+if("${RIC_GENERATED_E2SM_RC_BINDING_DIR}" STREQUAL "")
+  set(E2SM_RC_ASN_FILE ${RIC_ASN_DIR}/e2sm-rc-v01.00.asn1)
+  set(E2SM_RC_C_DIR ${CMAKE_CURRENT_BINARY_DIR}/messages/E2SM-RC/)
+  execute_process(
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_asn1c_includes.sh "${E2SM_RC_C_DIR}" "${E2SM_RC_ASN_FILE}" "E2SM_RC_" -fno-include-deps -fincludes-quoted
+    RESULT_VARIABLE ret)
+  if (NOT ${ret} STREQUAL 0)
+    message(FATAL_ERROR "${ret}: error")
+  endif (NOT ${ret} STREQUAL 0)
+else()
+  set(E2SM_RC_C_DIR "${RIC_GENERATED_E2SM_RC_BINDING_DIR}")
+endif()
+file(GLOB E2SM_RC_source ${E2SM_RC_C_DIR}/*.c)
+if("${RIC_GENERATED_E2SM_RC_BINDING_DIR}" STREQUAL "")
+  add_custom_command (
+    OUTPUT ${E2SM_RC_source}
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/tools/make_asn1c_includes.sh "${E2SM_RC_C_DIR}" "${E2SM_RC_ASN_FILE}" "E2SM_RC_" -fno-include-deps -fincludes-quoted
+    DEPENDS ${E2SM_RC_ASN_FILE})
+endif()
+endif()
+
 set(RIC_SOURCES
   ${E2AP_source}
   ${E2SM_GNB_NRT_source}
@@ -143,6 +165,13 @@ set(RIC_SOURCES
   e2sm_nexran.cc)
 endif()
 
+if(ENABLE_RIC_AGENT_RC)
+set(RIC_SOURCES
+  ${RIC_SOURCES}
+  ${E2SM_RC_source}
+  e2sm_rc.cc)
+endif()
+
 add_library(srsenb_ric STATIC ${RIC_SOURCES})
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_GNB_NRT_C_DIR})
 if(ENABLE_RIC_AGENT_KPM)
@@ -150,5 +179,8 @@ if(ENABLE_RIC_AGENT_KPM)
 endif()
 if(ENABLE_SLICER)
   target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_NEXRAN_C_DIR})
+endif()
+if(ENABLE_RIC_AGENT_RC)
+  target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_RC_C_DIR})
 endif()
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2AP_C_DIR})

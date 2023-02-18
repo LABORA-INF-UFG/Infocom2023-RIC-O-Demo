@@ -28,6 +28,9 @@
 #ifdef ENABLE_SLICER
 #include "srsenb/hdr/stack/mac/slicer_test_utils.h"
 #endif
+#ifdef ENABLE_RIC_AGENT_RC
+#include "srsenb/hdr/ric/e2sm_rc.h"
+#endif
 
 namespace ric {
 
@@ -136,6 +139,17 @@ int agent::init(const srsenb::all_args_t& args_,
   model = new nexran_model(this);
   if (model->init()) {
     RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
+    delete model;
+    return SRSLTE_ERROR;
+  }
+  service_models.push_back(model);
+  RIC_INFO("added model %s\n",model->name.c_str());
+#endif
+
+#ifdef ENABLE_RIC_AGENT_RC
+  model = new rc_model(this);
+  if (model->init()) {
+    RIC_ERROR("failed to add E2SM-RC model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }
