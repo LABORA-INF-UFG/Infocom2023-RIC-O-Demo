@@ -8,6 +8,8 @@
 #include "E2SM_KPM_EPC-CUUP-PM-Format.h"
 
 #include "E2SM_KPM_PerQCIReportListItemFormat.h"
+#include "E2SM_KPM_PerUEReportListItemFormat.h"
+#include "E2SM_KPM_PerSliceReportListItemFormat.h"
 static int
 memb_E2SM_KPM_perQCIReportList_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
@@ -34,14 +36,86 @@ memb_E2SM_KPM_perQCIReportList_constraint_1(const asn_TYPE_descriptor_t *td, con
 	}
 }
 
+static int
+memb_E2SM_KPM_perUEReportList_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	size_t size;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	/* Determine the number of elements */
+	size = _A_CSEQUENCE_FROM_VOID(sptr)->count;
+	
+	if((size >= 1 && size <= 1024)) {
+		/* Perform validation of the inner elements */
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
+static int
+memb_E2SM_KPM_perSliceReportList_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
+			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	size_t size;
+	
+	if(!sptr) {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: value not given (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+	
+	/* Determine the number of elements */
+	size = _A_CSEQUENCE_FROM_VOID(sptr)->count;
+	
+	if((size >= 1 && size <= 1024)) {
+		/* Perform validation of the inner elements */
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
+}
+
 static asn_per_constraints_t asn_PER_type_E2SM_KPM_perQCIReportList_constr_2 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 8,  8,  1,  256 }	/* (SIZE(1..256)) */,
 	0, 0	/* No PER value map */
 };
+static asn_per_constraints_t asn_PER_type_E2SM_KPM_perUEReportList_constr_5 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 10,  10,  1,  1024 }	/* (SIZE(1..1024)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_type_E2SM_KPM_perSliceReportList_constr_7 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 10,  10,  1,  1024 }	/* (SIZE(1..1024)) */,
+	0, 0	/* No PER value map */
+};
 static asn_per_constraints_t asn_PER_memb_E2SM_KPM_perQCIReportList_constr_2 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 8,  8,  1,  256 }	/* (SIZE(1..256)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_E2SM_KPM_perUEReportList_constr_5 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 10,  10,  1,  1024 }	/* (SIZE(1..1024)) */,
+	0, 0	/* No PER value map */
+};
+static asn_per_constraints_t asn_PER_memb_E2SM_KPM_perSliceReportList_constr_7 CC_NOTUSED = {
+	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+	{ APC_CONSTRAINED,	 10,  10,  1,  1024 }	/* (SIZE(1..1024)) */,
 	0, 0	/* No PER value map */
 };
 static asn_TYPE_member_t asn_MBR_E2SM_KPM_perQCIReportList_2[] = {
@@ -81,6 +155,80 @@ asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_perQCIReportList_2 = {
 	&asn_SPC_E2SM_KPM_perQCIReportList_specs_2	/* Additional specs */
 };
 
+static asn_TYPE_member_t asn_MBR_E2SM_KPM_perUEReportList_5[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_E2SM_KPM_PerUEReportListItemFormat,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_E2SM_KPM_perUEReportList_tags_5[] = {
+	(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_E2SM_KPM_perUEReportList_specs_5 = {
+	sizeof(struct E2SM_KPM_EPC_CUUP_PM_Format__perUEReportList),
+	offsetof(struct E2SM_KPM_EPC_CUUP_PM_Format__perUEReportList, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+static /* Use -fall-defs-global to expose */
+asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_perUEReportList_5 = {
+	"perUEReportList",
+	"perUEReportList",
+	&asn_OP_SEQUENCE_OF,
+	asn_DEF_E2SM_KPM_perUEReportList_tags_5,
+	sizeof(asn_DEF_E2SM_KPM_perUEReportList_tags_5)
+		/sizeof(asn_DEF_E2SM_KPM_perUEReportList_tags_5[0]) - 1, /* 1 */
+	asn_DEF_E2SM_KPM_perUEReportList_tags_5,	/* Same as above */
+	sizeof(asn_DEF_E2SM_KPM_perUEReportList_tags_5)
+		/sizeof(asn_DEF_E2SM_KPM_perUEReportList_tags_5[0]), /* 2 */
+	{ 0, &asn_PER_type_E2SM_KPM_perUEReportList_constr_5, SEQUENCE_OF_constraint },
+	asn_MBR_E2SM_KPM_perUEReportList_5,
+	1,	/* Single element */
+	&asn_SPC_E2SM_KPM_perUEReportList_specs_5	/* Additional specs */
+};
+
+static asn_TYPE_member_t asn_MBR_E2SM_KPM_perSliceReportList_7[] = {
+	{ ATF_POINTER, 0, 0,
+		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
+		0,
+		&asn_DEF_E2SM_KPM_PerSliceReportListItemFormat,
+		0,
+		{ 0, 0, 0 },
+		0, 0, /* No default value */
+		""
+		},
+};
+static const ber_tlv_tag_t asn_DEF_E2SM_KPM_perSliceReportList_tags_7[] = {
+	(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
+};
+static asn_SET_OF_specifics_t asn_SPC_E2SM_KPM_perSliceReportList_specs_7 = {
+	sizeof(struct E2SM_KPM_EPC_CUUP_PM_Format__perSliceReportList),
+	offsetof(struct E2SM_KPM_EPC_CUUP_PM_Format__perSliceReportList, _asn_ctx),
+	0,	/* XER encoding is XMLDelimitedItemList */
+};
+static /* Use -fall-defs-global to expose */
+asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_perSliceReportList_7 = {
+	"perSliceReportList",
+	"perSliceReportList",
+	&asn_OP_SEQUENCE_OF,
+	asn_DEF_E2SM_KPM_perSliceReportList_tags_7,
+	sizeof(asn_DEF_E2SM_KPM_perSliceReportList_tags_7)
+		/sizeof(asn_DEF_E2SM_KPM_perSliceReportList_tags_7[0]) - 1, /* 1 */
+	asn_DEF_E2SM_KPM_perSliceReportList_tags_7,	/* Same as above */
+	sizeof(asn_DEF_E2SM_KPM_perSliceReportList_tags_7)
+		/sizeof(asn_DEF_E2SM_KPM_perSliceReportList_tags_7[0]), /* 2 */
+	{ 0, &asn_PER_type_E2SM_KPM_perSliceReportList_constr_7, SEQUENCE_OF_constraint },
+	asn_MBR_E2SM_KPM_perSliceReportList_7,
+	1,	/* Single element */
+	&asn_SPC_E2SM_KPM_perSliceReportList_specs_7	/* Additional specs */
+};
+
 asn_TYPE_member_t asn_MBR_E2SM_KPM_EPC_CUUP_PM_Format_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct E2SM_KPM_EPC_CUUP_PM_Format, perQCIReportList),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -91,19 +239,41 @@ asn_TYPE_member_t asn_MBR_E2SM_KPM_EPC_CUUP_PM_Format_1[] = {
 		0, 0, /* No default value */
 		"perQCIReportList"
 		},
+	{ ATF_POINTER, 2, offsetof(struct E2SM_KPM_EPC_CUUP_PM_Format, perUEReportList),
+		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
+		0,
+		&asn_DEF_E2SM_KPM_perUEReportList_5,
+		0,
+		{ 0, &asn_PER_memb_E2SM_KPM_perUEReportList_constr_5,  memb_E2SM_KPM_perUEReportList_constraint_1 },
+		0, 0, /* No default value */
+		"perUEReportList"
+		},
+	{ ATF_POINTER, 1, offsetof(struct E2SM_KPM_EPC_CUUP_PM_Format, perSliceReportList),
+		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
+		0,
+		&asn_DEF_E2SM_KPM_perSliceReportList_7,
+		0,
+		{ 0, &asn_PER_memb_E2SM_KPM_perSliceReportList_constr_7,  memb_E2SM_KPM_perSliceReportList_constraint_1 },
+		0, 0, /* No default value */
+		"perSliceReportList"
+		},
 };
+static const int asn_MAP_E2SM_KPM_EPC_CUUP_PM_Format_oms_1[] = { 1, 2 };
 static const ber_tlv_tag_t asn_DEF_E2SM_KPM_EPC_CUUP_PM_Format_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
 static const asn_TYPE_tag2member_t asn_MAP_E2SM_KPM_EPC_CUUP_PM_Format_tag2el_1[] = {
-    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* perQCIReportList */
+    { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* perQCIReportList */
+    { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* perUEReportList */
+    { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* perSliceReportList */
 };
 asn_SEQUENCE_specifics_t asn_SPC_E2SM_KPM_EPC_CUUP_PM_Format_specs_1 = {
 	sizeof(struct E2SM_KPM_EPC_CUUP_PM_Format),
 	offsetof(struct E2SM_KPM_EPC_CUUP_PM_Format, _asn_ctx),
 	asn_MAP_E2SM_KPM_EPC_CUUP_PM_Format_tag2el_1,
-	1,	/* Count of tags in the map */
-	0, 0, 0,	/* Optional elements (not needed) */
+	3,	/* Count of tags in the map */
+	asn_MAP_E2SM_KPM_EPC_CUUP_PM_Format_oms_1,	/* Optional members */
+	0, 2,	/* Root/Additions */
 	1,	/* First extension addition */
 };
 asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_EPC_CUUP_PM_Format = {
@@ -118,7 +288,7 @@ asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_EPC_CUUP_PM_Format = {
 		/sizeof(asn_DEF_E2SM_KPM_EPC_CUUP_PM_Format_tags_1[0]), /* 1 */
 	{ 0, 0, SEQUENCE_constraint },
 	asn_MBR_E2SM_KPM_EPC_CUUP_PM_Format_1,
-	1,	/* Elements count */
+	3,	/* Elements count */
 	&asn_SPC_E2SM_KPM_EPC_CUUP_PM_Format_specs_1	/* Additional specs */
 };
 

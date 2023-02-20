@@ -22,6 +22,8 @@ extern "C" {
 
 /* Forward declarations */
 struct E2SM_KPM_PerQCIReportListItemFormat;
+struct E2SM_KPM_PerUEReportListItemFormat;
+struct E2SM_KPM_PerSliceReportListItemFormat;
 
 /* E2SM_KPM_EPC-CUUP-PM-Format */
 typedef struct E2SM_KPM_EPC_CUUP_PM_Format {
@@ -35,6 +37,18 @@ typedef struct E2SM_KPM_EPC_CUUP_PM_Format {
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
+	struct E2SM_KPM_EPC_CUUP_PM_Format__perUEReportList {
+		A_SEQUENCE_OF(struct E2SM_KPM_PerUEReportListItemFormat) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *perUEReportList;
+	struct E2SM_KPM_EPC_CUUP_PM_Format__perSliceReportList {
+		A_SEQUENCE_OF(struct E2SM_KPM_PerSliceReportListItemFormat) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *perSliceReportList;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -43,7 +57,7 @@ typedef struct E2SM_KPM_EPC_CUUP_PM_Format {
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_EPC_CUUP_PM_Format;
 extern asn_SEQUENCE_specifics_t asn_SPC_E2SM_KPM_EPC_CUUP_PM_Format_specs_1;
-extern asn_TYPE_member_t asn_MBR_E2SM_KPM_EPC_CUUP_PM_Format_1[1];
+extern asn_TYPE_member_t asn_MBR_E2SM_KPM_EPC_CUUP_PM_Format_1[3];
 
 #ifdef __cplusplus
 }

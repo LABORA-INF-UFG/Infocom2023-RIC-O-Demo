@@ -22,6 +22,8 @@ extern "C" {
 
 /* Forward declarations */
 struct E2SM_KPM_PerQCIReportListItem;
+struct E2SM_KPM_PerUEReportListItem;
+struct E2SM_KPM_PerSliceReportListItem;
 
 /* E2SM_KPM_EPC-DU-PM-Container */
 typedef struct E2SM_KPM_EPC_DU_PM_Container {
@@ -35,6 +37,18 @@ typedef struct E2SM_KPM_EPC_DU_PM_Container {
 	 * This type is extensible,
 	 * possible extensions are below.
 	 */
+	struct E2SM_KPM_EPC_DU_PM_Container__perUEReportList {
+		A_SEQUENCE_OF(struct E2SM_KPM_PerUEReportListItem) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *perUEReportList;
+	struct E2SM_KPM_EPC_DU_PM_Container__perSliceReportList {
+		A_SEQUENCE_OF(struct E2SM_KPM_PerSliceReportListItem) list;
+		
+		/* Context for parsing across buffer boundaries */
+		asn_struct_ctx_t _asn_ctx;
+	} *perSliceReportList;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
@@ -43,7 +57,7 @@ typedef struct E2SM_KPM_EPC_DU_PM_Container {
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_E2SM_KPM_EPC_DU_PM_Container;
 extern asn_SEQUENCE_specifics_t asn_SPC_E2SM_KPM_EPC_DU_PM_Container_specs_1;
-extern asn_TYPE_member_t asn_MBR_E2SM_KPM_EPC_DU_PM_Container_1[1];
+extern asn_TYPE_member_t asn_MBR_E2SM_KPM_EPC_DU_PM_Container_1[3];
 
 #ifdef __cplusplus
 }

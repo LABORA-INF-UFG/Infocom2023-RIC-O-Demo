@@ -22,6 +22,7 @@ extern "C" {
 #define E2SM_KPM_maxCellingNBDU (512)
 #define E2SM_KPM_maxofContainers (8)
 #define E2SM_KPM_maxPLMN (12)
+#define E2SM_KPM_maxnoofUE (1024)
 
 
 #ifdef __cplusplus
