@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: optimizer
-        image: zanattabruno/optimizer-demo
+        image: zanattabruno/optimizer-demo-test
         ports:
         - containerPort: 5000
           name: flask-default
