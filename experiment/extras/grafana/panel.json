@@ -150,7 +150,7 @@
         }
       ],
       "thresholds": "",
-      "title": "Control Looping Latency by SIM ID",
+      "title": "Control Looping Latency by gNB ID",
       "type": "gauge",
       "valueFontSize": "80%",
       "valueMaps": [
@@ -187,13 +187,13 @@
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 1,
+            "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "auto",
-            "spanNulls": false,
+            "showPoints": "never",
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -218,7 +218,38 @@
           },
           "unit": "ms"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "2"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "3"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -286,7 +317,7 @@
       "type": "timeseries"
     }
   ],
-  "refresh": "5s",
+  "refresh": false,
   "schemaVersion": 37,
   "style": "dark",
   "tags": [
@@ -315,8 +346,8 @@
     ]
   },
   "time": {
-    "from": "now-1h",
-    "to": "now"
+    "from": "2022-12-30T19:04:00.000Z",
+    "to": "2022-12-30T19:08:00.000Z"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -346,6 +377,6 @@
   "timezone": "browser",
   "title": "Control Looping Latency",
   "uid": "dsteTft4k",
-  "version": 2,
+  "version": 5,
   "weekStart": ""
 }
