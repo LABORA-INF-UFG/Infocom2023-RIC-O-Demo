@@ -2,11 +2,11 @@ affinity: {}
 fullnameOverride: ''
 image:
   args:
-    e2term: 10.233.90.7
+    e2term: 10.43.0.226
     gNB: 500
     id: 5
   command: e2sim-rc
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   repository: zanattabruno/e2sim-rc
   tag: ''
 nameOverride: ''

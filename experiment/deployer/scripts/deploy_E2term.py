@@ -34,6 +34,7 @@ def main():
         if node.metadata.name != 'node1':
             values = read_yaml(E2TERM_VALUES)
             values['nodeSelector']['kubernetes.io/hostname'] = node.metadata.name
+            values['services']['sctp']['nodePort']= 30001+i
             write_yaml(values, E2TERM_VALUES)
             if i == len(node_list.items) - 1:
                 os.system('helm upgrade --install opt-e2term-'+node.metadata.name+' helm-charts/e2term/ -n ricplt --wait')

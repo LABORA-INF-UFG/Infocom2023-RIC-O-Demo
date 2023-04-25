@@ -8,12 +8,12 @@ containers:
   image:
     name: zanattabruno/bouncer-rc
     registry: registry.hub.docker.com
-    tag: latest
+    tag: release-g
   name: bouncer-xapp
 fullname: {}
 http:
   protPort: tcp:8080
-image_pull_policy: IfNotPresent
+image_pull_policy: Always
 livenessProbe: {}
 messaging:
   ports:

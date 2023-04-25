@@ -9,10 +9,10 @@ e2term:
       print: '1'
     hostnetworkmode: false
     image:
-      name: ric-plt-e2
-      registry: nexus3.o-ran-sc.org:10002/o-ran-sc
-      tag: 6.0.0
-    imagePullPolicy: IfNotPresent
+      name: zanattabruno/ric-plt-e2
+      registry: registry.hub.docker.com
+      tag: release-g
+    imagePullPolicy: Always
     pizpub:
       enabled: false
     privilegedmode: false
@@ -32,3 +32,6 @@ health:
 loglevel: ERR
 nodeSelector:
   kubernetes.io/hostname: node3
+services:
+  sctp:
+    nodePort: 30003

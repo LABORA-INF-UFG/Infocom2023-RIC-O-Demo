@@ -30,8 +30,10 @@ metadata:
     release: {{ $topCtx.Release.Name }}
     heritage: {{ $topCtx.Release.Service }} 
 spec:
+  type: NodePort
   ports:
     - port: {{ include "common.serviceport.e2term.sctp" $topCtx }}
+      nodePort: {{ $topCtx.Values.services.sctp.nodePort }}
       protocol: "SCTP"
       targetPort: {{ include "common.serviceport.e2term.sctp" $topCtx }}
       name: "sctp-{{ $key }}"

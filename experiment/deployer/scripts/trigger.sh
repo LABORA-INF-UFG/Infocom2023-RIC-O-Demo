@@ -1,3 +1,3 @@
 #!/bin/bash
-curl -X POST http://10.233.23.76/alert -H "Content-Type: application/json" -d @scripts/alert-example.json
+curl -X POST http://10.233.9.131/alert -H "Content-Type: application/json" -d @scripts/alert-example.json
 #curl -X POST http://127.0.0.1:5000/alert -H "Content-Type: application/json" -d @scripts/alert-example.json
