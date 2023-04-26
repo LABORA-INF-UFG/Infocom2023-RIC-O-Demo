@@ -3,7 +3,7 @@ appconfig:
 appenv: {}
 containers:
 - args:
-    gNB: 500
+    gNB: 100
   command: b_xapp_main
   image:
     name: zanattabruno/bouncer-rc

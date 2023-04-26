@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "e2sim-helm.fullname" . }}-handover
+  labels:
+    {{- include "e2sim-helm.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.typehandover }}
+  ports:
+    - port: {{ .Values.service.handover }}
+      targetPort: handover
+      protocol: TCP
+      name: handover
+      nodePort: {{ .Values.service.nodePort }}
+  selector:
+    {{- include "e2sim-helm.selectorLabels" . | nindent 4 }}

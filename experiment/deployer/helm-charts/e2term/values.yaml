@@ -29,7 +29,7 @@ health:
     enabled: true
     initialDelaySeconds: 120
     periodSeconds: 60
-loglevel: ERR
+loglevel: 4
 nodeSelector:
   kubernetes.io/hostname: node3
 services:

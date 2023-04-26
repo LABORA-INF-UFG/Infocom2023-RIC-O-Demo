@@ -2,9 +2,10 @@ affinity: {}
 fullnameOverride: ''
 image:
   args:
-    e2term: 10.43.0.226
-    gNB: 500
-    id: 5
+    e2term: 10.43.0.227
+    gNB: 100
+    id: 1
+    port: 30002
   command: e2sim-rc
   pullPolicy: Always
   repository: zanattabruno/e2sim-rc
@@ -18,6 +19,9 @@ replicaCount: 1
 resources: {}
 service:
   port: 8080
+  handover: 8090
   tls: []
   type: ClusterIP
+  typehandover: NodePort
+  nodePort: 31000
 tolerations: []
