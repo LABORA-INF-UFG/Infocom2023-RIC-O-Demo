@@ -3,7 +3,7 @@ appconfig:
 appenv: {}
 containers:
 - args:
-    gNB: 100
+    gNB: 200
   command: b_xapp_main
   image:
     name: zanattabruno/bouncer-rc
@@ -40,7 +40,7 @@ messaging:
     port: 4561
 name: {}
 nodeSelector:
-  kubernetes.io/hostname: node3
+  kubernetes.io/hostname: node2
 readinessProbe: {}
 replicaCount: 1
 ricplt:

@@ -3,8 +3,8 @@ fullnameOverride: ''
 image:
   args:
     e2term: 10.43.0.228
-    gNB: 2
-    id: 1
+    gNB: 200
+    id: 2
     port: 30003
   command: e2sim-rc
   pullPolicy: Always
@@ -12,7 +12,7 @@ image:
   tag: ''
 nameOverride: ''
 nodeSelector:
-  kubernetes.io/hostname: node3
+  kubernetes.io/hostname: node2
 podAnnotations: {}
 podSecurityContext: {}
 replicaCount: 1
