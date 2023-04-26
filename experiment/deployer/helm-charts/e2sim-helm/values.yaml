@@ -2,26 +2,26 @@ affinity: {}
 fullnameOverride: ''
 image:
   args:
-    e2term: 10.43.0.227
-    gNB: 100
+    e2term: 10.43.0.228
+    gNB: 2
     id: 1
-    port: 30002
+    port: 30003
   command: e2sim-rc
   pullPolicy: Always
   repository: zanattabruno/e2sim-rc
   tag: ''
 nameOverride: ''
 nodeSelector:
-  kubernetes.io/hostname: node2
+  kubernetes.io/hostname: node3
 podAnnotations: {}
 podSecurityContext: {}
 replicaCount: 1
 resources: {}
 service:
-  port: 8080
   handover: 8090
+  nodePort: 31003
+  port: 8080
   tls: []
   type: ClusterIP
   typehandover: NodePort
-  nodePort: 31000
 tolerations: []
