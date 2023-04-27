@@ -21,4 +21,4 @@ do
     esac
 done
 
-docker build . -t $repotag && docker push $repotag
+docker build . -t $repotag && docker push $repotag 

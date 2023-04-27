@@ -13,6 +13,8 @@ COPY copy-files/config /home/.kube
 ENV KUBECONFIG=/home/.kube/config
 
 COPY deployer.py .
+COPY deployer-2.0.py .
+
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir -r requirements.txt
 
