@@ -37,7 +37,8 @@ E2TERM_SCTP_LIST = [{'name': 'node2', 'addr': '10.43.0.227', 'port': 30002}, {
     'name': 'node3', 'addr': '10.43.0.228', 'port': 30003}]
 E2SIM_HANDOVER_LIST = [{'name': 'node2', 'addr': '10.43.0.227', 'port': 31002}, {
     'name': 'node3', 'addr': '10.43.0.228', 'port': 31003}]
-PATH = 'Infocom2023-RIC-O-Demo/experiment/deployer/'
+#PATH = 'Infocom2023-RIC-O-Demo/experiment/deployer/'
+PATH = ''
 XAPP_VALUES = PATH+'helm-charts/bouncer-xapp/values.yaml'
 
 # A function to sort json file
