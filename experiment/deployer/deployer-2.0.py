@@ -98,6 +98,12 @@ def upgrade_e2sim_to_e2term(input):
                 if payload['e2term']['from']['addr'] != payload['e2term']['to']['addr']:
                     response = requests.post(url, headers=headers, data=json.dumps(payload))
                     print(response.status_code)
+                    if response.status_code == 204:
+                        payload['e2term']['from']['addr'] = payload['e2term']['to']['addr']
+                        payload['e2term']['from']['port'] = payload['e2term']['to']['addr']
+                        payloads[key] = payload
+                    else:
+                        print(f"Something worng with ENode in {node['name']}")
                 else:
                     print('No E2Term change')
 
@@ -132,25 +138,21 @@ def hello():
 def run_deployment():
     json_url = urllib.request.urlopen("http://10.233.43.65/optimizer-optimal")
     input = json.loads(json_url.read())
-    #TODO comparar ultima otimização verificar se não é igual
     pprint.pprint(input)
-    #print('Upgrade e2term deployment')
-    #input = read_json()
-    #upgrade_e2term_deploy(input)
     global input_deployed
     if compare_json(input_deployed,input):
         return 'No change in optization result\n'
     else:
         print('Upgrade e2sim to E2Term Connection')
         upgrade_e2sim_to_e2term(input)
-        print('Upgrade xApp1 deployment')
-        xapp_name =  'xApp1'
-        upgrade_xapp_deploy(input, xapp_name)
-        print('Remove last optimized functions')
-        remove_OPT_VNFs()
-        global optimization_interation 
-        optimization_interation += 1
-        input_deployed = input
+        #print('Upgrade xApp1 deployment')
+        #xapp_name =  'xApp1'
+        #upgrade_xapp_deploy(input, xapp_name)
+        #print('Remove last optimized functions')
+        #remove_OPT_VNFs()
+        #global optimization_interation 
+        #optimization_interation += 1
+        #input_deployed = input
         return 'RIC environment optimized\n'
 
 if __name__ == '__main__':
