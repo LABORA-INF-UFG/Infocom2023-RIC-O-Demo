@@ -69,10 +69,10 @@ def deploy_e2sim():
     for node in node_list.items:
         if node.metadata.name != 'node1':
             values = read_yaml(E2SIM_VALUES)
-            values['nodeSelector']['kubernetes.io/hostname'] = 'node2'
+            values['nodeSelector']['kubernetes.io/hostname'] = node.metadata.name
             values['service']['nodePort'] = 31001+i
-            values['image']['args']['e2term'] = E2TERM_SCTP_LIST[i-1]['addr']
-            values['image']['args']['port'] = E2TERM_SCTP_LIST[i-1]['port']
+            values['image']['args']['e2term'] = E2TERM_SCTP_LIST[0]['addr']
+            values['image']['args']['port'] = E2TERM_SCTP_LIST[0]['port']
             values['image']['args']['gNB'] = i*100
             values['image']['args']['id'] = i
             write_yaml(values, E2SIM_VALUES)
@@ -106,10 +106,10 @@ def deploy_xApp():
             values['containers'][0]['args']['gNB'] = i*100
             write_yaml(values, XAPP_VALUES)
             if i == len(node_list.items) - 1:
-                os.system('helm upgrade --install opt-xapp-'+str(i+1)+' helm-charts/bouncer-xapp -n ricxapp --wait')
+                os.system('helm upgrade --install opt-xapp-e2node'+str(i+1)+' helm-charts/bouncer-xapp -n ricxapp --wait')
                 i = i+1
             else:
-                os.system('helm upgrade --install opt-xapp-'+str(i+1)+' helm-charts/bouncer-xapp -n ricxapp')
+                os.system('helm upgrade --install opt-xapp-e2node'+str(i+1)+' helm-charts/bouncer-xapp -n ricxapp')
                 i = i+1
 
 if __name__ == '__main__':

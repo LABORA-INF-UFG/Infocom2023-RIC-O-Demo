@@ -2,17 +2,17 @@ affinity: {}
 fullnameOverride: ''
 image:
   args:
-    e2term: 10.43.0.228
+    e2term: 10.43.0.227
     gNB: 200
     id: 2
-    port: 30003
+    port: 30002
   command: e2sim-rc
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   repository: zanattabruno/e2sim-rc
   tag: ''
 nameOverride: ''
 nodeSelector:
-  kubernetes.io/hostname: node2
+  kubernetes.io/hostname: node3
 podAnnotations: {}
 podSecurityContext: {}
 replicaCount: 1
