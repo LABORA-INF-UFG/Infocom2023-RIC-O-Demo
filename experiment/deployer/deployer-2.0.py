@@ -184,7 +184,7 @@ def hello():
 
 
 def run_deployment():
-    json_url = urllib.request.urlopen("http://10.233.43.65/optimizer-optimal")
+    json_url = urllib.request.urlopen("http://service-optimizer.ricinfra.svc.cluster.local/optimizer-optimal")
     input = json.loads(json_url.read())
     pprint.pprint(input)
     #input = {'E2Nodes': [{'DB': 2,

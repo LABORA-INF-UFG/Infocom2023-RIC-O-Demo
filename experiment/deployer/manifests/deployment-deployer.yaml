@@ -21,7 +21,7 @@ spec:
         - containerPort: 5000
           name: flask-default
         command: ["python3"]
-        args: ["deployer.py"]
+        args: ["deployer-2.0.py"]
         imagePullPolicy: Always
       nodeSelector:
         kubernetes.io/hostname: node1
