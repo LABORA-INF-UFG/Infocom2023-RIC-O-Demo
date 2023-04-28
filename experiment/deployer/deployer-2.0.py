@@ -1,9 +1,5 @@
 import pprint
-import json
-from kubernetes import client, config
-from subprocess import PIPE, run
 from flask import Flask, request, json
-import urllib.request
 import requests
 import copy
 import yaml
@@ -33,11 +29,14 @@ TRIGGER_ALLERT_LOOPING = 'HighRICControlLoopLatency'
 TRIGGER_ALLERT_NODE = 'NodeDownAlert'
 
 STATUS_ALLERT = 'firing'
+
 E2TERM_SCTP_LIST = [{'name': 'node2', 'addr': '10.43.0.227', 'port': 30002}, {
     'name': 'node3', 'addr': '10.43.0.228', 'port': 30003}]
+
 E2SIM_HANDOVER_LIST = [{'name': 'node2', 'addr': '10.43.0.227', 'port': 31002}, {
     'name': 'node3', 'addr': '10.43.0.228', 'port': 31003}]
-#PATH = 'Infocom2023-RIC-O-Demo/experiment/deployer/'
+
+PATH = 'Infocom2023-RIC-O-Demo/experiment/deployer/'
 PATH = ''
 XAPP_VALUES = PATH+'helm-charts/bouncer-xapp/values.yaml'
 
@@ -114,14 +113,14 @@ def upgrade_e2sim_to_e2term(input):
                         url, headers=headers, json=payload)
                     if response.status_code == 204:
                         print(
-                            f"{key} changed his E2Term from {payload['e2term']['from']['addr']} to {payload['e2term']['from']['addr']}")
+                            f"{key} changed his E2Term from {payload['e2term']['from']['addr']} to {payload['e2term']['to']['addr']}")
                         payload['e2term']['from']['addr'] = payload['e2term']['to']['addr']
                         payload['e2term']['from']['port'] = payload['e2term']['to']['port']
                         payloads[key] = payload
                     else:
                         print(f"Something wrong with ENode in {node['name']}")
                 else:
-                    print('No E2Term change')
+                    print(f'"{key} not changed his E2Term')
                 break
 
  # A function to get relation between xApps E2Node
@@ -138,8 +137,7 @@ def get_xApp_e2node(input, xapp_name):
                 e2node = ('node'+str(input_dict[key]))
         xApp_e2node[xApp] = e2node
         list_xApp_e2node.append([xApp, e2node])
-        # print (list_xApp_e2node)
-    return list_xApp_e2node
+    return sorted(list_xApp_e2node)
 
 
 def read_yaml(path):
@@ -187,16 +185,16 @@ def run_deployment():
     json_url = urllib.request.urlopen("http://service-optimizer.ricinfra.svc.cluster.local/optimizer-optimal")
     input = json.loads(json_url.read())
     pprint.pprint(input)
-    #input = {'E2Nodes': [{'DB': 2,
-    #                      'E2Node': 2,
-    #                      'E2T': 2,
-    #                      'RIC_MAN': 2,
-    #                      'SDL': 2,
-    #                      'xApp1': 2},
+    #input = {'E2Nodes': [{'DB': 3,
+    #                      'E2Node': 3,
+    #                      'E2T': 3,
+    #                      'RIC_MAN': 1,
+    #                      'SDL': 3,
+    #                      'xApp1': 3},
     #         {'DB': 2,
-    #          'E2Node': 3,
-    #          'E2T': 3,
-    #          'RIC_MAN': 2,
+    #          'E2Node': 2,
+    #          'E2T': 2,
+    #          'RIC_MAN': 1,
     #          'SDL': 2,
     #          'xApp1': 2}]}
     #pprint.pprint(input)
@@ -204,7 +202,7 @@ def run_deployment():
     if compare_json(input_deployed, input):
         return 'No change in optization result\n'
     else:
-        print('Upgrade e2sim to E2Term Connection')
+        print('Upgrading E2Node to E2Term Connection')
         upgrade_e2sim_to_e2term(input)
         xapp_name = 'xApp1'
         upgrade_xapp_deploy(input, xapp_name)
