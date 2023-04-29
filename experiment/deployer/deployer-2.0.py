@@ -32,10 +32,10 @@ TRIGGER_ALLERT_NODE = 'NodeDownAlert'
 STATUS_ALLERT = 'firing'
 
 E2TERM_SCTP_LIST = [{'name': 'node2', 'addr': '192.168.1.126', 'port': 30002}, {
-    'name': 'node3', 'addr': '192.169.1.127', 'port': 30003}]
+    'name': 'node3', 'addr': '192.168.1.127', 'port': 30003}]
 
 E2SIM_HANDOVER_LIST = [{'name': 'node2', 'addr': '192.168.1.126', 'port': 31002}, {
-    'name': 'node3', 'addr': '192.169.1.127', 'port': 31003}]
+    'name': 'node3', 'addr': '192.168.1.127', 'port': 31003}]
 
 PATH = 'Infocom2023-RIC-O-Demo/experiment/deployer/'
 PATH = ''
