@@ -80,7 +80,8 @@ def deploy_e2sim():
                 os.system('helm upgrade --install opt-e2sim-'+node.metadata.name+' helm-charts/e2sim-helm -n ricplt --wait')
                 i = i+1
             else:
-                os.system('helm upgrade --install opt-e2sim-'+node.metadata.name+' helm-charts/e2sim-helm -n ricplt')
+                if i != 1:
+                    os.system('helm upgrade --install opt-e2sim-'+node.metadata.name+' helm-charts/e2sim-helm -n ricplt')
                 i = i+1
 
 def deploy_xApp():
