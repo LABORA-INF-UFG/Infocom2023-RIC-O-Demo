@@ -199,15 +199,20 @@ def run_deployment():
     #          'SDL': 2,
     #          'xApp1': 2}]}
     #pprint.pprint(input)
-    global input_deployed
-    if compare_json(input_deployed, input):
-        return 'No change in optization result\n'
-    else:
-        print('Upgrading E2Node to E2Term Connection')
-        upgrade_e2sim_to_e2term(input)
-        xapp_name = 'xApp1'
-        upgrade_xapp_deploy(input, xapp_name)
-        return 'RIC environment optimized\n'
+    #global input_deployed
+    #if compare_json(input_deployed, input):
+    #    return 'No change in optization result\n'
+    #else:
+    #    print('Upgrading E2Node to E2Term Connection')
+    #    upgrade_e2sim_to_e2term(input)
+    #    xapp_name = 'xApp1'
+    #    upgrade_xapp_deploy(input, xapp_name)
+    #    return 'RIC environment optimized\n'
+    print('Upgrading E2Node to E2Term Connection')
+    upgrade_e2sim_to_e2term(input)
+    xapp_name = 'xApp1'
+    upgrade_xapp_deploy(input, xapp_name)
+    return 'RIC environment optimized\n'
 
 
 if __name__ == '__main__':
