@@ -1,0 +1,38 @@
+# CMake generated Testfile for 
+# Source directory: /home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common
+# Build directory: /home/cciadmin/Infocom2023-RIC-O-Demo/build/lib/test/common
+# 
+# This file includes the relevant testing commands required for 
+# testing this directory and lists subdirectories to be tested as well.
+add_test(byte_buffer_queue_test "byte_buffer_queue_test")
+set_tests_properties(byte_buffer_queue_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;28;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_eia1 "test_eia1")
+set_tests_properties(test_eia1 PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;32;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_eia3 "test_eia3")
+set_tests_properties(test_eia3 PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;36;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_eea1 "test_eea1")
+set_tests_properties(test_eea1 PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;40;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_eea2 "test_eea2")
+set_tests_properties(test_eea2 PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;44;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_eea3 "test_eea3")
+set_tests_properties(test_eea3 PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;48;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_f12345 "test_f12345")
+set_tests_properties(test_f12345 PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;52;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(stack_procedure_test "stack_procedure_test")
+set_tests_properties(stack_procedure_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;63;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(queue_test "queue_test")
+set_tests_properties(queue_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;67;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(timer_test "timer_test")
+set_tests_properties(timer_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;71;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(network_utils_test "network_utils_test")
+set_tests_properties(network_utils_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;75;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(test_common_test "test_common_test")
+set_tests_properties(test_common_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;79;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(tti_point_test "tti_point_test")
+set_tests_properties(tti_point_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;83;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(fsm_test "fsm_test")
+set_tests_properties(fsm_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;87;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(choice_type_test "choice_type_test")
+set_tests_properties(choice_type_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;91;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")
+add_test(task_scheduler_test "task_scheduler_test")
+set_tests_properties(task_scheduler_test PROPERTIES  _BACKTRACE_TRIPLES "/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;95;add_test;/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/CMakeLists.txt;0;")

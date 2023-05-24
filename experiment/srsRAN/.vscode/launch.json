@@ -1,0 +1,44 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [{
+        "name": "(gdb) Launch",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/srsenb/src/srsenb",
+        "args": ["--enb.n_prb=15",
+                "--enb.name=enb1",
+                "--enb.enb_id=0x64",
+                "--rf.device_name=zmq",
+                "--ric.agent.remote_ipv4_addr=10.15.0.42",
+                "--ric.agent.remote_port=32222",
+                "--log.all_level=warn",
+                "--ric.agent.log_level=debug",
+                "--log.filename=stdout",
+                "--slicer.enable=1",
+                "--slicer.workshare=0",
+                "--ric.agent.local_ipv4_addr=10.15.0.17",
+                "--ric.agent.local_port=5055",
+                "--ric.agent.no_reconnect=0"],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}/build",
+        "environment": [],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "setupCommands": [
+            {
+                "description": "Enable pretty-printing for gdb",
+                "text": "-enable-pretty-printing",
+                "ignoreFailures": true
+            },
+            {
+                "description": "Set Disassembly Flavor to Intel",
+                "text": "-gdb-set disassembly-flavor intel",
+                "ignoreFailures": true
+            }
+        ],
+        "miDebuggerPath": "/usr/bin/gdb"
+    }]
+}

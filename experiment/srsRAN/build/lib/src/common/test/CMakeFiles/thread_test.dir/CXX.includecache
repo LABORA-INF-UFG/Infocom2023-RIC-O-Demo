@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../lib/include/srslte/common/threads.h
+pthread.h
+-
+stdint.h
+-
+stdio.h
+-
+sys/timerfd.h
+-
+unistd.h
+-
+string
+-
+
+/home/cciadmin/Infocom2023-RIC-O-Demo/lib/src/common/test/thread_test.cc
+iostream
+-
+srslte/common/threads.h
+-
+

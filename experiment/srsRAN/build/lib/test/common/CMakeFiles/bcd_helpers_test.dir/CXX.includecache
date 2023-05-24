@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../lib/include/srslte/common/bcd_helpers.h
+ctype.h
+-
+stdint.h
+-
+string
+-
+
+/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/bcd_helpers_test.cc
+srslte/common/bcd_helpers.h
+/home/cciadmin/Infocom2023-RIC-O-Demo/lib/test/common/srslte/common/bcd_helpers.h
+assert.h
+-
+

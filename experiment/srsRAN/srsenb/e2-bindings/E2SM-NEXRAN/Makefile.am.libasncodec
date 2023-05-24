@@ -1,0 +1,129 @@
+ASN_MODULE_SRCS=	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_C-RNTI.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_M-TMSI.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_GUMMEI.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_GUTI.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_PLMN-Identity.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_IMSI.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceName.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_ProportionalAllocationPolicy.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SchedPolicy.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceConfig.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceStatus.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceConfigRequest.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceDeleteRequest.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceStatusRequest.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceStatusReport.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceUeBindRequest.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceUeUnbindRequest.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_RANfunction-Name.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_RANfunction-Description.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlMessage-Id.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlHeader.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlHeader-Format1.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlMessage.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlMessage-Format1.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlOutcome.c	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlOutcome-Format1.c
+
+ASN_MODULE_HDRS=	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_C-RNTI.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_M-TMSI.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_GUMMEI.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_GUTI.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_PLMN-Identity.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_IMSI.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceName.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_ProportionalAllocationPolicy.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SchedPolicy.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceConfig.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceStatus.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceConfigRequest.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceDeleteRequest.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceStatusRequest.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceStatusReport.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceUeBindRequest.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_SliceUeUnbindRequest.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_RANfunction-Name.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_RANfunction-Description.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlMessage-Id.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlHeader.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlHeader-Format1.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlMessage.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlMessage-Format1.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlOutcome.h	\
+	/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/E2SM_NEXRAN_E2SM-NexRAN-ControlOutcome-Format1.h
+
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/OPEN_TYPE.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/OPEN_TYPE.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_CHOICE.h
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/INTEGER.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/INTEGER.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/NativeEnumerated.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/NativeEnumerated.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/NativeInteger.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/NativeInteger.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/PrintableString.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/PrintableString.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/OCTET_STRING.h
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_SET_OF.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_SET_OF.c
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_CHOICE.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_SEQUENCE.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_SEQUENCE.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_SEQUENCE_OF.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_SEQUENCE_OF.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_SET_OF.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_SET_OF.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_application.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_application.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_ioc.h
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_system.h
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_codecs.h
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_internal.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_internal.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_random_fill.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_random_fill.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_bit_data.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_bit_data.c
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/OCTET_STRING.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/BIT_STRING.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/BIT_STRING.c
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_codecs_prim.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/asn_codecs_prim.h
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/ber_tlv_length.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/ber_tlv_length.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/ber_tlv_tag.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/ber_tlv_tag.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/ber_decoder.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/ber_decoder.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/der_encoder.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/der_encoder.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_TYPE.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constr_TYPE.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constraints.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/constraints.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/xer_support.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/xer_support.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/xer_decoder.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/xer_decoder.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/xer_encoder.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/xer_encoder.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_support.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_support.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_decoder.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_decoder.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_encoder.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_encoder.c
+ASN_MODULE_HDRS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_opentype.h
+ASN_MODULE_SRCS+=/home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/per_opentype.c
+
+ASN_MODULE_CFLAGS=-DASN_DISABLE_OER_SUPPORT 
+
+lib_LTLIBRARIES+=libasncodec.la
+libasncodec_la_SOURCES=$(ASN_MODULE_SRCS) $(ASN_MODULE_HDRS)
+libasncodec_la_CPPFLAGS=-I$(top_srcdir)//home/vikas/srslte-ric/build/srsenb/src/ric/messages/E2SM-NEXRAN/
+libasncodec_la_CFLAGS=$(ASN_MODULE_CFLAGS)
+libasncodec_la_LDFLAGS=-lm
