@@ -3,6 +3,7 @@
 
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <queue>
 
 #include "pthread.h"
@@ -44,9 +45,19 @@ private:
   std::map<std::string,slicer::slice_config_t *> slices;
   std::map<std::string,std::list<std::string>> ues;
   pthread_mutex_t lock;
+  uint8_t cpid;
   long serial_number;
   std::list<ric::subscription_t *> subscriptions;
   timer_queue queue;
+  struct timespec sent_time;
+  std::unordered_map<unsigned int, unsigned long> sent_ts_map; // timestamp of sent messages (INSERT) in nanoseconds
+  std::unordered_map<unsigned int, unsigned long> recv_ts_map; // timestamp of received messages (CONTROL) in nanoseconds
+  static inline unsigned long elapsed_nanoseconds(struct timespec ts) {
+    return ts.tv_sec * 1000000000 + ts.tv_nsec;
+}
+  static inline double elapsed_seconds(unsigned long sent_ns, unsigned long recv_ns) {
+    return (recv_ns - sent_ns) / 1000000000.0;     // converting to seconds
+}
 };
 
 }

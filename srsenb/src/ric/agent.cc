@@ -500,6 +500,8 @@ bool agent::handle_message(srslte::unique_byte_buffer_t pdu,
 			   int flags)
 {
   int ret;
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
 
   /* If this "message" is an SCTP notification/event, handle it. */
   if (flags & MSG_NOTIFICATION) {
@@ -519,7 +521,7 @@ bool agent::handle_message(srslte::unique_byte_buffer_t pdu,
   }
 
   /* Otherwise, handle the message. */
-  ret = ric::e2ap::handle_message(this,0,pdu->msg,pdu->N_bytes);
+  ret = ric::e2ap::handle_message(this,0,pdu->msg,pdu->N_bytes,&ts);
   if (ret == SRSLTE_SUCCESS)
     return true;
   else {

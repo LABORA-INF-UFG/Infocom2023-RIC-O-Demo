@@ -43,7 +43,7 @@ namespace ric {
 
 rc_model::rc_model(ric::agent *agent_) :
   service_model(agent_,"ORAN-E2SM-RC","1.3.6.1.4.1.53148.1.1.2.3"),
-  serial_number(1), lock(PTHREAD_MUTEX_INITIALIZER)
+  serial_number(1), cpid(1), lock(PTHREAD_MUTEX_INITIALIZER)
 {
 }
 
@@ -274,6 +274,7 @@ void rc_model::send_indications(int timer_id)
   ssize_t header_buf_len = 0;
   uint8_t *msg_buf = NULL;
   ssize_t msg_buf_len = 0;
+  OCTET_STRING *cpid_ostr;
 
   pthread_mutex_lock(&lock);
 
@@ -416,6 +417,10 @@ void rc_model::send_indications(int timer_id)
       asn_DEF_E2SM_RC_E2SM_RC_IndicationMessage,&im);
     goto out;
   }
+  cpid_ostr = (OCTET_STRING_t *) calloc(1,sizeof(OCTET_STRING_t));
+  cpid_ostr->buf = (uint8_t *) calloc(1, sizeof(cpid));
+  cpid_ostr->size = sizeof(cpid);
+  memcpy(cpid_ostr->buf, &cpid, sizeof(cpid));
 
   for (it2 = sub->actions.begin(); it2 != sub->actions.end(); ++it2) {
     action = *it2;
@@ -423,7 +428,7 @@ void rc_model::send_indications(int timer_id)
     if (ric::e2ap::generate_indication(
           agent,sub->request_id,sub->instance_id,sub->function_id,
 	  action->id,serial_number++,(int)E2AP_RICindicationType_insert,
-	  header_buf,header_buf_len,msg_buf,msg_buf_len,NULL,0,&buf,&buf_len)) {
+	  header_buf,header_buf_len,msg_buf,msg_buf_len,cpid_ostr->buf,cpid_ostr->size,&buf,&buf_len)) {
       E2SM_ERROR(
         agent,"e2sm-rc: failed to generate indication (reqid=%ld,instid=%ld,funcid=%ld,actid=%ld)\n",
 	sub->request_id,sub->instance_id,sub->function_id,action->id);
@@ -433,10 +438,13 @@ void rc_model::send_indications(int timer_id)
 	agent,"e2sm-rc: sending indication (reqid=%ld,instid=%ld,funcid=%ld,actid=%ld)\n",
 	sub->request_id,sub->instance_id,sub->function_id,action->id);
       agent->send_sctp_data(buf,buf_len);
+        clock_gettime(CLOCK_REALTIME, &sent_time);
+        sent_ts_map[cpid] = elapsed_nanoseconds(sent_time);
     }
     free(buf);
     buf = NULL;
     buf_len = 0;
+    ASN_STRUCT_FREE(asn_DEF_OCTET_STRING, cpid_ostr);
   }
 
  out:
@@ -455,6 +463,20 @@ void rc_model::handle_control(ric::control_t *rc)
   int ret;
 
   E2SM_DEBUG(agent,"e2sm-rc: handle_control\n");
+
+  unsigned long recv_ns = elapsed_nanoseconds(*rc->recv_ts);
+  // E2SM_DEBUG(agent,"Received timestamp is %lu ns", recv_ns);
+  unsigned long sent_ns{};
+  try{
+    sent_ns = sent_ts_map.at(cpid);
+    // E2SM_DEBUG(agent,"Sent timestamp is %lu ns", sent_ns);
+  } catch(std::out_of_range&) {
+    E2SM_ERROR(agent,"sent timestamp for message cpid=%u not found\n", cpid);
+  }
+  E2SM_DEBUG(agent,"Latency of message cpid=%u is %.3fms", cpid, (recv_ns-sent_ns)/1000000.0);
+  sent_ts_map.erase(cpid);
+  recv_ts_map.erase(cpid);
+  cpid++;
 
   if (!rc->header_buf || rc->header_len < 1
       || !rc->message_buf || rc->message_len < 1) {

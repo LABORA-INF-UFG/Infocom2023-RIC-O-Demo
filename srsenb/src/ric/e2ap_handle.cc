@@ -1,3 +1,4 @@
+#include <chrono>
 
 #include "srsenb/hdr/ric/e2ap_handle.h"
 #include "srsenb/hdr/ric/e2ap_decode.h"
@@ -367,7 +368,7 @@ int handle_reset_request(ric::agent *agent,uint32_t stream,
 }
 
 int handle_control(ric::agent *agent,uint32_t stream,
-		   E2AP_E2AP_PDU_t *pdu)
+		   E2AP_E2AP_PDU_t *pdu, struct timespec *recv_ts)
 {
   E2AP_RICcontrolRequest_t *req;
   E2AP_RICcontrolRequest_IEs_t *rie,**ptr;
@@ -413,7 +414,13 @@ int handle_control(ric::agent *agent,uint32_t stream,
       memcpy(rc->message_buf,rie->value.choice.RICcontrolMessage.buf,
 	     rc->message_len);
     }
+    else if (rie->id == E2AP_ProtocolIE_ID_id_RICcallProcessID) {
+      rc->cpid_len = rie->value.choice.RICcallProcessID.size;
+      rc->cpid_buf = (uint8_t *)malloc(rc->cpid_len);
+      memcpy(rc->cpid_buf,rie->value.choice.RICcallProcessID.buf,rc->cpid_len);
+    }
   }
+  rc->recv_ts = recv_ts;
 
   func = agent->lookup_ran_function(rc->function_id);
   if (!func) {
@@ -446,7 +453,8 @@ int handle_control(ric::agent *agent,uint32_t stream,
 }
 
 int handle_message(ric::agent *agent,uint32_t stream,
-		   const uint8_t * const buf,const uint32_t buflen)
+		   const uint8_t * const buf,const uint32_t buflen,
+       struct timespec *recv_ts)
 {
   E2AP_E2AP_PDU_t pdu;
   int ret;
@@ -474,7 +482,7 @@ int handle_message(ric::agent *agent,uint32_t stream,
       ret = handle_reset_request(agent,stream,&pdu);
       break;
     case E2AP_ProcedureCode_id_RICcontrol:
-      ret = handle_control(agent,stream,&pdu);
+      ret = handle_control(agent,stream,&pdu, recv_ts);
       break;
     default:
       E2AP_WARN(agent,"unsupported initiatingMessage procedure %ld\n",

@@ -65,6 +65,9 @@ typedef struct control {
   size_t header_len;
   uint8_t *message_buf;
   size_t message_len;
+  uint8_t *cpid_buf;
+  size_t cpid_len;
+  struct timespec* recv_ts;
   void *model_data;
 } control_t;
 

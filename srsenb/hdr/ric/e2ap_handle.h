@@ -10,7 +10,8 @@ class agent;
 namespace e2ap {
 
 int handle_message(ric::agent *agent,uint32_t stream,
-		   const uint8_t * const buf,const uint32_t buflen);
+		   const uint8_t * const buf,const uint32_t buflen,
+		   struct timespec *recv_ts);
 
 }
 }
