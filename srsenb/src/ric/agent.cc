@@ -186,10 +186,10 @@ int agent::init(const srsenb::all_args_t& args_,
   RIC_INFO("added model %s\n",model->name.c_str());
 #endif
 
-#ifdef ENABLE_SLICER
-  model = new nexran_model(this);
+#ifdef ENABLE_RIC_AGENT_RC
+  model = new rc_model(this);
   if (model->init()) {
-    RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
+    RIC_ERROR("failed to add E2SM-RC model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }
@@ -197,10 +197,10 @@ int agent::init(const srsenb::all_args_t& args_,
   RIC_INFO("added model %s\n",model->name.c_str());
 #endif
 
-#ifdef ENABLE_RIC_AGENT_RC
-  model = new rc_model(this);
+#ifdef ENABLE_SLICER
+  model = new nexran_model(this);
   if (model->init()) {
-    RIC_ERROR("failed to add E2SM-RC model; aborting!\n");
+    RIC_ERROR("failed to add E2SM-NEXRAN model; aborting!\n");
     delete model;
     return SRSLTE_ERROR;
   }
