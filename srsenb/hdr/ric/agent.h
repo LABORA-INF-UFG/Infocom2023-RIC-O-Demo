@@ -18,6 +18,13 @@
 #include "srsenb/hdr/ric/e2ap.h"
 #include "srsenb/hdr/ric/e2sm.h"
 
+#ifdef ENABLE_PROMETHEUS_METRICS
+#include "prometheus/family.h"
+#include "prometheus/exposer.h"
+#include "prometheus/histogram.h"
+
+using namespace prometheus;
+#endif
 namespace ric {
 
 typedef enum {
@@ -48,6 +55,9 @@ public:
   int init(const srsenb::all_args_t& args_,
 	   srsenb::phy_cfg_t& phy_cfg_,
 	   srsenb::rrc_cfg_t rrc_cfg_);
+#ifdef ENABLE_PROMETHEUS_METRICS
+  void init_prometheus();
+#endif
   void stop();
   int reset();
   bool send_sctp_data(uint8_t *buf,ssize_t len);
@@ -84,6 +94,18 @@ public:
   srsenb::enb_metrics_interface *enb_metrics_interface;
 #ifdef ENABLE_SLICER
   srsenb::enb_slicer_interface *enb_slicer_interface;
+#endif
+
+#ifdef ENABLE_PROMETHEUS_METRICS
+  struct {
+    std::shared_ptr<Registry> registry;
+    Family<Histogram> *hist_family;
+    std::shared_ptr<Exposer> exposer;
+    Histogram *histogram = nullptr;
+    std::shared_ptr<Histogram::BucketBoundaries> buckets;
+    Family<Gauge> *gauge_family;
+    Gauge *gauge = nullptr;
+  } prom_metrics;
 #endif
 
 private:

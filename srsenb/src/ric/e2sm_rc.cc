@@ -267,7 +267,7 @@ void rc_model::send_indications(int timer_id)
   E2SM_RC_EUTRA_CGI_t *eutra_cgi;
   uint8_t eutra_cgi_buffer[8192] = {0, };
   size_t eutra_cgi_buffer_size = 8192;
-  asn_codec_ctx_t *opt_cod;
+  asn_codec_ctx_t *opt_cod{};
   asn_enc_rval_t er;
   OCTET_STRING_t *octet_string;
   uint8_t *header_buf = NULL;
@@ -477,6 +477,11 @@ void rc_model::handle_control(ric::control_t *rc)
   sent_ts_map.erase(cpid);
   recv_ts_map.erase(cpid);
   cpid++;
+
+  // prometheus metrics
+  double seconds = elapsed_seconds(sent_ns, recv_ns);
+  agent->prom_metrics.histogram->Observe(seconds);
+  agent->prom_metrics.gauge->Set(seconds);
 
   if (!rc->header_buf || rc->header_len < 1
       || !rc->message_buf || rc->message_len < 1) {

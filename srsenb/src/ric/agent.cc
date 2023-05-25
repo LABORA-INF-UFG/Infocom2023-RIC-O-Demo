@@ -32,10 +32,61 @@
 #include "srsenb/hdr/ric/e2sm_rc.h"
 #endif
 
+#ifdef ENABLE_PROMETHEUS_METRICS
+#include "prometheus/registry.h"
+#include "prometheus/exposer.h"
+#include "prometheus/histogram.h"
+#endif
 namespace ric {
 
 bool e2ap_xer_print;
 bool e2sm_xer_print;
+
+/*
+    Builds the prometheus configuration and exposes its metrics on port 8080
+*/
+void agent::init_prometheus() {
+  std::string hostname = "srsRAN-eNB";
+    char *pod_env = std::getenv("HOSTNAME");
+    if(pod_env != NULL) {
+        hostname = pod_env;
+    }
+
+    prom_metrics.registry = std::make_shared<Registry>();
+    prom_metrics.hist_family = &BuildHistogram()
+                            .Name("rc_control_loop_seconds")
+                            .Help("E2SM-RC Insert-Control Loop metrics")
+                            .Labels({{"HOSTNAME", hostname},
+                                     {"E2TERM", args.ric_agent.remote_ipv4_addr + ":" + std::to_string(args.ric_agent.remote_port)}
+                                    })
+                            .Register(*prom_metrics.registry);
+
+    prom_metrics.gauge_family = &BuildGauge()
+                            .Name("rc_control_loop_latency_seconds")
+                            .Help("Current E2SM-RC Insert-Control Loop latency")
+                            .Labels({{"HOSTNAME", hostname},
+                                     {"E2TERM", args.ric_agent.remote_ipv4_addr + ":" + std::to_string(args.ric_agent.remote_port)}
+                                    })
+                            .Register(*prom_metrics.registry);
+
+    prom_metrics.exposer = std::make_shared<Exposer>("0.0.0.0:8080", 1);
+    prom_metrics.exposer->RegisterCollectable(prom_metrics.registry);
+
+    prom_metrics.buckets = std::make_shared<Histogram::BucketBoundaries>();
+    prom_metrics.buckets->assign({0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.01, 0.02, 0.05, 0.1});
+
+    // TODO: e2node_instance should be registered per thread (next line should be called within each spawned thread)
+    // for now we call it here due e2sim only runs a single e2node instance
+    prom_metrics.histogram = &prom_metrics.hist_family->Add({
+            {"GNODEB_ID", std::to_string(args.enb.enb_id)},
+            {"SIM_ID", std::to_string(1)}
+        }, *prom_metrics.buckets);
+
+    prom_metrics.gauge = &prom_metrics.gauge_family->Add({
+            {"GNODEB_ID", std::to_string(args.enb.enb_id)},
+            {"SIM_ID", std::to_string(1)}
+        }, 0.0);
+}
 
 agent::agent(srslte::logger* logger_,
 	     srsenb::enb_metrics_interface *enb_metrics_interface_
@@ -187,6 +238,9 @@ int agent::init(const srsenb::all_args_t& args_,
 
     }
   }
+  #ifdef ENABLE_PROMETHEUS_METRICS
+  init_prometheus();
+  #endif
 
   set_state(RIC_INITIALIZED);
 

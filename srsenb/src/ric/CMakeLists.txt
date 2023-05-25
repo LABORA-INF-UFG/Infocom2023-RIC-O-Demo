@@ -4,6 +4,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
 endif()
 
+if(ENABLE_PROMETHEUS_METRICS)
+find_package(prometheus-cpp CONFIG REQUIRED)
+endif()
+
 # Set global flags for build of generated asn.1 bindings.
 #
 # For debugging: add ASN_EMIT_DEBUG to see per-type debug asn.1
@@ -184,3 +188,13 @@ if(ENABLE_RIC_AGENT_RC)
   target_include_directories(srsenb_ric BEFORE PUBLIC ${E2SM_RC_C_DIR})
 endif()
 target_include_directories(srsenb_ric BEFORE PUBLIC ${E2AP_C_DIR})
+
+if(ENABLE_PROMETHEUS_METRICS)
+target_include_directories(srsenb_ric PRIVATE /usr/local/include/prometheus)
+if(PROMETHEUS_CPP_ENABLE_PUSH)
+    target_link_libraries(srsenb_ric prometheus-cpp::push)
+endif()
+if(PROMETHEUS_CPP_ENABLE_PULL)
+    target_link_libraries(srsenb_ric prometheus-cpp::pull)
+endif()
+endif()
