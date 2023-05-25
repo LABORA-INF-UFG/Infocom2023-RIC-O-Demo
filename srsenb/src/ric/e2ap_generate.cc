@@ -13,6 +13,7 @@
 #include "E2AP_SuccessfulOutcome.h"
 #include "E2AP_UnsuccessfulOutcome.h"
 #include "E2AP_E2setupRequest.h"
+#include "E2AP_PLMN-Identity.h"
 
 namespace ric {
 namespace e2ap {
@@ -28,6 +29,31 @@ int generate_e2_setup_request(
   ric::ran_function_t *func;
   std::list<ric::service_model *>::iterator it;
   std::list<ric::ran_function_t *>::iterator it2;
+  E2AP_PLMN_Identity_t *plmn_arg_id;
+  BIT_STRING_t gnb_id;
+
+  // memset(plmn_arg_id, 0, sizeof(E2AP_PLMN_Identity_t));
+  // memset(gnb_id, 0, sizeof(BIT_STRING_t));
+
+  // encoding PLMN identity
+  uint8_t *plmn = (uint8_t *)"747";
+  size_t plmn_len = strlen((char *)plmn);
+  plmn_arg_id = (E2AP_PLMN_Identity_t *) calloc(1, sizeof(E2AP_PLMN_Identity_t));
+  plmn_arg_id->size = plmn_len;
+  plmn_arg_id->buf = (uint8_t *) calloc(plmn_len, sizeof(uint8_t));
+  memcpy(plmn_arg_id->buf, plmn, plmn_arg_id->size);
+
+  // encoding gNodeB identity
+  uint32_t gnb_arg_id = 100;
+  // gnb_id = (BIT_STRING_t *) calloc(1, sizeof(BIT_STRING_t));
+  gnb_id.buf = (uint8_t *) calloc(1, 4); // maximum size is 32 bits
+  gnb_id.size = 4;
+  gnb_id.bits_unused = 3; // we are using 29 bits for gnb_id so that 7 bits (3+4) is left for the NR Cell Identity
+  gnb_arg_id = ((gnb_arg_id & 0X1FFFFFFF) << 3);
+  gnb_id.buf[0] = ((gnb_arg_id & 0XFF000000) >> 24);
+  gnb_id.buf[1] = ((gnb_arg_id & 0X00FF0000) >> 16);
+  gnb_id.buf[2] = ((gnb_arg_id & 0X0000FF00) >> 8);
+  gnb_id.buf[3] = (gnb_arg_id & 0X000000FF);
 
   memset(&pdu,0,sizeof(pdu));
   pdu.present = E2AP_E2AP_PDU_PR_initiatingMessage;
@@ -48,15 +74,20 @@ int generate_e2_setup_request(
   ie->criticality = E2AP_Criticality_reject;
   ie->value.present = E2AP_E2setupRequestIEs__value_PR_GlobalE2node_ID;
   /* Hardcode LTE until we srslte has NG RAN stuff. */
-  ie->value.choice.GlobalE2node_ID.present = E2AP_GlobalE2node_ID_PR_eNB;
-  ASN1_MAKE_PLMNID(
-    agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
-    &ie->value.choice.GlobalE2node_ID.choice.eNB.global_eNB_ID.pLMN_Identity);
-  ie->value.choice.GlobalE2node_ID.choice.eNB.global_eNB_ID.eNB_ID.present = \
-    E2AP_ENB_ID_PR_macro_eNB_ID;
-  ASN1_MAKE_MACRO_ENB_ID(
-    agent->args.stack.s1ap.enb_id,
-    &ie->value.choice.GlobalE2node_ID.choice.eNB.global_eNB_ID.eNB_ID.choice.macro_eNB_ID);
+  // ie->value.choice.GlobalE2node_ID.present = E2AP_GlobalE2node_ID_PR_eNB;
+  ie->value.choice.GlobalE2node_ID.present = E2AP_GlobalE2node_ID_PR_gNB;
+  // ASN1_MAKE_PLMNID(
+  //   agent->args.stack.s1ap.mcc,agent->args.stack.s1ap.mnc,
+  //   &ie->value.choice.GlobalE2node_ID.choice.eNB.global_eNB_ID.pLMN_Identity);
+  ie->value.choice.GlobalE2node_ID.choice.gNB.global_gNB_ID.plmn_id = *plmn_arg_id;
+  // ie->value.choice.GlobalE2node_ID.choice.eNB.global_eNB_ID.eNB_ID.present = \
+  //   E2AP_ENB_ID_PR_macro_eNB_ID;
+  ie->value.choice.GlobalE2node_ID.choice.gNB.global_gNB_ID.gnb_id.present = \
+    E2AP_GNB_ID_Choice_PR_gnb_ID;
+  // ASN1_MAKE_MACRO_ENB_ID(
+  //   agent->args.stack.s1ap.enb_id,
+  //   &ie->value.choice.GlobalE2node_ID.choice.eNB.global_eNB_ID.eNB_ID.choice.macro_eNB_ID);
+  ie->value.choice.GlobalE2node_ID.choice.gNB.global_gNB_ID.gnb_id.choice.gnb_ID = gnb_id;
   ASN_SEQUENCE_ADD(&req->protocolIEs.list,ie);
 
   /* "Optional" RANfunctions_List. */
