@@ -2,7 +2,7 @@ affinity: {}
 fullnameOverride: ''
 image:
   args:
-    e2term: 192.168.1.126
+    e2term: 10.43.0.227
     gNB: 200
     id: 2
     port: 30002

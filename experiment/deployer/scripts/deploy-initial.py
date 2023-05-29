@@ -7,7 +7,7 @@ E2TERM_VALUES = 'helm-charts/e2term/values.yaml'
 E2SIM_VALUES = 'helm-charts/e2sim-helm/values.yaml'
 XAPP_VALUES = 'helm-charts/bouncer-xapp/values.yaml'
 
-E2TERM_SCTP_LIST = [ {'name': 'node2', 'addr': '192.168.1.126', 'port': 30002}, {'name': 'node3', 'addr': '192.168.1.127', 'port': 30003}]
+E2TERM_SCTP_LIST = [ {'name': 'node2', 'addr': '10.43.0.227', 'port': 30002}, {'name': 'node3', 'addr': '10.43.0.228', 'port': 30003}]
 
 
 
@@ -80,8 +80,7 @@ def deploy_e2sim():
                 os.system('helm upgrade --install opt-e2sim-'+node.metadata.name+' helm-charts/e2sim-helm -n ricplt --wait')
                 i = i+1
             else:
-                if i != 1:
-                    os.system('helm upgrade --install opt-e2sim-'+node.metadata.name+' helm-charts/e2sim-helm -n ricplt')
+                os.system('helm upgrade --install opt-e2sim-'+node.metadata.name+' helm-charts/e2sim-helm -n ricplt')
                 i = i+1
 
 def deploy_xApp():
