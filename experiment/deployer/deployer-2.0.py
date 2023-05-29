@@ -80,7 +80,7 @@ def upgrade_e2sim_to_e2term(input):
     payload_template = {
         "e2term": {
             "from": {
-                "addr": "192.168.1.126",
+                "addr": "'10.43.0.227",
                 "port": 30002
             },
             "to": {

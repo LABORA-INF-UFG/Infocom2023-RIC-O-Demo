@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: deployer
-        image: zanattabruno/deployer-demo-test
+        image: zanattabruno/deployer-demo:vms
         ports:
         - containerPort: 5000
           name: flask-default
